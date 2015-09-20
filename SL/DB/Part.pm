@@ -29,6 +29,7 @@ __PACKAGE__->meta->add_relationships(
     type         => 'one to many',
     class        => 'SL::DB::Price',
     column_map   => { id => 'parts_id' },
+    manager_args => { with_objects => [ 'pricegroup' ] }
   },
   makemodels     => {
     type         => 'one to many',
@@ -52,6 +53,11 @@ __PACKAGE__->meta->add_relationships(
     column_map      => { id => 'trans_id' },
     query_args      => [ what_done => 'part' ],
     manager_args    => { sort_by => 'itime' },
+  },
+  shop_parts     => {
+    type         => 'one to many',
+    class        => 'SL::DB::ShopPart',
+    column_map   => { id => 'part_id' },
   },
 );
 
