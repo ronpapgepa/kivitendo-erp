@@ -134,16 +134,17 @@ sub is_service    { $_[0]->part_type eq 'service'    }
 sub is_assortment { $_[0]->part_type eq 'assortment' }
 
 sub type {
-  my ($self, $type) = @_;
-  if (@_ > 1) {
-    die 'invalid type' unless $type =~ /^(?:part|service|assembly)$/;
-    $self->assembly(          $type eq 'assembly' ? 1 : 0);
-    $self->inventory_accno_id($type ne 'service'  ? 1 : undef);
-  }
+  return $_[0]->part_type;
+  # my ($self, $type) = @_;
+  # if (@_ > 1) {
+  #   die 'invalid type' unless $type =~ /^(?:part|service|assembly)$/;
+  #   $self->assembly(          $type eq 'assembly' ? 1 : 0);
+  #   $self->inventory_accno_id($type ne 'service'  ? 1 : undef);
+  # }
 
-  return 'assembly' if $self->assembly;
-  return 'part'     if $self->inventory_accno_id;
-  return 'service';
+  # return 'assembly' if $self->assembly;
+  # return 'part'     if $self->inventory_accno_id;
+  # return 'service';
 }
 
 sub new_part {
