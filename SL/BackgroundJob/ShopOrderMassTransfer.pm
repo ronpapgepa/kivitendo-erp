@@ -43,6 +43,9 @@ sub create_order {
     die "can't find shoporder with id $shop_order_id" unless $shop_order;
     $::lxdebug->dump(0, 'WH: CREATE:I ', \$shop_order);
     #TODO Kundenabfrage so ändern, dass es nicht abricht
+    unless($shop_order){
+      push @{ $error_report{$shop_order_id}} }, 'Shoporder not found';
+    }
     my $customer = SL::DB::Manager::Customer->find_by(id => $shop_order->{kivi_customer_id});
     die "Can't find customer" unless $customer;
     my $employee = SL::DB::Manager::Employee->current;
