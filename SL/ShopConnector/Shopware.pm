@@ -150,6 +150,35 @@ sub get_new_orders {
   # return $import;
 };
 
+sub get_categories {
+  my ($self) = @_;
+
+  my $url = $self->url;
+
+  my $data = $self->connector->get("http://$url/api/categories");
+  my $data_json = $data->content;
+  my $import = SL::JSON::decode_json($data_json);
+  my @daten = @{$import->{data}};
+  my %categories = map { ($_->{id} => $_) } @daten;
+
+  for(@daten) {
+    my $parent = $categories{$_->{parentId}};
+    $parent->{children} ||= [];
+    push @{$parent->{children}},$_;
+  }
+
+  return \@daten;
+}
+
+sub get_article {
+}
+
+sub get_articles {
+}
+
+sub set_article {
+}
+
 sub init_url {
   my ($self) = @_;
   # TODO: validate url and port
