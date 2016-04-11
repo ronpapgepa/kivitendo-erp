@@ -2,7 +2,7 @@
 namespace('kivi.shop_part', function(ns) {
   var $dialog;
 
-  // this is called by sub render, with a certain prerendered html (edit.html)
+  // this is called by sub render, with a certain prerendered html (edit.html,categories.html)
   ns.shop_part_dialog = function(title, html) {
     var id            = 'jqueryui_popup_dialog';
     var dialog_params = {
