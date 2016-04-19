@@ -9,7 +9,7 @@ use strict;
 use SL::DB::MetaSetup::ShopPart;
 use SL::DB::Manager::ShopPart;
 use SL::DB::Helper::AttrHTML;
-use SL::DB::Helper::ActsAsList;
+#use SL::DB::Helper::ActsAsList;
 
 __PACKAGE__->meta->initialize;
 __PACKAGE__->attr_html('shop_description');
