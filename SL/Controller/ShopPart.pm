@@ -260,7 +260,7 @@ sub render_shop_part_edit_dialog {
   $self->js->render;
 }
 
-sub render_shop_categories_edit_dialog {
+sub action_save_categories {
   my ($self) = @_;
 
   my @categories =  @{ $::form->{categories} || [] };
