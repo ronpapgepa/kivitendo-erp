@@ -13,6 +13,7 @@ use SL::DB::ShopOrder;
 use SL::DB::ShopOrderItem;
 use Data::Dumper;
 use Sort::Naturally ();
+use SL::Helper::Flash;
 use Encode qw(encode_utf8);
 use SL::Controller::ShopPart;
 
@@ -150,6 +151,11 @@ sub get_new_orders {
     }else{
       last;
     }
+    my $shop = $self->config->description;
+
+    my @fetched_orders = ($shop,$i);
+
+    return \@fetched_orders;
   }
   # return $import;
 };
@@ -188,7 +194,6 @@ sub update_part {
   $main::lxdebug->dump(0, 'WH: UPDATE JSON: ', \$json);
   my $url = $self->url;
   my $part = SL::DB::Part->new(id => $shop_part->{part_id})->load;
-$main::lxdebug->dump(0, 'WH: SHOPPART: ',\$part);
 
   # TODO: Prices (pricerules, pricegroups, multiple prices)
   my $cvars = { map { ($_->config->name => { value => $_->value_as_text, is_valid => $_->is_valid }) } @{ $part->cvars_by_config } };
@@ -275,7 +280,6 @@ $main::lxdebug->message(0, "WH: else success: ". $import->{success});
   }
   if(@upload_img) {
     $self->connector->put("http://$url/api/generateArticleImages/$part->{partnumber}?useNumberAsId=true");
-    #$self->connector->delete("http://$url/api/caches/");
   }
   return $upload_content->{success};
 }
@@ -318,13 +322,16 @@ __END__
 
 =head1 SYNOPSIS
 
+
 =head1 DESCRIPTION
+
 
 =head1 BUGS
 
-None yet. :)
+  None yet. :)
 
 =head1 AUTHOR
 
+  W. Hahn E<lt>wh@futureworldsearch.netE<gt>
 
 =cut
