@@ -1,7 +1,12 @@
 [% USE HTML %]
 [% USE LxERP %]
 [% USE L %]
- <h3>[%- LxERP.t8('Import result') %]</h3>
+ <h3>
+   [%- LxERP.t8('Import result') %]
+   [%- IF SELF.num_errors -%]
+     <font color="red">([%- SELF.num_errors -%]&nbsp;[%- LxERP.t8('Errors') -%])</font>
+   [%- END -%]
+ </h3>
 
 [%- PROCESS 'common/paginate.html' pages=SELF.pages, base_url = SELF.base_url %]
  <table>
