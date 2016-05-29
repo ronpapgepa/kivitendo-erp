@@ -280,7 +280,10 @@ sub check_objects {
 
 
   # If order has errors set error for orderitems as well
+  # If one of the orderitems has an error, set an error for the order
+  # This algorithm only works for one order per csv file!
   my $order_entry;
+  my $item_column_errors;
   foreach my $entry (@{ $self->controller->data }) {
     # Search first order
     if ($entry->{raw_data}->{datatype} eq $self->_order_column) {
@@ -289,9 +292,16 @@ sub check_objects {
               && $entry->{raw_data}->{datatype} eq $self->_item_column
               && scalar @{ $order_entry->{errors} } > 0 ) {
       push @{ $entry->{errors} }, $::locale->text('Error: Invalid order for this order item');
-    }
+      $item_column_errors++;
+    } elsif ( defined $order_entry
+              && $entry->{raw_data}->{datatype} eq $self->_item_column
+              && scalar @{ $entry->{errors} } > 0 ) {
+      $item_column_errors++;
+    };
   }
-
+  if ( $item_column_errors ) {
+    push @{ $order_entry->{errors} }, $::locale->text('Error: there are errors with #1 items', $item_column_errors);
+  };
 }
 
 sub handle_order {

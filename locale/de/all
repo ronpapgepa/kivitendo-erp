@@ -1194,6 +1194,7 @@ $self->{texts} = {
   'Error: taxincluded has to be t or f' => 'Fehler: Steuer im Preis inbegriffen muß t oder f sein',
   'Error: taxincluded wasn\'t set' => 'Fehler: Steuer im Preis inbegriffen nicht gesetzt (taxincluded)',
   'Error: taxkey missing'       => 'Fehler: Steuerschlüssel fehlt',
+  'Error: there are errors with #1 items' => 'Fehler: es gibt Fehler bei #1 Artikeln',
   'Error: this feature requires that articles with a time-based unit (e.g. \'h\' or \'min\') exist.' => 'Fehler: dieses Feature setzt voraus, dass Artikel mit einer Zeit-basierenden Einheit (z.B. "Std") existieren.',
   'Error: unknown local bank account' => 'Fehler: unbekannte Kontnummer',
   'Error: unknown local bank account id' => 'Fehler: unbekannte Bankkonto-ID',
