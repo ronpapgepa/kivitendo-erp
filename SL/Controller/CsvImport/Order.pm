@@ -279,28 +279,36 @@ sub check_objects {
   $self->handle_prices_and_taxes();
 
 
-  # If order has errors set error for orderitems as well
-  # If one of the orderitems has an error, set an error for the order
-  # This algorithm only works for one order per csv file!
-  my $order_entry;
+  # If the order has errors set an error for the orderitems as well.
+  # If one of the orderitems has an error, set an error for the order.
+  # Now only orders without errors are imported, but if there are several
+  # orders, some with errors, some without, then only those without errors are
+  # imported. Maybe it would be better to block the whole CSV file?
+
+  my $last_order_entry;
   my $item_column_errors;
   foreach my $entry (@{ $self->controller->data }) {
     # Search first order
     if ($entry->{raw_data}->{datatype} eq $self->_order_column) {
-      $order_entry = $entry;
-    } elsif ( defined $order_entry
+      if ( $item_column_errors && $last_order_entry ) {
+        push @{ $last_order_entry->{errors} }, $::locale->text('Error: there are errors with #1 items', $item_column_errors);
+      };
+      $item_column_errors = 0; # reset for each order if there are several orders in csv file
+      $last_order_entry = $entry;
+    } elsif ( defined $last_order_entry
               && $entry->{raw_data}->{datatype} eq $self->_item_column
-              && scalar @{ $order_entry->{errors} } > 0 ) {
+              && scalar @{ $last_order_entry->{errors} } > 0 ) {
       push @{ $entry->{errors} }, $::locale->text('Error: Invalid order for this order item');
       $item_column_errors++;
-    } elsif ( defined $order_entry
+    } elsif ( defined $last_order_entry
               && $entry->{raw_data}->{datatype} eq $self->_item_column
               && scalar @{ $entry->{errors} } > 0 ) {
       $item_column_errors++;
     };
   }
+  # when loop ends, run error check for the final order (or the first, if there is only one)
   if ( $item_column_errors ) {
-    push @{ $order_entry->{errors} }, $::locale->text('Error: there are errors with #1 items', $item_column_errors);
+    push @{ $last_order_entry->{errors} }, $::locale->text('Error: there are errors with #1 items', $item_column_errors);
   };
 }
 
