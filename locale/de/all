@@ -1430,6 +1430,7 @@ $self->{texts} = {
   'Import finished with errors.' => 'Der Import wurde mit Fehlern beendet.',
   'Import finished without errors.' => 'Der Import wurde ohne Fehler beendet.',
   'Import not started yet, please wait...' => 'Der Taskserver ist gerade ausgelastet. Ihr Import wird gleich gestartet, bitte warten...',
+  'Import order ignoring part errors' => 'Auftrag trotz Positionsfehler importieren',
   'Import preview'              => 'Import-Vorschau',
   'Import profiles'             => 'Import-Profil',
   'Import result'               => 'Import-Ergebnis',

@@ -411,6 +411,7 @@ sub profile_from_form {
 
   if ($self->type eq 'orders') {
     $::form->{settings}->{max_amount_diff} = $::form->parse_amount(\%::myconfig, $::form->{settings}->{max_amount_diff});
+    $::form->{settings}->{import_order_despite_part_errors} = $::form->{settings}->{import_order_despite_part_errors};
   }
 
   delete $::form->{profile}->{id};

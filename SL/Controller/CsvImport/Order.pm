@@ -41,6 +41,7 @@ sub set_profile_defaults {
                        order_column    => $::locale->text('Order'),
                        item_column     => $::locale->text('OrderItem'),
                        max_amount_diff => 0.02,
+                       import_order_despite_part_errors => 0,
                       );
 };
 
@@ -48,7 +49,7 @@ sub set_profile_defaults {
 sub init_settings {
   my ($self) = @_;
 
-  return { map { ( $_ => $self->controller->profile->get($_) ) } qw(order_column item_column max_amount_diff) };
+  return { map { ( $_ => $self->controller->profile->get($_) ) } qw(order_column item_column max_amount_diff import_order_despite_part_errors) };
 }
 
 
@@ -290,7 +291,7 @@ sub check_objects {
   foreach my $entry (@{ $self->controller->data }) {
     # Search first order
     if ($entry->{raw_data}->{datatype} eq $self->_order_column) {
-      if ( $item_column_errors && $last_order_entry ) {
+      if ( $item_column_errors && $last_order_entry && !$self->settings->{'import_order_despite_part_errors'} ) {
         push @{ $last_order_entry->{errors} }, $::locale->text('Error: there are errors with #1 items', $item_column_errors);
       };
       $item_column_errors = 0; # reset for each order if there are several orders in csv file
@@ -307,7 +308,7 @@ sub check_objects {
     };
   }
   # when loop ends, run error check for the final order (or the first, if there is only one)
-  if ( $item_column_errors ) {
+  if ( $item_column_errors and !$self->settings->{'import_order_despite_part_errors'} ) {
     push @{ $last_order_entry->{errors} }, $::locale->text('Error: there are errors with #1 items', $item_column_errors);
   };
 }

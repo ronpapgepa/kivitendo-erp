@@ -14,3 +14,9 @@
   [% L.input_tag('settings.max_amount_diff', LxERP.format_amount(SELF.profile.get('max_amount_diff')), size => "5") %]
  </td>
 </tr>
+<tr>
+ <th align="right">[%- LxERP.t8('Import order ignoring part errors') %]:</th>
+ <td colspan="10">
+  [% L.checkbox_tag('settings.import_order_despite_part_errors', checked=SELF.profile.get('import_order_despite_part_errors')) %]
+ </td>
+</tr>
