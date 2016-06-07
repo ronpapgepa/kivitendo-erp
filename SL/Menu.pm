@@ -241,6 +241,7 @@ sub clear_access {
 
 sub set_access {
   my ($self) = @_;
+
   # 1. evaluate access for all
   # 2. if a menu has no visible children, its not visible either
 
