@@ -31,7 +31,6 @@ sub get_new_orders {
   my $ordnumber = $self->config->last_order_number + 1;
   my $otf = $self->config->orders_to_fetch;
 
-
   my $i;
   for ($i=1;$i<=$otf;$i++) {
 
@@ -235,6 +234,7 @@ sub get_categories {
   my $url = $self->url;
 
   my $data = $self->connector->get("http://$url/api/categories");
+
   my $data_json = $data->content;
   my $import = SL::JSON::decode_json($data_json);
   my @daten = @{$import->{data}};
@@ -281,13 +281,11 @@ sub update_part {
 
   my ($import,$data,$data_json);
   if( $shop_part->last_update){
-    my $partnumber = $::form->escape($part->{partnumber});#shopware don't accept "/" in articlenumber
+    my $partnumber = $::form->escape($part->{partnumber});#shopware don't accept / in articlenumber
     $data = $self->connector->get("http://$url/api/articles/$partnumber?useNumberAsId=true");
     $data_json = $data->content;
     $import = SL::JSON::decode_json($data_json);
-    $main::lxdebug->dump(0, 'WH:IMPORT ',\$import);
-
-#  }
+  }
 
   # get the right price
   my ( $price_src_str, $price_src_id ) = split(/\//,$shop_part->active_price_source);
@@ -388,10 +386,8 @@ sub update_part {
   my $del_imgString = SL::JSON::to_json(\%del_img);
   #my $delImg = $self->connector->put("http://$url/api/articles/$part->{partnumber}?useNumberAsId=true",Content => $del_imgString);
     #update
-    my $partnumber = $::form->escape($part->{partnumber});#shopware dosn't accept / in articlenumber
+    my $partnumber = $::form->escape($part->{partnumber});#shopware don't accept / in articlenumber
     my $upload = $self->connector->put("http://$url/api/articles/$partnumber?useNumberAsId=true",Content => $dataString);
-    $main::lxdebug->dump(0, 'WH:iUPLOAD ',\$upload);
-
     my $data_json = $upload->content;
     $upload_content = SL::JSON::decode_json($data_json);
   }else{
@@ -412,7 +408,7 @@ sub get_article {
   my ($self,$partnumber) = @_;
 
   my $url = $self->url;
-  $partnumber = $::form->escape($partnumber);#shopware don't accept / in articlenumber
+  my $partnumber = $::form->escape($partnumber);#shopware don't accept / in articlenumber
   my $data = $self->connector->get("http://$url/api/articles/$partnumber?useNumberAsId=true");
   my $data_json = $data->content;
   return SL::JSON::decode_json($data_json);
