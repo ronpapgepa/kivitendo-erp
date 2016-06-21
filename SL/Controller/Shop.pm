@@ -9,9 +9,10 @@ use SL::Locale::String;
 use SL::DB::Default;
 use SL::DB::Manager::Shop;
 use SL::DB::Pricegroup;
+use SL::DB::TaxZone;
 
 use Rose::Object::MakeMethods::Generic (
-  scalar                  => [ qw(connectors price_types price_sources) ],
+  scalar                  => [ qw(connectors price_types price_sources taxzone_id) ],
   'scalar --get_set_init' => [ qw(shop) ]
 );
 
@@ -140,6 +141,16 @@ sub load_types {
   };
 
   $self->price_sources( $pricesources );
+
+  #Buchungsgruppen for calculate the tax for an article
+  my $taxkey_ids;
+  my $taxzones = SL::DB::Manager::TaxZone->get_all_sorted();
+
+  foreach my $tz( @$taxzones ) {
+    push( @{ $taxkey_ids }, { id => $tz->id, name => $tz->description } );
+  }
+  $self->taxzone_id( $taxkey_ids );
+
 };
 
 

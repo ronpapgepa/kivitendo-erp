@@ -5,7 +5,7 @@
 [% SET size=34 %]
 
 <h1>[% HTML.escape(title) %]</h1>
-[% # Dumper.dump_html(SELF.shop) %]
+[% #Dumper.dump_html(SELF.shop) %]
 <form action="controller.pl" method="post">
 
 [%- INCLUDE 'common/flash.html' %]
@@ -28,6 +28,10 @@
   <tr>
     <th align="right">[% 'Price Source' | $T8 %]</th>
     <td>[% L.select_tag('shop.price_source', SELF.price_sources, value_key = 'id', title_key = 'name', with_empty = 0, default = SELF.shop.price_source, default_value_key='id' ) %]</td>
+  </tr>
+  <tr>
+    <th align="right">[% 'Bookinggroup/Tax' | $T8 %]</th>
+    <td>[% L.select_tag('shop.taxzone_id', SELF.taxzone_id, value_key = 'id', title_key = 'name', with_empty = 0, default = SELF.shop.taxzone_id, default_value_key='id' ) %]</td>
   </tr>
   <tr>
     <th align="right">[% 'URL' | $T8 %]</th>
