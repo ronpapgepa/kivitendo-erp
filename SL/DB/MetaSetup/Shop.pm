@@ -22,6 +22,7 @@ __PACKAGE__->meta->columns(
   price_source      => { type => 'text' },
   pricetype         => { type => 'text' },
   sortkey           => { type => 'integer' },
+  taxzone_id        => { type => 'integer' },
   url               => { type => 'text' },
 );
 
