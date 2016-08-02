@@ -103,4 +103,15 @@ sub convert_to_sales_order {
    return $order;
 };
 
+sub compare_to {
+  my ($self, $other) = @_;
+
+  return  1 if  $self->transfer_date && !$other->transfer_date;
+  return -1 if !$self->transfer_date &&  $other->transfer_date;
+
+  my $result = 0;
+  $result    = $self->transfer_date <=> $other->transfer_date if $self->transfer_date;
+  return $result || ($self->id <=> $other->id);
+}
+
 1;

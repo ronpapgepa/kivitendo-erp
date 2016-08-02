@@ -18,7 +18,7 @@ sub shop_order {
 
   my $text = join '', (
     $params{no_link} ? '' : '<a href="controller.pl?action=ShopOrder/show&amp;id='.$self->escape($shop_order->id).'">',
-    $self->escape($shop_order->id),
+    $self->escape($shop_order->shop_ordernumber),
     $params{no_link} ? '' : '</a>',
   );
   return $self->escaped_text($text);
