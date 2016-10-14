@@ -26,7 +26,7 @@ namespace('kivi.ShopOrder', function(ns) {
 
   ns.setup = function() {
     kivi.ShopOrder.massTransferInitialize();
-    kivi.submit_ajax_form('controller.pl?action=ShopOrder/mass_transfer','[name=shop_orders]');
+    kivi.submit_ajax_form('controller.pl?action=ShopOrder/mass_transfer','[name=shop_orders_list]');
   };
 
 });

@@ -31,6 +31,7 @@ sub get_new_orders {
   my $ordnumber = $self->config->last_order_number + 1;
   my $otf = $self->config->orders_to_fetch;
 
+
   my $i;
   for ($i=1;$i<=$otf;$i++) {
 
@@ -106,7 +107,6 @@ sub get_new_orders {
         tax_included            => ($import->{data}->{net} == 0 ? 0 : 1)
       );
       my $shop_order = SL::DB::ShopOrder->new(%columns);
-
       $shop_order->save;
       my $id = $shop_order->id;
 
@@ -134,15 +134,17 @@ sub get_new_orders {
       my $proposals = SL::DB::Manager::Customer->get_all_count(
            where => [
                        or => [
-                                and => [ # when matching names also match zipcode
-                                         or => [ 'name' => { like => "$shop_order->billing_lastname"},
-                                                 'name' => { like => $shop_order->billing_company },
-                                               ],
-                                         'zipcode' => { like => $shop_order->billing_zipcode },
-                                       ],
-                                or  => [ 'email' => { like => $shop_order->billing_email } ],
-                                and  => [ 'street' => { like => $shop_order->billing_street },
-                                         'zipcode' => { like => $shop_order->billing_zipcode } ],
+                                and  => [ # when matching names also match zipcode
+                                          or => [ 'name' => { ilike => "%$shop_order->billing_lastname%"},
+                                                  'name' => { ilike => "%$shop_order->billing_company%" },
+                                                ],
+                                          'zipcode' => { ilike => $shop_order->billing_zipcode },
+                                        ],
+                                and  => [ # matching street and zipcode
+                                         'street' => { ilike => "%$shop_order->billing_street%" },
+                                         'zipcode' => { ilike => $shop_order->billing_zipcode }
+                                        ],
+                                or   => [ 'email' => { ilike => $shop_order->billing_email } ],
                              ],
                     ],
       );
@@ -162,13 +164,21 @@ sub get_new_orders {
                         'ustid'                 => $shop_order->billing_vat,
                         'taxincluded_checked'   => $self->config->pricetype eq "brutto" ? 1 : 0,
                         'taxincluded'           => $self->config->pricetype eq "brutto" ? 1 : 0,
-                        'klass'                 => (split '\/',$self->config->price_source)[1],
+                        'pricegroup_id'                 => (split '\/',$self->config->price_source)[1],
                         'taxzone_id'            => $self->config->taxzone_id,
                         'currency'              => 1,   # TODO hardcoded
                         'payment_id'            => 7345,# TODO hardcoded
                       );
         my $customer = SL::DB::Customer->new(%address);
         $customer->save;
+        my $snumbers = "customernumber_" . $customer->customernumber;
+        SL::DB::History->new(
+                          trans_id    => $customer->id,
+                          snumbers    => $snumbers,
+                          employee_id => SL::DB::Manager::Employee->current->id,
+                          addition    => 'SAVED',
+                          what_done   => 'Shopimport',
+                        )->save();
 
       }
       my %billing_address = ( 'name'     => $shop_order->billing_lastname,
@@ -275,7 +285,9 @@ sub update_part {
     $data = $self->connector->get("http://$url/api/articles/$partnumber?useNumberAsId=true");
     $data_json = $data->content;
     $import = SL::JSON::decode_json($data_json);
-  }
+    $main::lxdebug->dump(0, 'WH:IMPORT ',\$import);
+
+#  }
 
   # get the right price
   my ( $price_src_str, $price_src_id ) = split(/\//,$shop_part->active_price_source);
@@ -400,9 +412,14 @@ sub get_article {
   my ($self,$partnumber) = @_;
 
   my $url = $self->url;
+  $partnumber = $::form->escape($partnumber);#shopware don't accept / in articlenumber
   my $data = $self->connector->get("http://$url/api/articles/$partnumber?useNumberAsId=true");
   my $data_json = $data->content;
   return SL::JSON::decode_json($data_json);
+}
+
+sub set_orderstatus {
+  my ($self,$ordernumber);
 }
 
 sub init_url {
