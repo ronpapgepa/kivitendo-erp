@@ -5,6 +5,8 @@ use strict;
 
 use parent qw(SL::Controller::Base);
 
+use SL::BackgroundJob::ShopPartMassUpload;
+use SL::System::TaskServer;
 use Data::Dumper;
 use SL::Locale::String qw(t8);
 use SL::DB::ShopPart;
@@ -12,15 +14,16 @@ use SL::DB::File;
 use SL::Controller::FileUploader;
 use SL::DB::Default;
 use SL::Helper::Flash;
+use MIME::Base64;
 
 use Rose::Object::MakeMethods::Generic
 (
    scalar                 => [ qw(price_sources) ],
-  'scalar --get_set_init' => [ qw(shop_part file) ],
+  'scalar --get_set_init' => [ qw(shop_part file shops producers) ],
 );
 
 __PACKAGE__->run_before('check_auth');
-__PACKAGE__->run_before('add_javascripts', only => [ qw(edit_popup) ]);
+__PACKAGE__->run_before('add_javascripts', only => [ qw(edit_popup list_articles) ]);
 __PACKAGE__->run_before('load_pricesources',    only => [ qw(create_or_edit_popup) ]);
 
 #
@@ -31,20 +34,20 @@ sub action_create_or_edit_popup {
   my ($self) = @_;
 
   $self->render_shop_part_edit_dialog();
-};
+}
 
 sub action_update_shop {
   my ($self, %params) = @_;
 
   my $shop_part = SL::DB::Manager::ShopPart->find_by(id => $::form->{shop_part_id});
   die unless $shop_part;
+
   require SL::Shop;
   my $shop = SL::Shop->new( config => $shop_part->shop );
 
-  # data to upload to shop. Goes to SL::Connector::XXXConnector.
   my $part_hash = $shop_part->part->as_tree;
   my $json      = SL::JSON::to_json($part_hash);
-  my $return    = $shop->connector->update_part($self->shop_part, $json);
+  my $return    = $shop->connector->update_part($self->shop_part, $json,'all');
 
   # the connector deals with parsing/result verification, just needs to return success or failure
   if ( $return == 1 ) {
@@ -59,12 +62,11 @@ sub action_update_shop {
     $self->js->flash('error', t8('The shop part wasn\'t updated.'))->render;
   };
 
-};
+}
 
 sub action_show_files {
   my ($self) = @_;
 
-  require SL::DB::File;
   my $images = SL::DB::Manager::File->get_all_sorted( where => [ trans_id => $::form->{id}, modul => $::form->{modul}, file_content_type => { like => 'image/%' } ], sort_by => 'position' );
 
   $self->render('shop_part/_list_images', { header => 0 }, IMAGES => $images);
@@ -114,7 +116,6 @@ sub action_ajax_update_file{
   my @file_errors = $self->file->validate if $attributes->{file_content};;
   push @errors,@file_errors if @file_errors;
 
-
   return $self->js->error(@errors)->render($self) if @errors;
 
   $self->file->file_update_type_and_dimensions if $attributes->{file_content};
@@ -153,15 +154,6 @@ sub action_get_categories {
   $self->js->render;
 }
 
-# old:
-# sub action_edit {
-#   my ($self) = @_;
-#
-#   $self->render('shop_part/edit'); #, { output => 0 }); #, price_source => $price_source)
-# }
-#
-# used when saving existing ShopPart
-
 sub action_update {
   my ($self) = @_;
 
@@ -173,27 +165,58 @@ sub action_show_price_n_pricesource {
 
   my ( $price, $price_src_str ) = $self->get_price_n_pricesource($::form->{pricesource});
 
-  #TODO Price must be formatted. $price_src_str must be translated
-  $self->js->html('#price_' . $self->shop_part->id, $price)
+  $self->js->html('#price_' . $self->shop_part->id, $::form->format_amount(\%::myconfig,$price,2))
            ->html('#active_price_source_' . $self->shop_part->id, $price_src_str)
            ->render;
 }
 
 sub action_show_stock {
   my ($self) = @_;
-  my ( $stock_local, $stock_onlineshop );
+  my ( $stock_local, $stock_onlineshop, $active_online );
 
   require SL::Shop;
   my $shop = SL::Shop->new( config => $self->shop_part->shop );
-  my $shop_article = $shop->connector->get_article($self->shop_part->part->partnumber);
+
+  if($self->shop_part->last_update) {
+    my $shop_article = $shop->connector->get_article($self->shop_part->part->partnumber);
+    $stock_onlineshop = $shop_article->{data}->{mainDetail}->{inStock};
+    $active_online = $shop_article->{data}->{active};
+    #}
 
   $stock_local = $self->shop_part->part->onhand;
-  $stock_onlineshop = $shop_article->{data}->{mainDetail}->{inStock};
 
-  $self->js->html('#stock_' . $self->shop_part->id, $stock_local."/".$stock_onlineshop)
+  $self->js->html('#stock_' . $self->shop_part->id, $::form->format_amount(\%::myconfig,$stock_local,0)."/".$::form->format_amount(\%::myconfig,$stock_onlineshop,0))
+           ->html('#toogle_' . $self->shop_part->id,$active_online)
            ->render;
 }
 
+sub action_get_n_write_categories {
+  my ($self) = @_;
+
+  my @shop_parts =  @{ $::form->{shop_parts_ids} || [] };
+  foreach my $part(@shop_parts){
+
+    my $shop_part = SL::DB::Manager::ShopPart->get_all( where => [id => $part], with_objects => ['part', 'shop'])->[0];
+    require SL::DB::Shop;
+    my $shop = SL::Shop->new( config => $shop_part->shop );
+    my $online_article = $shop->connector->get_article($shop_part->part->partnumber);
+    my $online_cat = $online_article->{data}->{categories};
+    my @cat = ();
+    for(keys %$online_cat){
+    # The ShopwareConnector works with the CategoryID @categories[x][0] in others/new Connectors it must be tested
+    # Each assigned categorie is saved with id,categorie_name an multidimensional array and could be expanded with categoriepath or what is needed
+      my @cattmp;
+      push( @cattmp,$online_cat->{$_}->{id} );
+      push( @cattmp,$online_cat->{$_}->{name} );
+      push( @cat,\@cattmp );
+    }
+    my $attributes->{shop_category} = \@cat;
+    my $active->{active} = $online_article->{data}->{active};
+    $shop_part->assign_attributes(%{$attributes}, %{$active});
+    $shop_part->save;
+  }
+  $self->redirect_to( action => 'list_articles' );
+}
 
 sub create_or_update {
   my ($self) = @_;
@@ -214,7 +237,7 @@ sub create_or_update {
   # $self->js->val('#partnumber', 'ladida');
   $self->js->html('#shop_part_description_' . $self->shop_part->id, $self->shop_part->shop_description)
            ->html('#shop_part_active_' . $self->shop_part->id, $self->shop_part->active)
-           ->html('#price_' . $self->shop_part->id, $price)
+           ->html('#price_' . $self->shop_part->id, $::form->format_amount(\%::myconfig,$price,2))
            ->html('#active_price_source_' . $self->shop_part->id, $price_src_str)
            ->run('kivi.shop_part.close_dialog')
            ->flash('info', t8("Updated shop part"))
@@ -241,14 +264,16 @@ sub action_save_categories {
   my ($self) = @_;
 
   my @categories =  @{ $::form->{categories} || [] };
-  $main::lxdebug->dump(0, 'WH: KATEGORIEN: ', \@categories);
-  my @cat = ();
-  foreach my $cat ( @categories) {
-    # TODO das koma macht Probleme z.B kategorie "Feldsalat, Rapunzel"
-    my @temp = [split(/,/,$cat)];
-    push( @cat, @temp );
-  }
-  $main::lxdebug->dump(0, 'WH: KAT2:',\@cat);
+
+    # The ShopwareConnector works with the CategoryID @categories[x][0] in others/new Connectors it must be tested
+    # Each assigned categorie is saved with id,categorie_name an multidimensional array and could be expanded with categoriepath or what is needed
+    my @cat = ();
+    foreach my $cat ( @categories) {
+      my @cattmp;
+      push( @cattmp,$cat );
+      push( @cattmp,$::form->{"cat_id_${cat}"} );
+      push( @cat,\@cattmp );
+    }
 
   my $categories->{shop_category} = \@cat;
 
@@ -268,12 +293,70 @@ sub action_save_categories {
 
 sub action_reorder {
   my ($self) = @_;
-$main::lxdebug->message(0, "WH:REORDER ");
+
   require SL::DB::File;
   SL::DB::File->reorder_list(@{ $::form->{image_id} || [] });
-  $main::lxdebug->message(0, "WH:REORDER II ");
 
   $self->render(\'', { type => 'json' });
+}
+
+sub action_list_articles {
+  my ($self) = @_;
+
+  my %filter = ($::form->{filter} ? parse_filter($::form->{filter}) : query => [ transferred => 0 ]);
+  my $transferred = $::form->{filter}->{transferred_eq_ignore_empty} ne '' ? $::form->{filter}->{transferred_eq_ignore_empty} : '';
+  my $sort_by = $::form->{sort_by} ? $::form->{sort_by} : 'part.partnumber';
+  $sort_by .=$::form->{sort_dir} ? ' DESC' : ' ASC';
+$main::lxdebug->message(0, "WH:LA ");
+
+  my $articles = SL::DB::Manager::ShopPart->get_all(where => [ 'shop.obsolete' => 0 ],with_objects => [ 'part','shop' ], sort_by => $sort_by );
+
+  foreach my $article (@{ $articles}) {
+    my $images = SL::DB::Manager::File->get_all_count( where => [ trans_id => $article->part->id, modul => 'shop_part', file_content_type => { like => 'image/%' } ], sort_by => 'position' );
+    $article->{images} = $images;
+  }
+  $main::lxdebug->dump(0, 'WH:ARTIKEL ',\$articles);
+
+  $self->render('shop_part/_list_articles', title => t8('Webshops articles'), SHOP_PARTS => $articles);
+}
+
+sub action_upload_status {
+  my ($self) = @_;
+  my $job     = SL::DB::BackgroundJob->new(id => $::form->{job_id})->load;
+  my $html    = $self->render('shop_part/_upload_status', { output => 0 }, job => $job);
+
+  $self->js->html('#status_mass_upload', $html);
+  $self->js->run('kivi.shop_part.massUploadFinished') if $job->data_as_hash->{status} == SL::BackgroundJob::ShopPartMassUpload->DONE();
+  $self->js->render;
+}
+
+sub action_mass_upload {
+  my ($self) = @_;
+$main::lxdebug->message(0, "WH:MA ");
+
+  my @shop_parts =  @{ $::form->{shop_parts_ids} || [] };
+
+  my $job                   = SL::DB::BackgroundJob->new(
+    type                    => 'once',
+    active                  => 1,
+    package_name            => 'ShopPartMassUpload',
+  )->set_data(
+     shop_part_record_ids         => [ @shop_parts ],
+     todo                         => $::form->{upload_todo},
+     status                       => SL::BackgroundJob::ShopPartMassUpload->WAITING_FOR_EXECUTION(),
+     conversation_errors          => [ ],
+   )->update_next_run_at;
+$main::lxdebug->dump(0, 'WH:MA JOB ',\$job);
+
+   SL::System::TaskServer->new->wake_up;
+$main::lxdebug->dump(0, 'WH:MA JOB 2',\$job);
+
+   my $html = $self->render('shop_part/_transfer_status', { output => 0 }, job => $job);
+
+   $self->js
+      ->html('#status_mass_upload', $html)
+      ->run('kivi.shop_part.massUploadStarted')
+      ->render;
 }
 
 #
@@ -338,6 +421,36 @@ sub init_shop_part {
   };
 }
 
+sub init_file {
+  $main::lxdebug->message(0, "WH:INIT_FILES ");
+  my $file = $::form->{id} ? SL::DB::File->new(id => $::form->{id})->load : SL::DB::File->new;
+  $main::lxdebug->dump(0, 'WH: INITFILE: ',\file);
+
+  return $file;
+}
+
+sub init_shops {
+  # data for drop down filter options
+  $main::lxdebug->message(0, "WH:INIT_SHOPS ");
+
+  require SL::DB::Shop;
+  my @shops_dd = [ { title => t8("all") ,   value =>'' } ];
+  my $shops = SL::DB::Mangager::Shop->get_all( where => [ obsolete => 0 ] );
+   my @tmp = map { { title => $_->{description}, value => $_->{id} } } @{ $shops } ;
+ $main::lxdebug->dump(0, 'WH:SHOPS ',\@tmp);
+ return @shops_dd;
+
+}
+
+sub init_producers {
+  # data for drop down filter options
+  $main::lxdebug->message(0, "WH:INIT_PRODUCERS ");
+
+  my @producers_dd = [ { title => t8("all") ,   value =>'' } ];
+ return @producers_dd;
+
+}
+
 1;
 
 __END__
@@ -361,8 +474,11 @@ __END__
 
 =item C<action_update_shop>
 
-  To be called from the "Update" button, for manually syncing a part with its shop. Generates a  Calls some ClientJS functions to modifiy original page.
+  To be called from the "Update" button of the shoppart, for manually syncing/upload one part with its shop. Generates a  Calls some ClientJS functions to modifiy original page.
 
+=item C<action_get_n_write_categories>
+
+  Can be used to sync the categories of a shoppart with the categories from online.
 
 =head1 AUTHORS
 
@@ -370,6 +486,3 @@ __END__
   W. Hahn E<lt>wh@futureworldsearch.netE<gt>
 
 =cut
-
-=cut
-1;
