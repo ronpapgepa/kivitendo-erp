@@ -12,6 +12,8 @@ use LWP::UserAgent;
 use LWP::Authen::Digest;
 use SL::DB::ShopOrder;
 use SL::DB::ShopOrderItem;
+use SL::DB::History;
+use SL::DB::File;
 use Data::Dumper;
 use Sort::Naturally ();
 use SL::Helper::Flash;
@@ -126,7 +128,7 @@ sub get_new_orders {
         $pos_insert->save;
         $position++;
       }
-      $shop_order->{positions} = $position;
+      $shop_order->{positions} = $position-1;
 
       # Only Customers which are not found will be applied
       my $proposals = SL::DB::Manager::Customer->get_all_count(
@@ -158,10 +160,10 @@ sub get_new_orders {
                         'fax'                   => $shop_order->billing_fax,
                         'phone'                 => $shop_order->billing_phone,
                         'ustid'                 => $shop_order->billing_vat,
-                        'taxincluded_checked'   => 1,   # TODO hardcoded
-                        'taxincluded'           => 1,   # TODO hardcoded
-                        'klass'                 => 908, # TODO hardcoded
-                        'taxzone_id'            => 4,   # TODO hardcoded, use default taxzone instead
+                        'taxincluded_checked'   => $self->config->pricetype eq "brutto" ? 1 : 0,
+                        'taxincluded'           => $self->config->pricetype eq "brutto" ? 1 : 0,
+                        'klass'                 => (split '\/',$self->config->price_source)[1],
+                        'taxzone_id'            => $self->config->taxzone_id,
                         'currency'              => 1,   # TODO hardcoded
                         'payment_id'            => 7345,# TODO hardcoded
                       );
@@ -203,11 +205,11 @@ sub get_new_orders {
         $shipping_pos_insert->save;
 
       }
-        my $attributes->{last_order_number} = $ordnumber;
-        $self->config->assign_attributes( %{ $attributes } );
-        $self->config->save;
-        $ordnumber++;
       # EOT Versandkosten DF
+      my $attributes->{last_order_number} = $ordnumber;
+      $self->config->assign_attributes( %{ $attributes } );
+      $self->config->save;
+      $ordnumber++;
     }
   }
     my $shop = $self->config->description;
@@ -238,7 +240,7 @@ sub get_categories {
 }
 
 sub update_part {
-  my ($self, $shop_part, $json) = @_;
+  my ($self, $shop_part, $json, $todo) = @_;
 
   #shop_part is passed as a param
   die unless ref($shop_part) eq 'SL::DB::ShopPart';
@@ -303,30 +305,68 @@ sub update_part {
   $taxrate = @$rate[0]->{taxrate}*100;
 
   # mapping to shopware still missing attributes,metatags
-  my %shop_data =  (  name              => $part->{description},
-                      tax               => $taxrate,
-                      mainDetail        => { number   => $part->{partnumber},
-                                         inStock  => $part->{onhand},
-                                         prices   =>  [ {          from   => 1,
-                                                                   price  => $price,
-                                                        customerGroupKey  => 'EK',
-                                                      },
-                                                    ],
-                                       },
-                      supplier          => $cvars->{freifeld_7}->{value},
-                      descriptionLong   => $shop_part->{shop_description},
-                      active            => $shop_part->active,
-                      images            => [ @upload_img ],
-                      __options_images  => { replace => 1, },
-                      categories        => [ @cat ],
-                      description       => $shop_part->{shop_description},
-                      active            => $shop_part->active,
-                      images            => [ @upload_img ],
-                      __options_images  => { replace => 1, },
-                      categories        => [ @cat ], #{ path => 'Deutsch|test2' }, ], #[ $categories ],
+  my %shop_data;
+  $main::lxdebug->dump(0, 'WH:TODO ',\$todo);
 
-                    )
-                  ;
+  if($todo eq "price"){
+    %shop_data = ( mainDetail => { number   => $part->{partnumber},
+                                   prices   =>  [ { from             => 1,
+                                                    price            => $price,
+                                                    customerGroupKey => 'EK',
+                                                  },
+                                                ],
+                                  },
+                 );
+  }elsif($todo eq "stock"){
+    %shop_data = ( mainDetail => { number   => $part->{partnumber},
+                                   inStock  => $part->{onhand},
+                                 },
+                 );
+  }elsif($todo eq "price_stock"){
+    %shop_data =  ( mainDetail => { number   => $part->{partnumber},
+                                    inStock  => $part->{onhand},
+                                    prices   =>  [ { from             => 1,
+                                                     price            => $price,
+                                                     customerGroupKey => 'EK',
+                                                   },
+                                                 ],
+                                   },
+                   );
+  }elsif($todo eq "active"){
+    %shop_data =  ( mainDetail => { number   => $part->{partnumber},
+                                   },
+                    active => ($part->{partnumber} == 1 ? 0 : 1),
+                   );
+  }elsif($todo eq "all"){
+  # mapping to shopware still missing attributes,metatags
+    %shop_data =  (  name              => $part->{description},
+                     tax               => $taxrate,
+                     mainDetail        => { number   => $part->{partnumber},
+                                            inStock  => $part->{onhand},
+                                            active   => $shop_part->active,
+                                            prices   =>  [ { from              => 1,
+                                                             price             => $price,
+                                                             customerGroupKey  => 'EK',
+                                                           },
+                                                         ],
+                                          },
+                     supplier          => $cvars->{freifeld_7}->{value},
+                     descriptionLong   => $shop_part->{shop_description},
+                     active            => $shop_part->active,
+                     images            => [ @upload_img ],
+                     __options_images  => { replace => 1, },
+                     categories        => [ @cat ],
+                     description       => $shop_part->{shop_description},
+                     active            => $shop_part->active,
+                     images            => [ @upload_img ],
+                     __options_images  => { replace => 1, },
+                     categories        => [ @cat ],
+                   );
+  }else{
+    my %shop_data =  ( mainDetail => { number   => $part->{partnumber}, });
+  }
+  $main::lxdebug->dump(0, 'WH:SHOPDATA ',\%shop_data);
+
   my $dataString = SL::JSON::to_json(\%shop_data);
   $dataString = encode_utf8($dataString);
 
@@ -338,6 +378,8 @@ sub update_part {
     #update
     my $partnumber = $::form->escape($part->{partnumber});#shopware dosn't accept / in articlenumber
     my $upload = $self->connector->put("http://$url/api/articles/$partnumber?useNumberAsId=true",Content => $dataString);
+    $main::lxdebug->dump(0, 'WH:iUPLOAD ',\$upload);
+
     my $data_json = $upload->content;
     $upload_content = SL::JSON::decode_json($data_json);
   }else{
@@ -346,6 +388,7 @@ sub update_part {
     my $data_json = $upload->content;
     $upload_content = SL::JSON::decode_json($data_json);
   }
+  # Don't know if this is needed
   if(@upload_img) {
     my $partnumber = $::form->escape($part->{partnumber});#shopware don't accept / in articlenumber
     $self->connector->put("http://$url/api/generateArticleImages/$partnumber?useNumberAsId=true");

@@ -9,3 +9,11 @@
     action: ShopOrder/list
     db: shop_orders
     sort_by: shop_ordernumber
+- parent: webshop
+  id: webshop_articles
+  name: Webshop articles
+  params:
+    action: ShopPart/list_articles
+    db: shop_parts
+    sort_by: part.onhand
+#ShopPart
