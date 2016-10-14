@@ -6,6 +6,7 @@ use strict;
 
 use parent qw(SL::ShopConnector::Base);
 
+use SL::DBUtils;
 use SL::JSON;
 use LWP::UserAgent;
 use LWP::Authen::Digest;
@@ -15,7 +16,6 @@ use Data::Dumper;
 use Sort::Naturally ();
 use SL::Helper::Flash;
 use Encode qw(encode_utf8);
-use SL::Controller::ShopPart;
 
 use Rose::Object::MakeMethods::Generic (
   'scalar --get_set_init' => [ qw(connector url) ],
@@ -31,6 +31,7 @@ sub get_new_orders {
 
   my $i;
   for ($i=1;$i<=$otf;$i++) {
+
     my $data = $self->connector->get("http://$url/api/orders/$ordnumber?useNumberAsId=true");
     my $data_json = $data->content;
     my $import = SL::JSON::decode_json($data_json);
@@ -97,21 +98,24 @@ sub get_new_orders {
         shop_customer_number    => $import->{data}->{billing}->{number},
         shop_customer_comment   => $import->{data}->{customerComment},
         shop_data               => "",
-        shop_id                 => $import->{data}->{id},
+        shop_id                 => $self->config->id,
         shop_ordernumber        => $import->{data}->{number},
         shop_trans_id           => $import->{data}->{id},
         tax_included            => ($import->{data}->{net} == 0 ? 0 : 1)
       );
-      my $insert = SL::DB::ShopOrder->new(%columns);
-      $insert->save;
-      my $id = $insert->id;
+      my $shop_order = SL::DB::ShopOrder->new(%columns);
+
+      $shop_order->save;
+      my $id = $shop_order->id;
 
       my @positions = sort { Sort::Naturally::ncmp($a->{"partnumber"}, $b->{"partnumber"}) } @{ $import->{data}->{details} };
       my $position = 1;
       foreach my $pos(@positions) {
+        my $price = $::form->round_amount($pos->{price},2);
+
         my %pos_columns = ( description       => $pos->{articleName},
                             partnumber        => $pos->{articleNumber},
-                            price             => $pos->{price},
+                            price             => $price,
                             quantity          => $pos->{quantity},
                             position          => $position,
                             tax_rate          => $pos->{taxRate},
@@ -122,15 +126,70 @@ sub get_new_orders {
         $pos_insert->save;
         $position++;
       }
-      # Versandkosten als Position am ende einfügen Dreschflegelspezifisch event. konfigurierbar machen
+      $shop_order->{positions} = $position;
 
+      # Only Customers which are not found will be applied
+      my $proposals = SL::DB::Manager::Customer->get_all_count(
+           where => [
+                       or => [
+                                and => [ # when matching names also match zipcode
+                                         or => [ 'name' => { like => "$shop_order->billing_lastname"},
+                                                 'name' => { like => $shop_order->billing_company },
+                                               ],
+                                         'zipcode' => { like => $shop_order->billing_zipcode },
+                                       ],
+                                or  => [ 'email' => { like => $shop_order->billing_email } ],
+                                and  => [ 'street' => { like => $shop_order->billing_street },
+                                         'zipcode' => { like => $shop_order->billing_zipcode } ],
+                             ],
+                    ],
+      );
+
+      if(!$proposals){
+        my %address = ( 'name'                  => $shop_order->billing_firstname . " " . $shop_order->billing_lastname,
+                        'department_1'          => $shop_order->billing_company,
+                        'department_2'          => $shop_order->billing_department,
+                        'street'                => $shop_order->billing_street,
+                        'zipcode'               => $shop_order->billing_zipcode,
+                        'city'                  => $shop_order->billing_city,
+                        'email'                 => $shop_order->billing_email,
+                        'country'               => $shop_order->billing_country,
+                        'greeting'              => $shop_order->billing_greeting,
+                        'fax'                   => $shop_order->billing_fax,
+                        'phone'                 => $shop_order->billing_phone,
+                        'ustid'                 => $shop_order->billing_vat,
+                        'taxincluded_checked'   => 1,   # TODO hardcoded
+                        'taxincluded'           => 1,   # TODO hardcoded
+                        'klass'                 => 908, # TODO hardcoded
+                        'taxzone_id'            => 4,   # TODO hardcoded, use default taxzone instead
+                        'currency'              => 1,   # TODO hardcoded
+                        'payment_id'            => 7345,# TODO hardcoded
+                      );
+        my $customer = SL::DB::Customer->new(%address);
+        $customer->save;
+
+      }
+      my %billing_address = ( 'name'     => $shop_order->billing_lastname,
+                              'company'  => $shop_order->billing_company,
+                              'street'   => $shop_order->billing_street,
+                              'zipcode'  => $shop_order->billing_zipcode,
+                              'city'     => $shop_order->billing_city,
+                            );
+      my $b_address = SL::Controller::ShopOrder->check_address(%billing_address);
+      if ($b_address) {
+        $shop_order->{kivi_customer_id} = $b_address->{id};
+      }
+      $shop_order->save;
+
+      # DF Versandkosten als Position am ende einfügen Dreschflegelspezifisch event. konfigurierbar machen
       if (my $shipping = $import->{data}->{dispatch}->{name}) {
         my %shipping_partnumbers = (
                                     'Auslandsversand Einschreiben'  => { 'partnumber' => '900650'},
                                     'Auslandsversand'               => { 'partnumber' => '900650'},
-                                    'Standard Versand'              => { 'partnumber' => '905500'},
+                                    'Versandpauschale Inland'       => { 'partnumber' => '905500'},
                                     'Kostenloser Versand'           => { 'partnumber' => '905500'},
                                   );
+        # TODO description für Preis muss angepasst werden
         my %shipping_pos = ( description    => $import->{data}->{dispatch}->{name},
                              partnumber     => $shipping_partnumbers{$shipping}->{partnumber},
                              price          => $import->{data}->{invoiceShipping},
@@ -143,21 +202,19 @@ sub get_new_orders {
         my $shipping_pos_insert = SL::DB::ShopOrderItem->new(%shipping_pos);
         $shipping_pos_insert->save;
 
+      }
         my $attributes->{last_order_number} = $ordnumber;
         $self->config->assign_attributes( %{ $attributes } );
         $self->config->save;
         $ordnumber++;
-      }
-    }else{
-      last;
+      # EOT Versandkosten DF
     }
+  }
     my $shop = $self->config->description;
 
     my @fetched_orders = ($shop,$i);
 
     return \@fetched_orders;
-  }
-  # return $import;
 };
 
 sub get_categories {
@@ -180,52 +237,43 @@ sub get_categories {
   return \@daten;
 }
 
-sub get_article {
-}
-
 sub update_part {
   my ($self, $shop_part, $json) = @_;
 
   #shop_part is passed as a param
   die unless ref($shop_part) eq 'SL::DB::ShopPart';
 
-  $main::lxdebug->dump(0, 'WH: UPDATE SHOPPART: ', \$shop_part);
-  $main::lxdebug->dump(0, 'WH: UPDATE SELF: ', \$self);
-  $main::lxdebug->dump(0, 'WH: UPDATE JSON: ', \$json);
   my $url = $self->url;
   my $part = SL::DB::Part->new(id => $shop_part->{part_id})->load;
 
   # TODO: Prices (pricerules, pricegroups, multiple prices)
   my $cvars = { map { ($_->config->name => { value => $_->value_as_text, is_valid => $_->is_valid }) } @{ $part->cvars_by_config } };
-  #my $categories = { map { ( name => $_) } @{ $shop_part->{shop_category} } };
+
   my @cat = ();
   foreach my $row_cat ( @{ $shop_part->shop_category } ) {
-    $main::lxdebug->dump(0, 'WH:ROWCAT ',\$row_cat);
-
     my $temp = { ( id => @{$row_cat}[0], ) };
-    $main::lxdebug->dump(0, 'WH: TEMP: ', \$temp);
-
     push ( @cat, $temp );
   }
 
   my $images = SL::DB::Manager::File->get_all( where => [ modul => 'shop_part', trans_id => $part->{id} ]);
   my @upload_img = ();
   foreach my $img (@{ $images }) {
-    $main::lxdebug->dump(0, 'WH: FOR: ', \$img);
-
     my ($path, $extension) = (split /\./, $img->{filename});
     my $temp ={ ( link        => 'data:' . $img->{file_content_type} . ';base64,' . MIME::Base64::encode($img->{file_content},''),
                   description => $img->{title},
                   position    => $img->{position},
                   extension   => $extension,
                       )}    ;
-    push( @images3, $temp);
+    push( @upload_img, $temp);
   }
-  $main::lxdebug->dump(0, 'WH: IMAGES 3 ',\@images3);
 
-  my $data = $self->connector->get("http://$url/api/articles/$part->{partnumber}?useNumberAsId=true");
-  my $data_json = $data->content;
-  my $import = SL::JSON::decode_json($data_json);
+  my ($import,$data,$data_json);
+  if( $shop_part->last_update){
+    my $partnumber = $::form->escape($part->{partnumber});#shopware don't accept "/" in articlenumber
+    $data = $self->connector->get("http://$url/api/articles/$partnumber?useNumberAsId=true");
+    $data_json = $data->content;
+    $import = SL::JSON::decode_json($data_json);
+  }
 
   # get the right price
   my ( $price_src_str, $price_src_id ) = split(/\//,$shop_part->active_price_source);
@@ -238,9 +286,25 @@ sub update_part {
     my $part = SL::DB::Manager::Part->get_all( where => [id => $shop_part->part_id, 'prices.'.pricegroup_id => $price_src_id], with_objects => ['prices'],limit => 1)->[0];
     $price =  $part->prices->[0]->price;
   }
+
+  # get the right taxrate for the article
+  my $taxrate;
+  my $dbh = $::form->get_standard_dbh();
+  my $b_id = $part->buchungsgruppen_id;
+  my $t_id = $shop_part->shop->taxzone_id;
+
+  my $sql_str = "SELECT a.rate AS taxrate from tax a
+  WHERE a.taxkey = (SELECT b.taxkey_id
+  FROM chart b LEFT JOIN taxzone_charts c ON b.id = c.income_accno_id
+  WHERE c.taxzone_id = $t_id
+  AND c.buchungsgruppen_id = $b_id)";
+
+  my $rate = selectall_hashref_query($::form, $dbh, $sql_str);
+  $taxrate = @$rate[0]->{taxrate}*100;
+
   # mapping to shopware still missing attributes,metatags
   my %shop_data =  (  name              => $part->{description},
-                      taxId             => 4, # TODO Hardcoded kann auch der taxwert sein zB. tax => 19.00
+                      tax               => $taxrate,
                       mainDetail        => { number   => $part->{partnumber},
                                          inStock  => $part->{onhand},
                                          prices   =>  [ {          from   => 1,
@@ -249,12 +313,17 @@ sub update_part {
                                                       },
                                                     ],
                                        },
-                      supplier      => $cvars->{freifeld_7}->{value},
-                      description   => $shop_part->{shop_description},
-                      active        => $shop_part->active,
-                      images        => [ @images3 ],
-                      __options_images => { replace => 1, },
-                      categories    => [ @cat ], #{ path => 'Deutsch|test2' }, ], #[ $categories ],
+                      supplier          => $cvars->{freifeld_7}->{value},
+                      descriptionLong   => $shop_part->{shop_description},
+                      active            => $shop_part->active,
+                      images            => [ @upload_img ],
+                      __options_images  => { replace => 1, },
+                      categories        => [ @cat ],
+                      description       => $shop_part->{shop_description},
+                      active            => $shop_part->active,
+                      images            => [ @upload_img ],
+                      __options_images  => { replace => 1, },
+                      categories        => [ @cat ], #{ path => 'Deutsch|test2' }, ], #[ $categories ],
 
                     )
                   ;
@@ -263,23 +332,23 @@ sub update_part {
 
   my $upload_content;
   if($import->{success}){
-$main::lxdebug->message(0, "WH: if success: ". $import->{success});
   my %del_img =  ( images        => [ {} ], ) ;
   my $del_imgString = SL::JSON::to_json(\%del_img);
   #my $delImg = $self->connector->put("http://$url/api/articles/$part->{partnumber}?useNumberAsId=true",Content => $del_imgString);
     #update
-    my $upload = $self->connector->put("http://$url/api/articles/$part->{partnumber}?useNumberAsId=true",Content => $dataString);
+    my $partnumber = $::form->escape($part->{partnumber});#shopware dosn't accept / in articlenumber
+    my $upload = $self->connector->put("http://$url/api/articles/$partnumber?useNumberAsId=true",Content => $dataString);
     my $data_json = $upload->content;
     $upload_content = SL::JSON::decode_json($data_json);
   }else{
     #upload
-$main::lxdebug->message(0, "WH: else success: ". $import->{success});
     my $upload = $self->connector->post("http://$url/api/articles/",Content => $dataString);
     my $data_json = $upload->content;
     $upload_content = SL::JSON::decode_json($data_json);
   }
   if(@upload_img) {
-    $self->connector->put("http://$url/api/generateArticleImages/$part->{partnumber}?useNumberAsId=true");
+    my $partnumber = $::form->escape($part->{partnumber});#shopware don't accept / in articlenumber
+    $self->connector->put("http://$url/api/generateArticleImages/$partnumber?useNumberAsId=true");
   }
   return $upload_content->{success};
 }
@@ -295,7 +364,7 @@ sub get_article {
 
 sub init_url {
   my ($self) = @_;
-  # TODO: validate url and port
+  # TODO: validate url and port Mabey in shopconfig test connection
   $self->url($self->config->url . ":" . $self->config->port);
 };
 
@@ -304,7 +373,7 @@ sub init_connector {
   my $ua = LWP::UserAgent->new;
   $ua->credentials(
       $self->url,
-      "Shopware REST-API",
+      "Shopware REST-API", # TODO in config
       $self->config->login => $self->config->password
   );
   return $ua;
