@@ -2,24 +2,29 @@
 [%- USE L %]
 [%- USE LxERP %]
 [%- USE HTML %]
-<form action='controller.pl' method='post'>
+ <form method="post" action="controller.pl" name="shop_orders" id="shoporders">
  [% L.submit_tag('action_get_orders',LxERP.t8('New shop orders')) %]
  <table id='filter_table'>
 
     <tr>
      <th align="right">[% 'Status' | $T8 %]</th>
-     <td>[% L.select_tag('filter.transferred:eq_ignore_empty', SELF.transferred, value_key = 'value', title_key = 'title', default=TOOK) %]</td>
+     <td>[% L.select_tag('filter.transferred:eq_ignore_empty', SELF.transferred, value_key = 'value', title_key = 'title', default=0) %]</td>
     </tr>
 
 
     <tr>
      <th align="right">[% 'from' | $T8 %]</th>
-     <td>[% L.date_tag('filter.order_date:date::ge', filter.order_date_date__ge) %]</td>
+     <td>[% L.date_tag('filter.order_date:date::ge', FORM.filter.order_date_date__ge) %]</td>
     </tr>
 
     <tr>
      <th align="right">[% 'to' | $T8 %]</th>
-     <td>[% L.date_tag('filter.order_date:date::le', filter.order_date_date__le) %]</td>
+     <td>[% L.date_tag('filter.order_date:date::le', FORM.filter.order_date_date__le) %]</td>
+    </tr>
+
+    <tr>
+      <th align="right">[% 'Obsolete' | $T8 %]</th>
+      <td>[% L.yes_no_tag('filter.obsolete', FORM.filter.obsolete, default='0', with_empty=1, empty_title='---') %]</td>
     </tr>
 
  </table>
@@ -31,4 +36,3 @@
  [% L.hidden_tag('action', 'ShopOrder/dispatch') %]
  [% L.submit_tag('action_list',LxERP.t8('renew')) %]
 
-</form>

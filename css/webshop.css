@@ -1,22 +1,39 @@
-div.table {
+/* Shop */
+div.shop_table {
   display: table;
-  padding: 20px,20px,20px,20px;
-  margin: 15px,15px,15px,15px;
+  background-color: #ebebeb;
+  /* padding: 15px;
+  margin: 15px; */
 }
-div.table-row {
+div.shop_table_address {
+  display: table;
+  /* padding: 15px; */
+  margin: 0px 0px 0px 15px;
+}
+div.shop_table-row {
   display: table-row;
 }
-div.table-cell {
+div.shop_table-cell {
   display: table-cell;
   padding: 20px,20px,20px,20px;
 }
-div.main{
+div.shop_table-cell_colspan {
+  flex: 2;
+  align: center;
+}
+div.shop_main{
   width: 100%;
   padding: 15px,15px,15px,15px;
   margin: 15px,15px,15px,15px;
 }
-.fleft {
+.shop_fleft {
   width: 30%;
   float: left;
   border: thin solid red;
+}
+
+div.shop_table_info {
+  color: #b3b3b3;
+  width: 100%;
+  align: left;
 }
