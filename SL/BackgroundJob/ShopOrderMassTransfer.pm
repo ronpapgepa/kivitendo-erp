@@ -13,14 +13,15 @@ use SL::DBUtils;
 use SL::DB::ShopOrder;
 use SL::DB::ShopOrderItem;
 use SL::DB::Order;
+use SL::DB::History;
 use SL::DB::DeliveryOrder;
 use SL::DB::Inventory;
 use Sort::Naturally ();
 
 use constant WAITING_FOR_EXECUTION        => 0;
-use constant CONVERTING_TO_ORDER          => 1;
-use constant CONVERTING_TO_DELIVERY_ORDER => 2;
-use constant DONE                         => 3;
+#use constant CONVERTING_TO_ORDER          => 1;
+use constant CONVERTING_TO_DELIVERY_ORDER => 1;
+use constant DONE                         => 2;
 
 # Data format:
 # my $data                  = {
@@ -35,13 +36,13 @@ sub create_order {
   my ( $self ) = @_;
   my $job_obj = $self->{job_obj};
   my $db      = $job_obj->db;
-
+  my %error_report;
   $job_obj->set_data(CONVERTING_TO_DELIVERY_ORDER())->save;
 
   foreach my $shop_order_id (@{ $job_obj->data_as_hash->{shop_order_record_ids} }) {
+    my $data = $job_obj->data_as_hash;
     my $shop_order = SL::DB::ShopOrder->new(id => $shop_order_id)->load;
-    die "can't find shoporder with id $shop_order_id" unless $shop_order;
-    $::lxdebug->dump(0, 'WH: CREATE:I ', \$shop_order);
+    # die "can't find shoporder with id $shop_order_id" unless $shop_order;
     #TODO Kundenabfrage so ändern, dass es nicht abricht
     unless($shop_order){
       push @{ $error_report{$shop_order_id}} }, 'Shoporder not found';
@@ -51,41 +52,53 @@ sub create_order {
     my $employee = SL::DB::Manager::Employee->current;
     my $items = SL::DB::Manager::ShopOrderItem->get_all( where => [shop_order_id => $shop_order_id],
                                                           sort_by => 'partnumber::int' );
-    $::lxdebug->dump(0, 'WH: CREATE:I ', \$shop_order);
-    $::lxdebug->dump(0, 'WH: CREATE:II ', \$items);
-
-    # check inventory onhand > 0
-    my $onhand = 0;
+    # check inventory onhand > 0 and active = 1
+    my $transferable = 0;
     foreach my $item (@$items) {
-      my $qty = SL::DB::Manager::Part->find_by(partnumber => $item->{partnumber})->onhand; # > 0 ? $onhand = 1 : 0;
-      $qty >= $item->{quantity} ? $onhand = 1 : 0;
-      $main::lxdebug->message(0, "WH: STOCK: $qty -- $onhand");
-      last if $onhand == 0;
+      my $part = SL::DB::Manager::Part->find_by(partnumber => $item->{partnumber});
+      # TODO: qty direkt aus dem Lager holen und nicht von onhand
+      $transferable = $part->{onhand} >= $item->{quantity} ? 1 : 0;
+      $transferable = $part->{active} = 1 ? 1 : 0;
+
+      last if $transferable == 0;
     }
-    $main::lxdebug->message(0, "WH:ONHAND: $onhand ");
-    if ($onhand == 1) {
+    if ($transferable == 1 && $customer->{order_lock} == 0) {
       $shop_order->{shop_order_items} = $items;
-      $main::lxdebug->dump(0, 'WH: TRANSFER SHOPORDER', \$shop_order);
 
       my $order = $shop_order->convert_to_sales_order(customer => $customer, employee => $employee);
       $order->save;
+      my $snumbers = "ordernumber_" . $order->ordnumber;
+      SL::DB::History->new(
+                        trans_id    => $order->id,
+                        snumbers    => $snumbers,
+                        employee_id => SL::DB::Manager::Employee->current->id,
+                        addition    => 'SAVED',
+                        what_done   => 'Shopimport->Order(MassTransfer)',
+                      )->save();
       $shop_order->transferred(1);
       $shop_order->transfer_date(DateTime->now_local);
       $shop_order->oe_transid($order->id);
       $shop_order->save;
       $shop_order->link_to_record($order);
+      $data->{num_created}++;
+      push @{ $data->{orders_ids} }, $order->id;
+      push @{ $data->{shop_orders_ids} }, $shop_order->id;
 
       my $delivery_order = $order->convert_to_delivery_order(customer => $customer, employee => $employee);
       $delivery_order->save;
+      my $snumbers = "deliveryordernumber_" . $delivery_order->donumber;
+      SL::DB::History->new(
+                        trans_id    => $delivery_order->id,
+                        snumbers    => $snumbers,
+                        employee_id => SL::DB::Manager::Employee->current->id,
+                        addition    => 'SAVED',
+                        what_done   => 'Shopimport->Order->Deliveryorder(MassTransfer)',
+                      )->save();
       $order->link_to_record($delivery_order);
       my $delivery_order_items = $delivery_order->{orderitems};
       # Lagerentnahme
       # entsprechende defaults holen, falls standardlagerplatz verwendet werden soll
-      $main::lxdebug->dump(0, 'WH: LAGER: ', \$delivery_order_items);
       my $test = $::instance_conf->get_transfer_default_use_master_default_bin;
-      $main::lxdebug->message(0, "WH: TEST $test ");
-      $main::lxdebug->dump(0, 'WH: KONF ',$::instance_conf);
-      $main::lxdebug->message(0, "WH:NACH ");
       require SL::DB::Inventory;
       my $rose_db = SL::DB::Inventory->new->db;
       my $dbh = $db->dbh;
@@ -138,8 +151,6 @@ sub create_order {
         }
         push @errors, @{ $err };
       }
-      $main::lxdebug->dump(0, 'WH: LAGER II ', \@transfers);
-      $main::lxdebug->dump(0, 'WH: LAGER III ', \@errors);
       if (!@errors) {
           $delivery_order->delivered(1);
           $delivery_order->save;
@@ -148,13 +159,8 @@ sub create_order {
   }
 }
 
-sub create_delivery_order {
-  my ( $self ) = @_;
-}
-
 sub run {
   my ($self, $job_obj) = @_;
-  $::lxdebug->dump(0, 'WH: RUN: ', \$self);
 
   $self->{job_obj}         = $job_obj;
   $self->create_order;

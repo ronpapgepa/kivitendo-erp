@@ -7,6 +7,8 @@
   name: Webshop Import
   params:
     action: ShopOrder/list
+    filter.transferred:eq_ignore_empty: 0
+    filter.obsolete: 0
     db: shop_orders
     sort_by: shop_ordernumber
 - parent: webshop

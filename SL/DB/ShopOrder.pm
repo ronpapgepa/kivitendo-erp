@@ -16,6 +16,16 @@ __PACKAGE__->meta->add_relationships(
     column_map => { id => 'shop_order_id' },
     type       => 'one to many',
   },
+  customer => {
+    class     => 'SL::DB::Customer',
+    column_map  => { kivi_customer_id => 'id' },
+    type        => 'one to many',
+  },
+  shop => {
+    class     => 'SL::DB::Shop',
+    column_map  => { shop_id => 'id' },
+    type        => 'one to many',
+  },
 );
 
 __PACKAGE__->meta->initialize;
@@ -33,24 +43,23 @@ sub convert_to_sales_order {
   require SL::DB::Part;
   require SL::DB::Shipto;
 
-  my @order_items;
-  foreach my $items (@{$self->shop_order_items}) {
-    my $item = SL::DB::OrderItem->new;
-    my $part = SL::DB::Manager::Part->find_by( partnumber => $items->{partnumber} );
-
-    $item->assign_attributes(
-        parts_id        => $part->id,
-        description     => $items->description,
-        qty             => $items->quantity,
-        sellprice       => $items->price,
-        unit            => $part->unit,
-        );
-    push(@order_items,$item);
-  }
+  my @items = map{
+    my $part = SL::DB::Part->new( partnumber => $_->partnumber )->load;
+    my @cvars = map { ($_->config->name => { value => $_->value_as_text, is_valid => $_->is_valid }) } @{ $part->cvars_by_config } ;
+    my $current_order_item =
+      SL::DB::OrderItem->new(parts_id               => $part->id,
+                             description            => $part->description,
+                             qty                    => $_->quantity,
+                             sellprice              => $_->price,
+                             unit                   => $part->unit,
+                             position               => $_->position,
+                             active_price_source    => ( $_->price == 0 ? "" : "pricegroup/908"), #TODO Hardcoded
+                           );
+  }@{ $self->shop_order_items };
 
   my $shipto_id;
   if ($self->{billing_firstname} ne $self->{delivery_firstname} || $self->{billing_lastname} ne $self->{delivery_lastname} || $self->{billing_city} ne $self->{delivery_city} || $self->{billing_street} ne $self->{delivery_street}) {
-    if(my $address = SL::DB::Manager::Shipto->find_by( shiptoname          => $self->{delivery_firstname} . " " . $self->{delivery_lastname}, 
+    if(my $address = SL::DB::Manager::Shipto->find_by( shiptoname          => $self->{delivery_firstname} . " " . $self->{delivery_lastname},
                                                         shiptostreet        => $self->{delivery_street},
                                                         shiptocity          => $self->{delivery_city},
                                                       )) {
@@ -59,14 +68,16 @@ sub convert_to_sales_order {
       my $gender = $self->{delivery_greeting} eq "Frau" ? 'f' : 'm';
       my $deliveryaddress = SL::DB::Shipto->new;
       $deliveryaddress->assign_attributes(
-        shiptoname      => $self->{delivery_firstname} . " " . $self->{delivery_lastname},
-        shiptocp_gender => $gender,
-        shiptostreet    => $self->{delivery_street},
-        shiptozipcode   => $self->{delivery_zipcode},
-        shiptocity      => $self->{delivery_city},
-        shiptocountry   => $self->{delivery_country},
-        trans_id        => $customer->id,   # ????
-        module          => "CT",
+        shiptoname          => $self->{delivery_firstname} . " " . $self->{delivery_lastname},
+        shiptodepartment_1  => $self->{delivery_company},
+        shiptodepartment_2  => $self->{delivery_department},
+        shiptocp_gender     => $gender,
+        shiptostreet        => $self->{delivery_street},
+        shiptozipcode       => $self->{delivery_zipcode},
+        shiptocity          => $self->{delivery_city},
+        shiptocountry       => $self->{delivery_country},
+        trans_id            => $customer->id,
+        module              => "CT",
       );
       $deliveryaddress->save;
       $shipto_id = $deliveryaddress->{shipto_id};
@@ -75,21 +86,21 @@ sub convert_to_sales_order {
 
   my $order = SL::DB::Order->new(
                   amount                  => $self->amount,
-                  cusordnumber            => $self->shop_id,
+                  cusordnumber            => $self->shop_ordernumber,
                   customer_id             => $customer->id,
                   shipto_id               => $shipto_id,
-                  orderitems              => [ @order_items ],
+                  orderitems              => [ @items ],
                   employee_id             => $employee->id,
-                  intnotes                => $self->{shop_customer_comment},
+                  intnotes                => ($customer->notes ne "" ? "\n[Kundestammdaten]\n" . $customer->notes : ""),
                   salesman_id             => $employee->id,
                   taxincluded             => 1,   # TODO: make variable
+                  payment_id              => $customer->payment_id,
                   taxzone_id              => $customer->taxzone_id,
                   currency_id             => $customer->currency_id,
                   transaction_description => 'Shop Import',
                   transdate               => DateTime->today_local
                 );
-  # $order->save;
-  return $order;
+   return $order;
 };
 
 1;
