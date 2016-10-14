@@ -2,7 +2,6 @@
 # Feel free to modify it at will; it will not be overwritten automatically.
 
 package SL::DB::ShopPart;
-#package SL::DB::ShopPart;
 
 use strict;
 

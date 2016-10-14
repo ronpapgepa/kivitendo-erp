@@ -4,7 +4,7 @@
 [%- USE P -%]
 [%- USE LxERP -%]
 [%- USE Dumper -%]
-
+<!-- ShopPart -->
 [%  LxERP.t8("Part") %]: [% HTML.escape(SELF.shop_part.part.displayable_name) %]<br>
 [%  LxERP.t8("Shop") %]: [% HTML.escape(SELF.shop_part.shop.description) %]
 <br>

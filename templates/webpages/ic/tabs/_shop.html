@@ -18,6 +18,7 @@
    <th>[% LxERP.t8("Action") %]</th>
   </tr>
   </thead>
+
   [%- FOREACH shop_part = SHOP_PARTS %]
   <tr class="listrow">
    <td>[% HTML.escape( shop_part.shop.description ) %]</td>
@@ -41,6 +42,9 @@
   [%- FOREACH shop = SHOPS_NOT_ASSIGNED %]
   <tr>
    <td>[% HTML.escape( shop.description ) %]</td>
+   <td></td>
+   <td></td>
+   <td></td>
    <td></td>
    <td></td>
    <td></td>
@@ -73,82 +77,15 @@
    </p>
   </div>
   [%- END %]
-  <script type="text/javascript">
-    $(function() {
-      kivi.shop_part.show_images([% shop_part.part_id %]);
-    });
-  </script>
-  <div id="shop_images" border=1 >
-  </div>
-
-<div id="shop_variables">
-[% LxERP.t8("Active shops:") %]
- <table>
-  <thead>
-  <tr>
-   <th>[% LxERP.t8("Shop") %]</th>
-   <th>[% LxERP.t8("Active") %]</th>
-   <th>[% LxERP.t8("Shop part") %]</th>
-   <th>[% LxERP.t8("Last update") %]</th>
-   <th>[% LxERP.t8("Action") %]</th>
-   <th>[% LxERP.t8("Action") %]</th>
-  </tr>
-  </thead>
-  [%- FOREACH shop_part = SHOP_PARTS %]
-  <tr>
-   <td>[% HTML.escape( shop_part.shop.description ) %]</td>
-   <td>[% L.html_tag('span', shop_part.active, id => 'shop_part_active_' _ shop_part.id ) %]</td>
-   <td>[% L.html_tag('span', shop_part.shop_description, id => 'shop_part_description_' _ shop_part.id ) %]</td>
-   <td>[% L.html_tag('span', shop_part.last_update.to_kivitendo('precision' => 'minute'), id => 'shop_part_last_update_' _ shop_part.id ) %]</td>
-   <td>[% L.button_tag("kivi.shop_part.edit_shop_part(" _ shop_part.id _ ")", LxERP.t8("Edit"))  %]</td>
-   <td>[% L.button_tag("kivi.shop_part.update_shop_part(" _ shop_part.id _ ")", LxERP.t8("Update"))  %]</td>
-   <td>[% L.button_tag("kivi.shop_part.get_all_categories(" _ shop_part.id _ ")", LxERP.t8("Shopcategories"))  %]</td>
-  </tr>
+  [%- IF shop_part.part_id %]
+    <script type="text/javascript">
+      $(function() {
+        kivi.shop_part.show_images([% shop_part.part_id %]);
+      });
+    </script>
+    <div id="shop_images" border=1 ></div>
+  [%- ELSE %]
+    <div id="shop_images" border=1 >[% LxERP.t8('To upload images: Please create shoppart first') %]</div>
   [%- END %]
-  [%- FOREACH shop = SHOPS_NOT_ASSIGNED %]
-  <tr>
-   <td>[% HTML.escape( shop.description ) %]</td>
-   <td></td>
-   <td></td>
-   <td></td>
-   <td>[% L.button_tag("kivi.shop_part.create_shop_part(" _ id _ ", " _ shop.id _ ")", LxERP.t8("Add"))  %]</td>
-   <td></td>
-  </tr>
-  [%- END %]
-</table>
-
-
-[% # L.dump(shop_part) %]
-<hr>
-  [%- IF CUSTOM_VARIABLES.size %]
-  <div id="shop_custom_variables">
-   <p>
-    <table>
-     [%- FOREACH var = CUSTOM_VARIABLES %]
-      [%- IF var.name.match('^shop_') %]
-       <tr>
-        [%- IF !var.partsgroup_filtered %]
-          <td align="right" valign="top">[% HTML.escape(var.description) %]</td>
-        [%- END %]
-        <td valign="top">[% var.HTML_CODE %]</td>
-       </tr>
-      [%- END %]
-     [%- END %]
-    </table>
-   </p>
-  </div>
-  [%- END %]
-  <script type="text/javascript">
-    function show_images() {
-      var url = 'controller.pl?action=ShopPart/show_files&modul=shop_part&id=[% shop_part.part_id %]';
-      $('#shop_images').load(url);
-    }
-
-$(window).load(function() {
-        show_images();
-});
-  </script>
-  <div id="shop_images" border=1 >
-  </div>
 </div>
 
