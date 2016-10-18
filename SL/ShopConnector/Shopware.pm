@@ -1,4 +1,5 @@
 package SL::ShopConnector::Shopware;
+#package SL::ShopConnector::Shopware;
 
 use strict;
 
