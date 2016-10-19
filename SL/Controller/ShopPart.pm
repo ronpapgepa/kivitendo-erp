@@ -1,5 +1,4 @@
 package SL::Controller::ShopPart;
-#package SL::Controller::ShopPart;
 
 use strict;
 
@@ -181,7 +180,7 @@ sub action_show_stock {
     my $shop_article = $shop->connector->get_article($self->shop_part->part->partnumber);
     $stock_onlineshop = $shop_article->{data}->{mainDetail}->{inStock};
     $active_online = $shop_article->{data}->{active};
-    #}
+  }
 
   $stock_local = $self->shop_part->part->onhand;
 
@@ -234,7 +233,6 @@ sub create_or_update {
 
   #TODO Price must be formatted. $price_src_str must be translated
   flash('info', $is_new ? t8('The shop part has been created.') : t8('The shop part has been saved.'));
-  # $self->js->val('#partnumber', 'ladida');
   $self->js->html('#shop_part_description_' . $self->shop_part->id, $self->shop_part->shop_description)
            ->html('#shop_part_active_' . $self->shop_part->id, $self->shop_part->active)
            ->html('#price_' . $self->shop_part->id, $::form->format_amount(\%::myconfig,$price,2))
@@ -307,7 +305,6 @@ sub action_list_articles {
   my $transferred = $::form->{filter}->{transferred_eq_ignore_empty} ne '' ? $::form->{filter}->{transferred_eq_ignore_empty} : '';
   my $sort_by = $::form->{sort_by} ? $::form->{sort_by} : 'part.partnumber';
   $sort_by .=$::form->{sort_dir} ? ' DESC' : ' ASC';
-$main::lxdebug->message(0, "WH:LA ");
 
   my $articles = SL::DB::Manager::ShopPart->get_all(where => [ 'shop.obsolete' => 0 ],with_objects => [ 'part','shop' ], sort_by => $sort_by );
 
@@ -315,7 +312,6 @@ $main::lxdebug->message(0, "WH:LA ");
     my $images = SL::DB::Manager::File->get_all_count( where => [ trans_id => $article->part->id, modul => 'shop_part', file_content_type => { like => 'image/%' } ], sort_by => 'position' );
     $article->{images} = $images;
   }
-  $main::lxdebug->dump(0, 'WH:ARTIKEL ',\$articles);
 
   $self->render('shop_part/_list_articles', title => t8('Webshops articles'), SHOP_PARTS => $articles);
 }
@@ -332,7 +328,6 @@ sub action_upload_status {
 
 sub action_mass_upload {
   my ($self) = @_;
-$main::lxdebug->message(0, "WH:MA ");
 
   my @shop_parts =  @{ $::form->{shop_parts_ids} || [] };
 
@@ -346,10 +341,8 @@ $main::lxdebug->message(0, "WH:MA ");
      status                       => SL::BackgroundJob::ShopPartMassUpload->WAITING_FOR_EXECUTION(),
      conversation_errors          => [ ],
    )->update_next_run_at;
-$main::lxdebug->dump(0, 'WH:MA JOB ',\$job);
 
    SL::System::TaskServer->new->wake_up;
-$main::lxdebug->dump(0, 'WH:MA JOB 2',\$job);
 
    my $html = $self->render('shop_part/_transfer_status', { output => 0 }, job => $job);
 
@@ -363,7 +356,6 @@ $main::lxdebug->dump(0, 'WH:MA JOB 2',\$job);
 # internal stuff
 #
 sub add_javascripts  {
-  # is this needed?
   $::request->{layout}->add_javascripts(qw(kivi.shop_part.js));
 }
 
@@ -422,32 +414,24 @@ sub init_shop_part {
 }
 
 sub init_file {
-  $main::lxdebug->message(0, "WH:INIT_FILES ");
   my $file = $::form->{id} ? SL::DB::File->new(id => $::form->{id})->load : SL::DB::File->new;
-  $main::lxdebug->dump(0, 'WH: INITFILE: ',\file);
-
   return $file;
 }
 
 sub init_shops {
   # data for drop down filter options
-  $main::lxdebug->message(0, "WH:INIT_SHOPS ");
-
   require SL::DB::Shop;
   my @shops_dd = [ { title => t8("all") ,   value =>'' } ];
   my $shops = SL::DB::Mangager::Shop->get_all( where => [ obsolete => 0 ] );
-   my @tmp = map { { title => $_->{description}, value => $_->{id} } } @{ $shops } ;
- $main::lxdebug->dump(0, 'WH:SHOPS ',\@tmp);
- return @shops_dd;
+  my @tmp = map { { title => $_->{description}, value => $_->{id} } } @{ $shops } ;
+  return @shops_dd;
 
 }
 
 sub init_producers {
   # data for drop down filter options
-  $main::lxdebug->message(0, "WH:INIT_PRODUCERS ");
-
   my @producers_dd = [ { title => t8("all") ,   value =>'' } ];
- return @producers_dd;
+  return @producers_dd;
 
 }
 

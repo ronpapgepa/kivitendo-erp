@@ -1,4 +1,3 @@
-//TMP
 namespace('kivi.shop_part', function(ns) {
   var $dialog;
 
@@ -30,28 +29,27 @@ namespace('kivi.shop_part', function(ns) {
   }
 
 
-    // save existing shop_part_id with new params from form, calls create_or_update and saves to db
-    ns.save_shop_part = function(shop_part_id) {
-      var form = $('form').serializeArray();
-      form.push( { name: 'action', value: 'ShopPart/update' }
-               , { name: 'shop_part_id',  value: shop_part_id }
-      );
+  // save existing shop_part_id with new params from form, calls create_or_update and saves to db
+  ns.save_shop_part = function(shop_part_id) {
+    var form = $('form').serializeArray();
+    form.push( { name: 'action', value: 'ShopPart/update' }
+             , { name: 'shop_part_id',  value: shop_part_id }
+    );
 
-      $.post('controller.pl', form, function(data) {
-        kivi.eval_json_result(data);
-      });
-    }
+    $.post('controller.pl', form, function(data) {
+      kivi.eval_json_result(data);
+    });
+  }
 
-    // add part to a shop
-    ns.add_shop_part = function(part_id,shop_id) {
-      var form = $('form').serializeArray();
-      form.push( { name: 'action', value: 'ShopPart/update' }
-      );
-
-      $.post('controller.pl', form, function(data) {
-        kivi.eval_json_result(data);
-      });
-    }
+  // add part to a shop
+  ns.add_shop_part = function(part_id,shop_id) {
+    var form = $('form').serializeArray();
+    form.push( { name: 'action', value: 'ShopPart/update' }
+    );
+    $.post('controller.pl', form, function(data) {
+      kivi.eval_json_result(data);
+    });
+  }
 
   // this is called from tabs/_shop.html, opens edit_window (render)
   ns.edit_shop_part = function(shop_part_id) {
@@ -120,5 +118,33 @@ namespace('kivi.shop_part', function(ns) {
       kivi.eval_json_result(data);
     });
   }
+
+  ns.massUploadInitialize = function() {
+    kivi.popup_dialog({
+      id: 'status_mass_upload',
+      dialog: {
+        title: kivi.t8('Status Shopupload')
+      }
+    });
+  };
+
+  ns.massUploadStarted = function() {
+    $('#status_mass_upload').data('timerId', setInterval(function() {
+      $.get("controller.pl", {
+        action: 'ShopPart/upload_status',
+        job_id: $('#smu_job_id').val()
+      }, kivi.eval_json_result);
+    }, 5000));
+  };
+
+  ns.massUploadFinished = function() {
+    clearInterval($('#status_mass_upload').data('timerId'));
+    $('.ui-dialog-titlebar button.ui-dialog-titlebar-close').prop('disabled', '')
+  };
+
+  ns.setup = function() {
+    kivi.shop_part.massUploadInitialize();
+    kivi.submit_ajax_form('controller.pl?action=ShopPart/mass_upload','[name=shop_parts]');
+  };
 
 });

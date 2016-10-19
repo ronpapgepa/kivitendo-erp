@@ -1,6 +1,4 @@
 package SL::Controller::ShopOrder;
-#package SL::Controller::ShopOrder;
-# Controller::ShopOrder
 
 use strict;
 
@@ -43,8 +41,6 @@ sub action_list {
   my ( $self ) = @_;
   my %filter = ($::form->{filter} ? parse_filter($::form->{filter}) : query => [ transferred => 0, obsolete => 0 ]);
   my $transferred = $::form->{filter}->{transferred_eq_ignore_empty} ne '' ? $::form->{filter}->{transferred_eq_ignore_empty} : '';
-  #$::lxdebug->dump(0, "WH: FILTER ",  $::form->{filter}->{_eq_ignore_empty}." - ".$transferred);
-  #$::lxdebug->dump(0, "WH: FILTER2 ",  \%filter);
   my $sort_by = $::form->{sort_by} ? $::form->{sort_by} : 'order_date';
   $sort_by .=$::form->{sort_dir} ? ' DESC' : ' ASC';
   my $shop_orders = SL::DB::Manager::ShopOrder->get_all( %filter, sort_by => $sort_by,
@@ -61,8 +57,6 @@ sub action_list {
     );
     $shop_order->{open_invoices} = $open_invoices;
   }
-  $main::lxdebug->dump(0, 'WH:SHOPORDER ',\$shop_orders);
-
 
   $self->render('shop_order/list',
                 title       => t8('ShopOrders'),
@@ -116,12 +110,12 @@ sub action_show {
                             and => [ # check for street and zipcode
                                      and => [ 'street'  => { ilike => "%".$shop_order->customer_street."%" },
                                               'zipcode' => { ilike => $shop_order->customer_zipcode },
+                                            ],
+                                   ],
                             or  => [ 'email' => { ilike => $shop_order->customer_email } ],
                          ],
                 ],
   );
-  $main::lxdebug->dump(0, 'WH:PROP ',\$proposals);
-
 
   $self->render('shop_order/show',
                 title       => t8('Shoporder'),
@@ -287,7 +281,6 @@ sub check_address {
                                            'zipcode'=> { ilike => $address{'zipcode'} },
                                            'city'   => { ilike => $address{'city'} },
                                          ]);
-  $::lxdebug->dump(0, "WH: CUSTOMER ", \$addressdata);
   return @{$addressdata}[0];
 }
 

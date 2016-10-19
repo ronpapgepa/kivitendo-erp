@@ -1,5 +1,5 @@
 package SL::BackgroundJob::ShopOrderMassTransfer;
-#BackgroundJob::ShopOrderMassTransfer
+
 use strict;
 use warnings;
 
@@ -27,7 +27,7 @@ use constant DONE                         => 2;
 # my $data                  = {
 #     shop_order_record_ids       => [ 603, 604, 605],
 #     num_order_created           => 0,
-#     num_delivery_order_created  => 0,
+#     orders_ids                  => [1,2,3]
 #     conversation_errors         => [ { id => 603 , item => 2, message => "Out of stock"}, ],
 # };
 #
@@ -45,7 +45,7 @@ sub create_order {
     # die "can't find shoporder with id $shop_order_id" unless $shop_order;
     #TODO Kundenabfrage so ändern, dass es nicht abricht
     unless($shop_order){
-      push @{ $error_report{$shop_order_id}} }, 'Shoporder not found';
+      push @{ $error_report{$shop_order_id} }, 'Shoporder not found';
     }
     my $customer = SL::DB::Manager::Customer->find_by(id => $shop_order->{kivi_customer_id});
     die "Can't find customer" unless $customer;
@@ -80,10 +80,11 @@ sub create_order {
       $shop_order->oe_transid($order->id);
       $shop_order->save;
       $shop_order->link_to_record($order);
-      $data->{num_created}++;
+      $data->{num_order_created} ++;
       push @{ $data->{orders_ids} }, $order->id;
       push @{ $data->{shop_orders_ids} }, $shop_order->id;
 
+      $job_obj->update_attributes(data_as_hash => $data);
       my $delivery_order = $order->convert_to_delivery_order(customer => $customer, employee => $employee);
       $delivery_order->save;
       my $snumbers = "deliveryordernumber_" . $delivery_order->donumber;

@@ -21,21 +21,6 @@ sub action_test_page{
   $self->render('fileuploader/test_page');
 }
 
-sub action_upload_form{
-  my ($self) = @_;
-  $self->file(SL::DB::File->new);
-  $self->render('common/file_upload', {header => 0});
-}
-
-sub action_show_files {
-  my ($self) = @_;
-$main::lxdebug->dump(0, 'WH: Show_Files',\$::form);
-  my $images = SL::DB::Manager::File->get_all( query => [ trans_id => $::form->{id}, modul => $::form->{modul} ] );
-  $main::lxdebug->dump(0, 'WH: ',\$images);
-
-
-}
-
 sub action_ajax_add_file{
   my ($self) = @_;
   $self->file( $::form->{id} ? SL::DB::File->new(id => $::form->{id})->load : SL::DB::File->new );
@@ -60,45 +45,6 @@ sub validate_filetype {
   return @errors
 }
 
-sub action_upload_form{
-  my ($self) = @_;
-  $self->file(SL::DB::File->new);
-  $self->render('common/file_upload', {header => 0});
-}
-
-sub action_show_files {
-  my ($self) = @_;
-
-
-sub action_ajax_add_file{
-  my ($self) = @_;
-  $self->file(SL::DB::File->new);
-  $self->render('common/file_upload', { layout => 0}, DATA => $::form);
-}
-
-sub action_ajax_upload_file{
-  my ($self, %params) = @_;
-  my $attributes                  = $::form->{ $::form->{form_prefix} } || die "Missing FormPrefix";
-  $attributes->{trans_id}         = $::form->{id} || die "Missing ID";
-  $attributes->{modul}            = $::form->{modul} || die "Missing Modul";
-  $attributes->{filename}         = $::form->{FILENAME} || die "Missing Filename";
-  $attributes->{title}            = $::form->{ $::form->{form_prefix} }->{title};
-  $attributes->{description}      = $::form->{ $::form->{form_prefix} }->{description};
-  my @image_types = ("jpg","tif","png");
-
-  my @errors = $self->file(SL::DB::File->new(%{ $attributes }))->validate;
-  return $self->js->error(@errors)->render($self) if @errors;
-
-  $self->file->save;
-
-  # TODO js call
-  $self->render('fileuploader/test_page');
-}
-
-#
-# helpers
-#
-
 sub init_file {
   return SL::DB::File->new(id => $::form->{id})->load;
 }
@@ -122,7 +68,16 @@ SL::Controller::FileUploader - Controller to manage fileuploads
 
 =head1 DESCRIPTION
 
-# longer description...
+ just the action ajax_add_file is needed and its automaticly called by. The other ones are for the testpage templates/webpages/testpage.html
+ kivi.add.file(id[shop_part_id,part_id, cv_id, project_id,...],modul[part,shop_part,project,IC,...],controller_action[ShopPart/do_something_file],allowed_filestypes) in your template.
+ [% L.button_tag("kivi.add_file(this.form.id.value,'shop_part', 'Part/do_something_with_file','jpg,png,gif,pdf')", 'Fileupload') %]
+
+ The called Controller/Action deals with the uploaded file in wich you can do whatever you want with the file.
+ like
+ - Store it in the Database SL::DB::File
+ - Store it in Webdav
+ - Store it in Webdav and DB (be careful: files wich deleted in the filesystem will not be deleted in the database automaticly)
+ - do something very fancy with the file
 
 
 =head1 INTERFACE
