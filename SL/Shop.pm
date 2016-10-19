@@ -1,4 +1,5 @@
 package SL::Shop;
+#package SL::Shop;
 
 use strict;
 
