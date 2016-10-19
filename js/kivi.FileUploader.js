@@ -1,4 +1,3 @@
-//TMP
 namespace('kivi.FileUploader', function(ns) {
   //opens a popupdialog for fileupload
 

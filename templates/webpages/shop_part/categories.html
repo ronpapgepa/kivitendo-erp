@@ -4,7 +4,7 @@
 [%- USE P -%]
 [%- USE LxERP -%]
 [%- USE Dumper -%]
-<!-- ShopPart -->
+
 [%  LxERP.t8("Part") %]: [% HTML.escape(SELF.shop_part.part.displayable_name) %]<br>
 [%  LxERP.t8("Shop") %]: [% HTML.escape(SELF.shop_part.shop.description) %]
 <br>
@@ -14,14 +14,14 @@
 
 <form action="controller.pl" method="post">
   [% BLOCK recurse %]
-  [% # path = '' %]<!-- TODO: Pfad wg neuer Kategorie im Shop anlegen -->
+    [% # path = '' %]<!-- TODO: Pfad wg neuer Kategorie im Shop anlegen -->
     [% FOREACH obj = data %]
       <ul>
         <li>
         [% checked = '' %]
         [% # path = path _ obj.name %]
         [% # test = path.split('\|') %]
-        [% # Dumper.dump_html(SELF.shop_part.shop_category.size) %]
+        [% # Dumper.dump_html(SELF.shop_part.shop_category) %]
         [% IF SELF.shop_part.shop_category.1.grep(obj.name).size %]
           [% checked = 'checked' %]
         [% ELSE %]
@@ -31,7 +31,7 @@
             [% END %]
           [% END %]
         [% END %]
-          [% L.checkbox_tag('categories[]',value=obj.id _"," _ obj.name _ ",PFAD", checked=checked) %][% HTML.escape(obj.name) %]</li>
+          [% L.checkbox_tag('categories[]',value=obj.id, checked=checked) %][% HTML.escape(obj.name) %][% L.hidden_tag("cat_id_" _ obj.id, obj.name) %]</li>
         [% IF obj.childrenCount >= 1 %]
           [% # path = path _ '|' %]
           [% INCLUDE recurse data=obj.children %]
@@ -41,6 +41,7 @@
   [% END %]
   <div><h2>[% LxERP.t8("Shopcategories") %]</h2>
       [% FOREACH row = CATEGORIES %]
+<!-- TODO: Is still hardcoded 'Root' is shopware specified -->
         [% IF row.name == 'Root' %]
           [% IF row.childrenCount >= 1 %]
             [% path = '' %]

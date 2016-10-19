@@ -1,15 +1,10 @@
 # This file has been auto-generated. Do not modify it; it will be overwritten
 # by rose_auto_create_model.pl automatically.
 package SL::DB::ShopPart;
-#package SL::DB::ShopPart;
 
 use strict;
 
-<<<<<<< HEAD
 use parent qw(SL::DB::Object);
-=======
-use base qw(SL::DB::Object);
->>>>>>> Shop - Einführung von ShopParts
 
 __PACKAGE__->meta->table('shop_parts');
 

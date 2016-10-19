@@ -18,4 +18,3 @@
     action: ShopPart/list_articles
     db: shop_parts
     sort_by: part.onhand
-#ShopPart

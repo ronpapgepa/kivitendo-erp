@@ -1,6 +1,4 @@
 package SL::ShopConnector::Shopware;
-#package SL::ShopConnector::Shopware;
-#package SL::ShopConnector::Shopware;
 
 use strict;
 
@@ -249,6 +247,12 @@ sub get_categories {
   return \@daten;
 }
 
+sub get_articles {
+  my ($self, $json_data) = @_;
+
+}
+
+
 sub update_part {
   my ($self, $shop_part, $json, $todo) = @_;
 
@@ -316,7 +320,6 @@ sub update_part {
 
   # mapping to shopware still missing attributes,metatags
   my %shop_data;
-  $main::lxdebug->dump(0, 'WH:TODO ',\$todo);
 
   if($todo eq "price"){
     %shop_data = ( mainDetail => { number   => $part->{partnumber},
@@ -375,16 +378,12 @@ sub update_part {
   }else{
     my %shop_data =  ( mainDetail => { number   => $part->{partnumber}, });
   }
-  $main::lxdebug->dump(0, 'WH:SHOPDATA ',\%shop_data);
 
   my $dataString = SL::JSON::to_json(\%shop_data);
   $dataString = encode_utf8($dataString);
 
   my $upload_content;
   if($import->{success}){
-  my %del_img =  ( images        => [ {} ], ) ;
-  my $del_imgString = SL::JSON::to_json(\%del_img);
-  #my $delImg = $self->connector->put("http://$url/api/articles/$part->{partnumber}?useNumberAsId=true",Content => $del_imgString);
     #update
     my $partnumber = $::form->escape($part->{partnumber});#shopware don't accept / in articlenumber
     my $upload = $self->connector->put("http://$url/api/articles/$partnumber?useNumberAsId=true",Content => $dataString);
@@ -408,7 +407,7 @@ sub get_article {
   my ($self,$partnumber) = @_;
 
   my $url = $self->url;
-  my $partnumber = $::form->escape($partnumber);#shopware don't accept / in articlenumber
+  $partnumber = $::form->escape($partnumber);#shopware don't accept / in articlenumber
   my $data = $self->connector->get("http://$url/api/articles/$partnumber?useNumberAsId=true");
   my $data_json = $data->content;
   return SL::JSON::decode_json($data_json);

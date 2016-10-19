@@ -1,6 +1,5 @@
 [%- USE HTML -%][%- USE LxERP -%][%- USE L -%][%- USE T8 -%]
 [% USE Dumper %]
-<!-- TMP -->
 
 <h1>[% title %]</h1>
 [%- PROCESS 'shop_order/_filter.html' filter=SELF.models.filtered.laundered %]
@@ -149,7 +148,7 @@
       <br>[% HTML.escape(shop_order.customer_street) %]
       <br>[% HTML.escape(shop_order.customer_zipcode) %]&nbsp;[% HTML.escape(shop_order.customer_city) %]
       <br>[% HTML.escape(shop_order.customer_country) %] </td>
-    <td>[% IF shop_order.customer_company %]<b>[% HTML.escape(shop_order.customer_company) %]</b><br>[% END %]
+    <td [% transferable_class %]>[% IF shop_order.customer_company %]<b>[% HTML.escape(shop_order.customer_company) %]</b><br>[% END %]
       <b>[% HTML.escape(shop_order.billing_lastname) %],&nbsp;[% HTML.escape(shop_order.billing_firstname) %]</b>
       <br>[% HTML.escape(shop_order.billing_street) %]
       <br>[% HTML.escape(shop_order.billing_zipcode) %]&nbsp;[% HTML.escape(shop_order.billing_city) %]
@@ -181,9 +180,11 @@
  </table>
  <hr>
   <p>
-   [% L.hidden_tag("action", "ShopOrder/mass_transfer") %]
-   [% L.submit_tag("", LxERP.t8("Transfer all marked")) %]
+  [% L.button_tag("kivi.ShopOrder.setup();", LxERP.t8("Transfer all marked"), id="mass_transfer") %]
   </p>
+  <div id="status_mass_transfer" style="display: none;">
+    [%- INCLUDE 'shop_order/_transfer_status.html' %]
+  </div>
  </form>
 <script type="text/javascript">
 <!--
