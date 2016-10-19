@@ -1,4 +1,3 @@
--- TMP
 -- @tag: shop_parts
 -- @description: Add tables for part information for shop
 -- @charset: UTF-8

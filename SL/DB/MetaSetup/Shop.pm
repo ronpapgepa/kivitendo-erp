@@ -1,11 +1,10 @@
 # This file has been auto-generated. Do not modify it; it will be overwritten
 # by rose_auto_create_model.pl automatically.
 package SL::DB::Shop;
-#package SL::DB::Shop;
 
 use strict;
 
-use base qw(SL::DB::Object);
+use parent qw(SL::DB::Object);
 
 __PACKAGE__->meta->table('shops');
 

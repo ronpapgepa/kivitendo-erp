@@ -1,13 +1,12 @@
-//TMP
 namespace('kivi.ShopOrder', function(ns) {
   ns.massTransferInitialize = function() {
     kivi.popup_dialog({
       id: 'status_mass_transfer',
       dialog: {
-        title: kivi.t8('Status Shoptransfer')
+        title: kivi.t8('Status Shoptransfer'),
+        close: function(event, ui) { alert('CLOSE'); },
       }
     });
-    alert('Hallo');
   };
 
   ns.massTransferStarted = function() {
@@ -24,10 +23,14 @@ namespace('kivi.ShopOrder', function(ns) {
     $('.ui-dialog-titlebar button.ui-dialog-titlebar-close').prop('disabled', '')
   };
 
+  ns.processClose = function() {
+    $('#status_mass_transfer').dialog('close');
+    window.location.href = 'controller.pl?filter.obsolete=0&filter.transferred=0&action=ShopOrder%2flist&db=shop_orders&sort_by=shop_ordernumber';
+  };
+
   ns.setup = function() {
     kivi.ShopOrder.massTransferInitialize();
     kivi.submit_ajax_form('controller.pl?action=ShopOrder/mass_transfer','[name=shop_orders_list]');
   };
 
 });
-//$(kivi.ShopOrder.setup);

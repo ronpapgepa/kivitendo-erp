@@ -5,11 +5,9 @@
 [%- USE LxERP -%]
 [%- USE Dumper -%]
 
-<!-- ShopPart -->
-<!-- ShopPart -->
 [% LxERP.t8("Part") %]: [% HTML.escape(SELF.shop_part.part.displayable_name) %]<br>
 [% LxERP.t8("Shop") %]: [% HTML.escape(SELF.shop_part.shop.description) %]
-[% Dumper.dump_html(SELF) %]
+[% # Dumper.dump_html(SELF) %]
 <form action="controller.pl" method="post">
   <div>
     [% IF SELF.shop_part.id %]
@@ -27,7 +25,7 @@
     </tr>
     <tr>
      <td>[% LxERP.t8("Active") %]</td>
-     <td>[% L.yes_no_tag("shop_part.active", SELF.shop_part.active) %]</td>
+     <td>[% L.yes_no_tag("shop_part.active", SELF.shop_part.active, default = "yes") %]</td>
     </tr>
     <tr>
       <th align="right">[% 'Price Source' | $T8 %]</th>

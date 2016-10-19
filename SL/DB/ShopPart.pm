@@ -13,4 +13,5 @@ use SL::DB::Helper::AttrHTML;
 __PACKAGE__->meta->initialize;
 __PACKAGE__->attr_html('shop_description');
 
+
 1;

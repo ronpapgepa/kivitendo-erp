@@ -2,7 +2,6 @@
 # Feel free to modify it at will; it will not be overwritten automatically.
 
 package SL::DB::File;
-#package SL::DB::File;
 
 use strict;
 
