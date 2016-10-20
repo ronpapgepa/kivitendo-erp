@@ -8,6 +8,13 @@
   <table width="100%">
 
     <tr height="5"></tr>
+    <tr>
+      <th align="right" valign="top" nowrap>[% 'Orderlock' | $T8 %]</th>
+      <td>
+        [% L.checkbox_tag('cv.order_lock', checked = SELF.cv.order_lock, for_submit=1) %]
+      </td>
+    </tr>
+
 
     [% IF ( INSTANCE_CONF.get_vertreter ) %]
       <tr>

@@ -1,6 +1,6 @@
 -- @tag: shop_orders
 -- @description: Erstellen der Tabellen shop_orders und shop_order_items
--- @depends: release_3_3_0
+-- @depends: release_3_4_1 shops
 
 CREATE TABLE shop_orders (
   id SERIAL PRIMARY KEY,
@@ -20,10 +20,10 @@ CREATE TABLE shop_orders (
   shop_id integer,               --welcher shop bei mehreren
   host TEXT,             --Hostname vom Shop
   remote_ip text,        --IP Besteller
-  transferred boolean DEFAULT FALSE,    -- übernommen 
+  transferred boolean DEFAULT FALSE,    -- übernommen
   transfer_date date, -- Zeit wann übernommen
   kivi_customer_id integer,  -- Kundenid von Tbl customer wenn übernommen
-  oe_transid integer,  -- id to 
+  oe_transid integer,  -- id to
 -- Bestell-, Rechnungs- und Lieferadresse. !!Manche Shops bieten sowas!!
 -- In der Regel ist aber die Rechnungsadresse die Kundenadresse
   -- Bestelldaten des Kunden
@@ -59,7 +59,7 @@ CREATE TABLE shop_orders (
   billing_phone TEXT,
   billing_fax TEXT,
   billing_email TEXT,
-  
+
   -- SEPA
   sepa_account_holder TEXT,
   sepa_iban TEXT,
@@ -82,6 +82,9 @@ CREATE TABLE shop_orders (
   delivery_fax TEXT,
   delivery_email TEXT,
 
+  obsolete boolean DEFAULT FALSE NOT NULL,
+  positions integer,
+
   itime timestamp DEFAULT now(),
   mtime timestamp
 );
@@ -92,7 +95,8 @@ CREATE TABLE shop_order_items (
   shop_order_id INTEGER REFERENCES shop_orders (id) ON DELETE CASCADE,
   description   TEXT,  -- Artikelbezeichnung
   partnumber    TEXT,
-  shop_id       INTEGER,  --kann als Sortorder benutzt werden
+  shop_id       INTEGER,
+  position      INTEGER,
   tax_rate      NUMERIC(15,2),
   quantity      NUMERIC(25,5),   -- qty in invoice and orderitems is real, doi is numeric(25,5)
   price         NUMERIC(15,5)
