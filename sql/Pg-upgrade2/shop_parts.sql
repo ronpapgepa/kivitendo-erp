@@ -16,10 +16,10 @@ CREATE TABLE shop_parts (
   sortorder        INTEGER,
   front_page       BOOLEAN NOT NULL DEFAULT false,
   active           BOOLEAN NOT NULL DEFAULT false,  -- rather than obsolete
-  shop_category TYPE TEXT[] USING array[shop_category;
+  shop_category TEXT[][],
   active_price_source TEXT,
   metatag_keywords TEXT,
-  metatag_keywords TEXT,
+  metatag_description TEXT,
   metatag_title TEXT,
   UNIQUE (part_id, shop_id)  -- make sure a shop_part appears only once per shop and part
 );
