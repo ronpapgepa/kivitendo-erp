@@ -1,6 +1,6 @@
 -- @tag: shops
 -- @description: Tabelle für Shops
--- @depends: release_3_3_0
+-- @depends: release_3_4_1 customer_klass_rename_to_pricegroup_id_and_foreign_key
 -- @ignore: 0
 
 CREATE TABLE shops (
@@ -11,6 +11,9 @@ CREATE TABLE shops (
   connector text,     -- hardcoded options, e.g. xtcommerce, shopware
   pricetype text,     -- netto/brutto
   price_source text,  -- sellprice/listprice/lastcost or pricegroup id
+  taxzone_id INTEGER,
+  last_order_number INTEGER,
+  orders_to_fetch INTEGER,
   url text,
   port INTEGER,
   login text,  -- "user" is reserved
