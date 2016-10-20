@@ -190,29 +190,6 @@ sub get_new_orders {
       }
       $shop_order->save;
 
-      # DF Versandkosten als Position am ende einfügen Dreschflegelspezifisch event. konfigurierbar machen
-      if (my $shipping = $import->{data}->{dispatch}->{name}) {
-        my %shipping_partnumbers = (
-                                    'Auslandsversand Einschreiben'  => { 'partnumber' => '900650'},
-                                    'Auslandsversand'               => { 'partnumber' => '900650'},
-                                    'Versandpauschale Inland'       => { 'partnumber' => '905500'},
-                                    'Kostenloser Versand'           => { 'partnumber' => '905500'},
-                                  );
-        # TODO description für Preis muss angepasst werden
-        my %shipping_pos = ( description    => $import->{data}->{dispatch}->{name},
-                             partnumber     => $shipping_partnumbers{$shipping}->{partnumber},
-                             price          => $import->{data}->{invoiceShipping},
-                             quantity       => 1,
-                             position       => $position,
-                             tax_rate       => 7,
-                             shop_trans_id  => 0,
-                             shop_order_id  => $id,
-                           );
-        my $shipping_pos_insert = SL::DB::ShopOrderItem->new(%shipping_pos);
-        $shipping_pos_insert->save;
-
-      }
-      # EOT Versandkosten DF
       my $attributes->{last_order_number} = $ordnumber;
       $self->config->assign_attributes( %{ $attributes } );
       $self->config->save;
@@ -407,7 +384,7 @@ sub get_article {
   my ($self,$partnumber) = @_;
 
   my $url = $self->url;
-  $partnumber = $::form->escape($partnumber);#shopware don't accept / in articlenumber
+  my $partnumber = $::form->escape($partnumber);#shopware don't accept / in articlenumber
   my $data = $self->connector->get("http://$url/api/articles/$partnumber?useNumberAsId=true");
   my $data_json = $data->content;
   return SL::JSON::decode_json($data_json);
