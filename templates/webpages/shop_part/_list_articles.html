@@ -6,7 +6,7 @@
 [%- PROCESS 'shop_part/_filter.html' filter=SELF.models.filtered.laundered %]
 <hr>
 <form method="post" action="controller.pl" name="shop_parts" id="shopparts">
-  <div class="data_count">[% 'Number of Data: ' | $T8 %][% SHOP_PARTS.size %]</div>
+  <div class="data_count">[% 'Number of Data: ' | $T8 %] [% SHOP_PARTS.size %]</div>
   <table id="shoplist" width="100%" >
     <thead>
       <tr class="listheading">
@@ -57,15 +57,6 @@
         [% 'Category' | $T8 %]</a>
     [% END %]
     </th>
-    <th>[% IF FORM.sort_by == 'part.microfiche' %]
-      <a href ="controller.pl?action=ShopPart/list_articles&sort_by=part.microfiche&sort_dir=[% 1 - FORM.sort_dir %]" class="sort_link">
-        [% 'Producer' | $T8 %][% IF FORM.sort_dir == 0 %]<img border="0" src="image/down.png">[% ELSE %]<img border="0" src="image/up.png">[% END %]</a>
-    [% ELSE %]
-      <a href ="controller.pl?action=ShopPart/list_articles&sort_by=part.microfiche&sort_dir=0" class="sort_link">
-        [% 'Producer' | $T8 %]</a>
-    [% END %]
-    </th>
-      <th>[% 'Action' | $T8 %]</th>
     </tr>
   </thead>
   [%- FOREACH shop_part = SHOP_PARTS %]
@@ -111,8 +102,6 @@
           [% END %]
         [% END %]
       </td>
-      <td>[% HTML.escape( shop_part.part.microfiche ) %]</td>
-      <td></td>
     <script type="text/javascript">
       $(function() {
          kivi.shop_part.update_price_n_price_source([% shop_part.id %],'[% shop_part.active_price_source %]');
