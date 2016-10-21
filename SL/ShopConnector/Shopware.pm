@@ -101,7 +101,7 @@ sub get_new_orders {
         shop_id                 => $self->config->id,
         shop_ordernumber        => $import->{data}->{number},
         shop_trans_id           => $import->{data}->{id},
-        tax_included            => ($import->{data}->{net} == 0 ? 0 : 1)
+        tax_included            => $self->config->pricetype eq "brutto" ? 1 : 0,
       );
       my $shop_order = SL::DB::ShopOrder->new(%columns);
       $shop_order->save;
@@ -112,14 +112,15 @@ sub get_new_orders {
       foreach my $pos(@positions) {
         my $price = $::form->round_amount($pos->{price},2);
 
-        my %pos_columns = ( description       => $pos->{articleName},
-                            partnumber        => $pos->{articleNumber},
-                            price             => $price,
-                            quantity          => $pos->{quantity},
-                            position          => $position,
-                            tax_rate          => $pos->{taxRate},
-                            shop_trans_id     => $pos->{articleId},
-                            shop_order_id     => $id,
+        my %pos_columns = ( description          => $pos->{articleName},
+                            partnumber           => $pos->{articleNumber},
+                            price                => $price,
+                            quantity             => $pos->{quantity},
+                            position             => $position,
+                            tax_rate             => $pos->{taxRate},
+                            shop_trans_id        => $pos->{articleId},
+                            shop_order_id        => $id,
+                            active_price_source  => $self->config->price_source,
                           );
         my $pos_insert = SL::DB::ShopOrderItem->new(%pos_columns);
         $pos_insert->save;
@@ -161,10 +162,10 @@ sub get_new_orders {
                         'ustid'                 => $shop_order->billing_vat,
                         'taxincluded_checked'   => $self->config->pricetype eq "brutto" ? 1 : 0,
                         'taxincluded'           => $self->config->pricetype eq "brutto" ? 1 : 0,
-                        'pricegroup_id'                 => (split '\/',$self->config->price_source)[1],
+                        'pricegroup_id'         => (split '\/',$self->config->price_source)[0] eq "pricegroup" ?  (split '\/',$self->config->price_source)[1] : undef,
                         'taxzone_id'            => $self->config->taxzone_id,
                         'currency'              => 1,   # TODO hardcoded
-                        'payment_id'            => 7345,# TODO hardcoded
+                        #'payment_id'            => 7345,# TODO hardcoded
                       );
         my $customer = SL::DB::Customer->new(%address);
         $customer->save;
