@@ -61,7 +61,7 @@ sub action_list {
   $self->render('shop_order/list',
                 title       => t8('ShopOrders'),
                 SHOPORDERS  => $shop_orders,
-                TOOK        => $transferred,  # is this used?
+                TOOK        => $transferred,
               );
 }
 
@@ -232,10 +232,10 @@ sub action_apply_customer {
                   # TODO in shopconfig
                         'taxincluded_checked'   => $shop->pricetype eq "brutto" ? 1 : 0,
                         'taxincluded'           => $shop->pricetype eq "brutto" ? 1 : 0,
-                        'klass'                 => (split '\/',$shop->price_source)[1],
+                        'pricegroup_id'         => (split '\/',$shop->price_source)[0] eq "pricegroup" ?  (split '\/',$shop->price_source)[1] : undef,
                         'taxzone_id'            => $shop->taxzone_id,
                         'currency'              => 1,   # TODO hardcoded
-                        'payment_id'            => 7345,# TODO hardcoded
+                        #'payment_id'            => 7345,# TODO hardcoded
                 );
   my $customer;
   if($::form->{cv_id}){
