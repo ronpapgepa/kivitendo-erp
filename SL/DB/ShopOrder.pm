@@ -43,7 +43,10 @@ sub convert_to_sales_order {
   require SL::DB::Shipto;
 
   my @items = map{
+  # TODO Flash and exit if part not found
     my $part = SL::DB::Part->new( partnumber => $_->partnumber )->load;
+    my $shop_part = SL::DB::Manager::ShopPart->get_all( where => [ shop_id => $self->shop_id, part_id => $part->id] )->[0];
+
     my @cvars = map { ($_->config->name => { value => $_->value_as_text, is_valid => $_->is_valid }) } @{ $part->cvars_by_config } ;
     my $current_order_item =
       SL::DB::OrderItem->new(parts_id               => $part->id,
@@ -52,7 +55,7 @@ sub convert_to_sales_order {
                              sellprice              => $_->price,
                              unit                   => $part->unit,
                              position               => $_->position,
-                             active_price_source    => ( $_->price == 0 ? "" : "pricegroup/908"), #TODO Hardcoded
+                             active_price_source    => $shop_part->active_price_source,
                            );
   }@{ $self->shop_order_items };
 
@@ -92,7 +95,7 @@ sub convert_to_sales_order {
                   employee_id             => $employee->id,
                   intnotes                => ($customer->notes ne "" ? "\n[Kundestammdaten]\n" . $customer->notes : ""),
                   salesman_id             => $employee->id,
-                  taxincluded             => 1,   # TODO: make variable
+                  taxincluded             => $self->tax_included,
                   payment_id              => $customer->payment_id,
                   taxzone_id              => $customer->taxzone_id,
                   currency_id             => $customer->currency_id,
