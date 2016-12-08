@@ -409,7 +409,7 @@ sub init_shop_part {
   if ($::form->{shop_part_id}) {
     SL::DB::Manager::ShopPart->find_by(id => $::form->{shop_part_id});
   } else {
-    SL::DB::ShopPart->new(shop_id => $::form->{shop_id}, part_id => $::form->{part_id});
+    SL::DB::ShopPart->new(shop_id => $::form->{shop_id}, part_id => $::form->{part_id})->load(with => ['shop']);
   };
 }
 

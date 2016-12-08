@@ -18,8 +18,9 @@
    <th>[% LxERP.t8("Action") %]</th>
   </tr>
   </thead>
-
-  [%- FOREACH shop_part = SHOP_PARTS %]
+  [% # L.dump(SELF.part) %]
+  [%- FOREACH shop_part = SELF.part.shop_parts %]
+  [% IF !shop_part.shop.obsolete %]
   <tr class="listrow">
    <td>[% HTML.escape( shop_part.shop.description ) %]</td>
    <td>[% L.html_tag('span', shop_part.active, id => 'shop_part_active_' _ shop_part.id ) %]</td>
@@ -38,6 +39,7 @@
       kivi.shop_part.update_stock([% shop_part.id %]);
     });
   </script>
+  [% END %]
   [%- END %]
   [%- FOREACH shop = SHOPS_NOT_ASSIGNED %]
   <tr>
@@ -55,27 +57,7 @@
 
 
 [% # L.dump(shop_part) %]
-<h2>[% LxERP.t8("Shopvariables and Images - valid for all shops") %]</h2>
-  [%- IF CUSTOM_VARIABLES.size %]
-[%  # L.dump(CUSTOM_VARIABLES) %]
-  <div id="shop_custom_variables">
-   <p>
-    <table>
-     [%- FOREACH var = CUSTOM_VARIABLES %]
-      [%- IF var.name.match('^shop_') %]
-       <tr>
-        [% # IF !var.partsgroup_filtered %]
-          <td align="right" valign="top">[% HTML.escape(var.description) %]</td>
-        [% # END %]
-      <td align="right" valign="top">[% var.VALID_BOX %]</td>
-        <td valign="top">[% var.HTML_CODE %]</td>
-       </tr>
-      [%- END %]
-     [%- END %]
-    </table>
-   </p>
-  </div>
-  [%- END %]
+<h2>[% LxERP.t8("Shopimages - valid for all shops") %]</h2>
   [%- IF shop_part.part_id %]
     <script type="text/javascript">
       $(function() {
