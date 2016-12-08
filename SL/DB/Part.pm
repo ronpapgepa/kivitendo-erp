@@ -58,6 +58,7 @@ __PACKAGE__->meta->add_relationships(
     type         => 'one to many',
     class        => 'SL::DB::ShopPart',
     column_map   => { id => 'part_id' },
+    manager_args => { with_objects => [ 'shop' ] },
   },
 );
 
