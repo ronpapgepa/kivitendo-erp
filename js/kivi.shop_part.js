@@ -67,7 +67,7 @@ namespace('kivi.shop_part', function(ns) {
 
   // gets all categories from the webshop
   ns.get_all_categories = function(shop_part_id) {
-    var form = $('form').serializeArray();
+    var form = new Array; //$('form').serializeArray();
     form.push( { name: 'action', value: 'ShopPart/get_categories' }
              , { name: 'shop_part_id', value: shop_part_id }
     );

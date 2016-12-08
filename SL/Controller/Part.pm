@@ -644,7 +644,7 @@ sub add {
 
 sub _set_javascript {
   my ($self) = @_;
-  $::request->layout->use_javascript("${_}.js")  for qw(kivi.Part kivi.File kivi.PriceRule ckeditor/ckeditor ckeditor/adapters/jquery);
+  $::request->layout->use_javascript("${_}.js")  for qw(kivi.Part kivi.PriceRule ckeditor/ckeditor ckeditor/adapters/jquery kivi.shop_part);
   $::request->layout->add_javascripts_inline("\$(function(){kivi.PriceRule.load_price_rules_for_part(@{[ $self->part->id ]})});") if $self->part->id;
 }
 
@@ -811,7 +811,7 @@ sub init_part {
   # used by edit, save, delete and add
 
   if ( $::form->{part}{id} ) {
-    return SL::DB::Part->new(id => $::form->{part}{id})->load(with => [ qw(makemodels prices translations partsgroup) ]);
+    return SL::DB::Part->new(id => $::form->{part}{id})->load(with => [ qw(makemodels prices translations partsgroup shop_parts shop_parts.shop) ]);
   } else {
     die "part_type missing" unless $::form->{part}{part_type};
     return SL::DB::Part->new(part_type => $::form->{part}{part_type});
