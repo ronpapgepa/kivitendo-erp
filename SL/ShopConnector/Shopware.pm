@@ -212,7 +212,9 @@ sub get_categories {
   my $data = $self->connector->get("http://$url/api/categories");
 
   my $data_json = $data->content;
+$main::lxdebug->dump(0, 'WH:DATA ',\$data_json);
   my $import = SL::JSON::decode_json($data_json);
+$main::lxdebug->dump(0, 'WH:DATA2 ',\$import);
   my @daten = @{$import->{data}};
   my %categories = map { ($_->{id} => $_) } @daten;
 
@@ -221,6 +223,7 @@ sub get_categories {
     $parent->{children} ||= [];
     push @{$parent->{children}},$_;
   }
+$main::lxdebug->dump(0, 'WH:DATA3 ',\@daten);
 
   return \@daten;
 }
