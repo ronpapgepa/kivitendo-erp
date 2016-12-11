@@ -140,6 +140,7 @@ sub action_get_categories {
 
   require SL::Shop;
   my $shop = SL::Shop->new( config => $self->shop_part->shop );
+
   my $categories = $shop->connector->get_categories;
 
   $self->js
@@ -149,6 +150,7 @@ sub action_get_categories {
       $self->render('shop_part/categories', { output => 0 }, CATEGORIES => $categories )
     )
     ->reinit_widgets;
+    $self->js->render;
 
   $self->js->render;
 }

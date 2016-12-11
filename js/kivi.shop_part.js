@@ -3,6 +3,7 @@ namespace('kivi.shop_part', function(ns) {
 
   // this is called by sub render, with a certain prerendered html (edit.html,categories.html)
   ns.shop_part_dialog = function(title, html) {
+    alert('HALLO');
     var id            = 'jqueryui_popup_dialog';
     var dialog_params = {
       id:     id,
@@ -15,6 +16,7 @@ namespace('kivi.shop_part', function(ns) {
     $('#' + id).remove();
 
     $dialog = $('<div style="display:none" id="' + id + '"></div>').appendTo('body');
+    alert('HALLO');
     $dialog.attr('title', title);
     $dialog.html(html);
     $dialog.dialog(dialog_params);
@@ -67,14 +69,16 @@ namespace('kivi.shop_part', function(ns) {
 
   // gets all categories from the webshop
   ns.get_all_categories = function(shop_part_id) {
-    var form = new Array; //$('form').serializeArray();
-    form.push( { name: 'action', value: 'ShopPart/get_categories' }
-             , { name: 'shop_part_id', value: shop_part_id }
-    );
-
-    $.post('controller.pl', form, function(data) {
+    //var form = new Array; //$('form').serializeArray();
+    //form.push( { name: 'action', value: 'ShopPart/get_categories' }
+    //         , { name: 'shop_part_id', value: shop_part_id }
+    //);
+    $.post('controller.pl', { action: 'ShopPart/get_categories', shop_part_id: shop_part_id }, function(data) {
       kivi.eval_json_result(data);
     });
+    //$.post('controller.pl', form, function(data) {
+    //  kivi.eval_json_result(data);
+    //});
   }
   // write categories in kivi DB not in the shops DB TODO: create new categories in the shops db
   ns.save_categories = function(shop_part_id, shop_id) {
