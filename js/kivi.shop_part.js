@@ -3,7 +3,6 @@ namespace('kivi.shop_part', function(ns) {
 
   // this is called by sub render, with a certain prerendered html (edit.html,categories.html)
   ns.shop_part_dialog = function(title, html) {
-    alert('HALLO');
     var id            = 'jqueryui_popup_dialog';
     var dialog_params = {
       id:     id,
@@ -16,7 +15,6 @@ namespace('kivi.shop_part', function(ns) {
     $('#' + id).remove();
 
     $dialog = $('<div style="display:none" id="' + id + '"></div>').appendTo('body');
-    alert('HALLO');
     $dialog.attr('title', title);
     $dialog.html(html);
     $dialog.dialog(dialog_params);
