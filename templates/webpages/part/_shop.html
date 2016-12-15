@@ -41,7 +41,7 @@
   </script>
   [% END %]
   [%- END %]
-  [%- FOREACH shop = SHOPS_NOT_ASSIGNED %]
+  [%- FOREACH shop = SELF.shops_not_assigned %]
   <tr>
    <td>[% HTML.escape( shop.description ) %]</td>
    <td></td>
@@ -49,7 +49,7 @@
    <td></td>
    <td></td>
    <td></td>
-   <td></td>
+   <td>[% L.button_tag("kivi.shop_part.create_shop_part(" _ id _ ", " _ shop.id _ ")", LxERP.t8("Add"))  %]</td>
   </tr>
   </thead>
   [%- END %]

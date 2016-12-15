@@ -6,6 +6,7 @@ use parent qw(SL::Controller::Base);
 use Clone qw(clone);
 use SL::DB::Part;
 use SL::DB::PartsGroup;
+use SL::DB::Shop;
 use SL::Controller::Helper::GetModels;
 use SL::Locale::String qw(t8);
 use SL::JSON;
@@ -21,7 +22,7 @@ use Carp;
 
 use Rose::Object::MakeMethods::Generic (
   'scalar --get_set_init' => [ qw(parts models part p warehouses multi_items_models
-                                  makemodels
+                                  makemodels shops_not_assigned
                                   orphaned
                                   assortment assortment_items assembly assembly_items
                                   all_pricegroups all_translations all_partsgroups all_units
@@ -929,6 +930,18 @@ sub init_all_buchungsgruppen {
     return SL::DB::Manager::Buchungsgruppe->get_all_sorted;
   } else {
     return SL::DB::Manager::Buchungsgruppe->get_all(where => [ id => $self->part->buchungsgruppen_id ]);
+  }
+}
+
+sub init_shops_not_assigned {
+  my ($self) = @_;
+
+  my @used_shop_ids = map { $_->shop->id } @{ $self->part->shop_parts };
+  if ( @used_shop_ids ) {
+    return SL::DB::Manager::Shop->get_all( query => [ obsolete => 0, '!id' => \@used_shop_ids ], sort_by => 'sortkey' );
+  }
+  else {
+    return SL::DB::Manager::Shop->get_all( query => [ obsolete => 0 ], sort_by => 'sortkey' );
   }
 }
 
