@@ -65,7 +65,7 @@
       <td>[% L.checkbox_tag('shop_parts_ids[]', checked=0, value=shop_part.id) %]</td>
       <td>[% HTML.escape( shop_part.shop.description ) %]/[% HTML.escape( shop_part.shop.connector ) %]</td>
       <td>[% HTML.escape( shop_part.part.partnumber ) %]</td>
-      <td><a href="ic.pl?id=[% shop_part.part.id %]&action=edit&callback=[% HTML.url('controller.pl?action=ShopPart/list_articles') %]#shop_variables">[% HTML.escape( shop_part.part.description ) %]</a></td>
+      <td><a href="controller.pl?part.id=[% shop_part.part.id %]&action=Part/edit&callback=[% HTML.url('controller.pl?action=ShopPart/list_articles') %]#shop_variables">[% HTML.escape( shop_part.part.description ) %]</a></td>
       <td>
         [% IF shop_part.shop_description %]
           [% 'Info' | $T8 %]
