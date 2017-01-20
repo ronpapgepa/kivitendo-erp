@@ -41,6 +41,7 @@
     [%- IF CUSTOM_VARIABLES.size %]
     <li><a href="#custom_variables">[% 'Custom Variables' | $T8 %]</a></li>
     [%- END %]
+    <li><a href="#shop_variables">[% 'Shop variables' | $T8 %]</a></li>
    </ul>
 
    <div id="basic_data">
@@ -66,6 +67,9 @@
    [%- IF SELF.part.id %]
    <div id="sales_price_information">
      [% PROCESS part/_sales_price_information.html id=SELF.part.id %]
+   </div>
+   <div id="shop_variables">
+     [% PROCESS 'part/_shop.html' %]
    </div>
    [%- END %]
 
