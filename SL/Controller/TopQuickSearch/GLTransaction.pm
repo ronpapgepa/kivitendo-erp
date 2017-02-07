@@ -10,6 +10,7 @@ use SL::DB::AccTransaction;
 use SL::Locale::String qw(t8);
 use SL::DBUtils qw(like);
 use List::Util qw(sum);
+use List::UtilsBy qw(rev_sort_by);
 
 sub auth { 'general_ledger|gl_transactions|ap_transactions|ar_transactions' }
 
@@ -45,56 +46,17 @@ sub query_autocomplete {
   my $ars = SL::DB::Manager::Invoice->get_all(        query => [ @arfilter ], limit => $limit, sort_by => 'transdate DESC', with_objects => [ 'customer' ]);
   my $aps = SL::DB::Manager::PurchaseInvoice->get_all(query => [ @apfilter ], limit => $limit, sort_by => 'transdate DESC', with_objects => [ 'vendor' ]);
 
-  my $gldata = [
-    map(
-      {
-        {
-           transdate => $_->transdate->to_kivitendo,
-           label     => $_->oneline_summary,
-           value     => '',
-           id        => 'gl.pl?action=edit&id=' . $_->id,
-        }
-      }
-      @{$gls}
-    ),
-  ];
+  my @data = rev_sort_by { $_->{'sortorder'} }
+             map {
+                   {
+                      sortorder => $_->transdate->strftime('%Y%m%d'), # transdate is only used for sorting
+                      label     => $_->oneline_summary,
+                      value     => '',
+                      id        => $_->url_link,
+                   }
+                 } @{$gls}, @{$ars}, @{$aps};
 
-  my $ardata = [
-    map(
-      {
-        {
-           transdate => $_->transdate->to_kivitendo,
-           label     => $_->oneline_summary,
-           value     => "",
-           id        => ($_->invoice ? "is" : "ar" ) . '.pl?action=edit&id=' . $_->id,
-        }
-      }
-      @{$ars}
-    ),
-  ];
-
-  my $apdata = [
-    map(
-      {
-        {
-           transdate => $_->transdate->to_kivitendo,
-           label     => $_->oneline_summary,
-           value     => "",
-           id        => ($_->invoice ? "ir" : "ap" ) . '.pl?action=edit&id=' . $_->id,
-        }
-      }
-      @{$aps}
-    ),
-  ];
-
-  my $data;
-  push(@{$data},@{$gldata});
-  push(@{$data},@{$ardata});
-  push(@{$data},@{$apdata});
-
-  @$data = reverse sort { $a->{'transdate'} cmp $b->{'transdate'} } @$data;
-
-  $data;
+  return \@data;
 }
 
 sub select_autocomplete {
