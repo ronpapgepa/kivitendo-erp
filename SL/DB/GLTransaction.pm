@@ -49,10 +49,7 @@ sub url_link {
 sub link {
   my ($self) = @_;
 
-  my $html;
-  $html   = SL::Presenter->get->gl_transaction($self, display => 'inline');
-
-  return $html;
+  return SL::Presenter->get->gl_transaction($self, display => 'inline');
 }
 
 sub invnumber {

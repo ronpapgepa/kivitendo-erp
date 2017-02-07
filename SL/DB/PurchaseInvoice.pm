@@ -102,11 +102,7 @@ sub url_link {
 sub link {
   my ($self) = @_;
 
-  my $html;
-  $html   = SL::Presenter->get->purchase_invoice($self, display => 'inline') if $self->invoice;
-  $html   = SL::Presenter->get->ap_transaction($self, display => 'inline') if !$self->invoice;
-
-  return $html;
+  return SL::Presenter->get->invoice($self, display => 'inline');
 }
 
 sub invoice_type {

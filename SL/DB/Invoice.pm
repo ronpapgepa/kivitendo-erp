@@ -581,11 +581,7 @@ sub url_link {
 sub link {
   my ($self) = @_;
 
-  my $html;
-  $html   = SL::Presenter->get->sales_invoice($self, display => 'inline') if $self->invoice;
-  $html   = SL::Presenter->get->ar_transaction($self, display => 'inline') if !$self->invoice;
-
-  return $html;
+  return SL::Presenter->get->invoice($self, display => 'inline');
 }
 
 sub mark_as_paid {
