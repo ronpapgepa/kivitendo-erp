@@ -42,6 +42,10 @@ sub oneline_summary {
   return sprintf("%s: %s %s %s (%s)", $self->abbreviation, $self->description, $self->reference, $amount, $self->transdate->to_kivitendo);
 }
 
+sub url_link {
+  return 'gl.pl?action=edit&id=' . $_[0]->id;
+}
+
 sub link {
   my ($self) = @_;
 

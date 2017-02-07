@@ -95,6 +95,10 @@ sub oneline_summary {
                                       $::form->format_amount(\%::myconfig, $self->amount,2), $self->transdate->to_kivitendo);
 }
 
+sub url_link {
+  return ($_[0]->invoice ? "ir" : "ap") . '.pl?action=edit&type=invoice&id=' . $_[0]->id;
+}
+
 sub link {
   my ($self) = @_;
 

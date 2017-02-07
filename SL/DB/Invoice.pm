@@ -574,6 +574,10 @@ sub customervendor {
   goto &customer;
 }
 
+sub url_link {
+  return ($_[0]->invoice ? "is" : "ar") . '.pl?action=edit&type=invoice&id=' . $_[0]->id;
+}
+
 sub link {
   my ($self) = @_;
 
