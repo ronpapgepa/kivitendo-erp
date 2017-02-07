@@ -39,12 +39,12 @@ sub query_autocomplete {
   my (@glfilter, @arfilter, @apfilter);
 
   push( @glfilter, (or => [ description => $descriptionquery, reference => $referencequery ] ) );
-  push( @arfilter, (or => [ invnumber   => $arinvnumberquery, name      => $namequery ] ) );
-  push( @apfilter, (or => [ invnumber   => $apinvnumberquery, name      => $namequery ] ) );
+  push( @arfilter, (or => [ invnumber   => $arinvnumberquery, name      => $namequery      ] ) );
+  push( @apfilter, (or => [ invnumber   => $apinvnumberquery, name      => $namequery      ] ) );
 
   my $gls = SL::DB::Manager::GLTransaction->get_all(  query => [ @glfilter ], limit => $limit, sort_by => 'transdate DESC');
   my $ars = SL::DB::Manager::Invoice->get_all(        query => [ @arfilter ], limit => $limit, sort_by => 'transdate DESC', with_objects => [ 'customer' ]);
-  my $aps = SL::DB::Manager::PurchaseInvoice->get_all(query => [ @apfilter ], limit => $limit, sort_by => 'transdate DESC', with_objects => [ 'vendor' ]);
+  my $aps = SL::DB::Manager::PurchaseInvoice->get_all(query => [ @apfilter ], limit => $limit, sort_by => 'transdate DESC', with_objects => [ 'vendor'   ]);
 
   my @data = rev_sort_by { $_->{'sortorder'} }
              map {
