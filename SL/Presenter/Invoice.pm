@@ -59,7 +59,7 @@ sub _is_ir_record {
   croak "Unknown display type '$params{display}'" unless $params{display} =~ m/^(?:inline|table-cell)$/;
 
   my $text = join '', (
-    $params{no_link} ? '' : '<a href="' . $controller . '.pl?action=edit&amp;type=invoice&amp;id=' . $self->escape($invoice->id) . '">',
+    $params{no_link} ? '' : '<a href="' . $self->escape($invoice->url_link) . '">',
     $self->escape($invoice->invnumber),
     $params{no_link} ? '' : '</a>',
   );
