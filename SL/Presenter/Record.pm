@@ -25,11 +25,7 @@ sub record {
   my %grouped = _group_records( [ $record ] ); # pass $record as arrayref
   my $type    = (keys %grouped)[0];
 
-  return $self->sales_invoice(   $record, %params) if $type eq 'sales_invoices';
-  return $self->purchase_invoice($record, %params) if $type eq 'purchase_invoices';
-  return $self->ar_transaction(  $record, %params) if $type eq 'ar_transactions';
-  return $self->ap_transaction(  $record, %params) if $type eq 'ap_transactions';
-  return $self->gl_transaction(  $record, %params) if $type eq 'gl_transactions';
+  return $record->presenter->render(%params);
 
   return '';
 }
@@ -364,8 +360,8 @@ sub _sales_invoice_list {
     type    => 'sales_invoice',
     columns => [
       [ $::locale->text('Invoice Date'),            'transdate'               ],
-      [ $::locale->text('Type'),                    sub { $_[0]->displayable_type } ],
-      [ $::locale->text('Invoice Number'),          sub { $self->sales_invoice($_[0], display => 'table-cell') } ],
+      [ $::locale->text('Type'),                    sub { $_[0]->presenter->type } ],
+      [ $::locale->text('Invoice Number'),          sub { $_[0]->presenter->table_cell } ],
       [ $::locale->text('Quotation Number'),        'quonumber' ],
       [ $::locale->text('Order Number'),            'ordnumber' ],
       [ $::locale->text('Customer'),                'customer'                ],
@@ -386,7 +382,7 @@ sub _purchase_invoice_list {
     type    => 'purchase_invoice',
     columns => [
       [ $::locale->text('Invoice Date'),                 'transdate'               ],
-      [ $::locale->text('Invoice Number'),               sub { $self->purchase_invoice($_[0], display => 'table-cell') } ],
+      [ $::locale->text('Invoice Number'),               sub { $_[0]->presenter->table_cell } ],
       [ $::locale->text('Request for Quotation Number'), 'quonumber' ],
       [ $::locale->text('Order Number'),                 'ordnumber' ],
       [ $::locale->text('Vendor'),                       'vendor'                 ],
@@ -407,8 +403,8 @@ sub _ar_transaction_list {
     type    => 'ar_transaction',
     columns => [
       [ $::locale->text('Invoice Date'),            'transdate'               ],
-      [ $::locale->text('Type'),                    sub { $_[0]->displayable_type } ],
-      [ $::locale->text('Invoice Number'),          sub { $self->ar_transaction($_[0], display => 'table-cell') } ],
+      [ $::locale->text('Type'),                    sub { $_[0]->presenter->type } ],
+      [ $::locale->text('Invoice Number'),          sub { $_[0]->presenter->table_cell } ],
       [ $::locale->text('Customer'),                'customer'                ],
       [ $::locale->text('Net amount'),              'netamount'               ],
       [ $::locale->text('Paid'),                    'paid'                    ],
@@ -427,7 +423,7 @@ sub _ap_transaction_list {
     type    => 'ap_transaction',
     columns => [
       [ $::locale->text('Invoice Date'),            'transdate'                      ],
-      [ $::locale->text('Invoice Number'),          sub { $self->ap_transaction($_[0 ], display => 'table-cell') } ],
+      [ $::locale->text('Invoice Number'),          sub { $_[0]->presenter->table_cell } ],
       [ $::locale->text('Vendor'),                  'vendor'                         ],
       [ $::locale->text('Net amount'),              'netamount'                      ],
       [ $::locale->text('Paid'),                    'paid'                           ],
@@ -447,7 +443,7 @@ sub _gl_transaction_list {
     columns => [
       [ $::locale->text('Date'),        'transdate'                                                    ],
       [ $::locale->text('Reference'),   'reference'                                                    ],
-      [ $::locale->text('Description'), sub { $self->gl_transaction($_[0 ], display => 'table-cell') } ],
+      [ $::locale->text('Description'), sub { $_[0]->presenter->table_cell } ],
     ],
     %params,
   );
