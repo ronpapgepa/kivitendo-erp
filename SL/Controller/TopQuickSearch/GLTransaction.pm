@@ -50,9 +50,9 @@ sub query_autocomplete {
              map {
                    {
                       sortorder => $_->transdate->strftime('%Y%m%d'), # transdate is only used for sorting
-                      label     => $_->oneline_summary,
+                      label     => $_->presenter->gist,
                       value     => '',
-                      id        => $_->url_link,
+                      id        => $_->presenter->url,
                    }
                  } @{$gls}, @{$ars}, @{$aps};
 
