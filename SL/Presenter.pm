@@ -149,6 +149,27 @@ sub escape_js {
   return SL::Presenter::EscapedText->new(text => $text, is_escaped => 1);
 }
 
+my %dispatch = (
+  invoice          => 'SL::Presenter::Invoice',
+  gl_transaction   => 'SL::Presenter::GLTransaction',
+  purchase_invoice => 'SL::Presenter::PurchaseInvoice',
+
+);
+
+sub AUTOLOAD {
+  our $AUTOLOAD;
+  my $method = $AUTOLOAD;
+
+  return if $method eq 'DESTROY';
+
+  if ($dispatch{$method}) {
+    eval "require $dispatch{$method}" or die;
+    return $dispatch{$method};
+  }
+
+  die "method '$method' not found";
+}
+
 1;
 
 __END__
