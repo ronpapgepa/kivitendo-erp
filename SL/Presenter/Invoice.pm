@@ -2,68 +2,52 @@ package SL::Presenter::Invoice;
 
 use strict;
 
-use parent qw(Exporter);
-
-use Exporter qw(import);
-our @EXPORT = qw(invoice sales_invoice ar_transaction purchase_invoice ap_transaction);
+use parent qw(SL::Presenter::Object);
+use SL::Locale::String qw(t8);
 
 use Carp;
 
-sub invoice {
-  my ($self, $invoice, %params) = @_;
+sub url {
+  my ($class, $object, %params) = @_;
 
-  if ( $invoice->is_sales ) {
-    if ( $invoice->invoice ) {
-      return _is_ir_record($self, $invoice, 'is', %params);
-    } else {
-      return _is_ir_record($self, $invoice, 'ar', %params);
-    }
-  } else {
-    if ( $invoice->invoice ) {
-      return _is_ir_record($self, $invoice, 'ir', %params);
-    } else {
-      return _is_ir_record($self, $invoice, 'ap', %params);
-    }
-  };
-};
-
-sub sales_invoice {
-  my ($self, $invoice, %params) = @_;
-
-  return _is_ir_record($self, $invoice, 'is', %params);
+  return ($object->invoice ? "is" : "ar") . '.pl?action=edit&type=invoice&id=' . $object->id;
 }
 
-sub ar_transaction {
-  my ($self, $invoice, %params) = @_;
-
-  return _is_ir_record($self, $invoice, 'ar', %params);
+sub id {
+  join ' ', grep $_, map $_[1]->$_, qw(displayable_type record_number);
 }
 
-sub purchase_invoice {
-  my ($self, $invoice, %params) = @_;
+sub gist {
+  my ($class, $self, %params) = @_;
 
-  return _is_ir_record($self, $invoice, 'ir', %params);
+  return sprintf("%s: %s %s %s (%s)", $self->abbreviation, $self->invnumber, $self->customer->name,
+                                      $::form->format_amount(\%::myconfig, $self->amount,2), $self->transdate->to_kivitendo);
 }
 
-sub ap_transaction {
-  my ($self, $invoice, %params) = @_;
+sub state {
+  my ($class, $self, %params) = @_;
 
-  return _is_ir_record($self, $invoice, 'ap', %params);
+  $self->closed ? t8('closed') : t8('open');
 }
 
-sub _is_ir_record {
-  my ($self, $invoice, $controller, %params) = @_;
+sub type {
+  my ($class, $self, %params) = @_;
 
-  $params{display} ||= 'inline';
+  return t8('AR Transaction')                         if $self->invoice_type eq 'ar_transaction';
+  return t8('Credit Note')                            if $self->invoice_type eq 'credit_note';
+  return t8('Invoice') . "(" . t8('Storno') . ")"     if $self->invoice_type eq 'invoice_storno';
+  return t8('Credit Note') . "(" . t8('Storno') . ")" if $self->invoice_type eq 'credit_note_storno';
+  return t8('Invoice');
+}
 
-  croak "Unknown display type '$params{display}'" unless $params{display} =~ m/^(?:inline|table-cell)$/;
+sub abbreviation {
+  my ($class, $self, %params) = @_;
 
-  my $text = join '', (
-    $params{no_link} ? '' : '<a href="' . $self->escape($invoice->url_link) . '">',
-    $self->escape($invoice->invnumber),
-    $params{no_link} ? '' : '</a>',
-  );
-  return $self->escaped_text($text);
+  return t8('AR Transaction (abbreviation)')         if $self->invoice_type eq 'ar_transaction';
+  return t8('Credit note (one letter abbreviation)') if $self->invoice_type eq 'credit_note';
+  return t8('Invoice (one letter abbreviation)') . "(" . t8('Storno (one letter abbreviation)') . ")" if $self->invoice_type eq 'invoice_storno';
+  return t8('Credit note (one letter abbreviation)') . "(" . t8('Storno (one letter abbreviation)') . ")"  if $self->invoice_type eq 'credit_note_storno';
+  return t8('Invoice (one letter abbreviation)');
 }
 
 1;

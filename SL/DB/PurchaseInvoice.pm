@@ -13,6 +13,7 @@ use SL::DB::Helper::LinkedRecords;
 use SL::DB::Helper::Payment qw(:ALL);
 use SL::Locale::String qw(t8);
 use Rose::DB::Object::Helpers qw(has_loaded_related forget_related);
+use SL::Presenter::PurchaseInvoice;
 
 # The calculator hasn't been adjusted for purchase invoices yet.
 # use SL::DB::Helper::PriceTaxCalculator;
@@ -78,50 +79,12 @@ sub customervendor {
   goto &vendor;
 }
 
-sub abbreviation {
-  my $self = shift;
-
-  return t8('AP Transaction (abbreviation)') if !$self->invoice && !$self->storno;
-  return t8('AP Transaction (abbreviation)') . '(' . t8('Storno (one letter abbreviation)') . ')' if !$self->invoice && $self->storno;
-  return t8('Invoice (one letter abbreviation)'). '(' . t8('Storno (one letter abbreviation)') . ')' if $self->storno;
-  return t8('Invoice (one letter abbreviation)');
-
-};
-
-sub oneline_summary {
-  my $self = shift;
-
-  return sprintf("%s: %s %s %s (%s)", $self->abbreviation, $self->invnumber, $self->vendor->name,
-                                      $::form->format_amount(\%::myconfig, $self->amount,2), $self->transdate->to_kivitendo);
-}
-
-sub url_link {
-  return ($_[0]->invoice ? "ir" : "ap") . '.pl?action=edit&type=invoice&id=' . $_[0]->id;
-}
-
-sub link {
-  my ($self) = @_;
-
-  return SL::Presenter->get->invoice($self, display => 'inline');
-}
-
 sub invoice_type {
   my ($self) = @_;
 
   return 'ap_transaction' if !$self->invoice;
   return 'purchase_invoice';
 }
-
-sub displayable_type {
-  my ($self) = @_;
-
-  return t8('AP Transaction')    if $self->invoice_type eq 'ap_transaction';
-  return t8('Purchase Invoice');
-}
-
-sub displayable_name {
-  join ' ', grep $_, map $_[0]->$_, qw(displayable_type record_number);
-};
 
 sub create_ap_row {
   my ($self, %params) = @_;
@@ -205,6 +168,13 @@ sub add_ap_amount_row {
   };
   return $acc_trans;
 };
+
+sub abbreviation     { $_[0]->presenter->abbreviation }
+sub displayable_type { $_[0]->presenter->type         }
+sub displayable_name { $_[0]->presenter->id           }
+sub link             { $_[0]->presenter->link_tag     }
+sub oneline_summary  { $_[0]->presenter->gist         }
+sub url_link         { $_[0]->presenter->url          }
 
 sub mark_as_paid {
   my ($self) = @_;

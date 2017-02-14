@@ -18,6 +18,7 @@ use SL::DB::Helper::PriceUpdater;
 use SL::DB::Helper::TransNumberGenerator;
 use SL::Locale::String qw(t8);
 use SL::DB::CustomVariable;
+use SL::Presenter::Invoice;
 
 __PACKAGE__->meta->add_relationship(
   invoiceitems => {
@@ -525,43 +526,6 @@ sub invoice_type {
   return 'invoice';
 }
 
-sub displayable_state {
-  my $self = shift;
-
-  return $self->closed ? $::locale->text('closed') : $::locale->text('open');
-}
-
-sub displayable_type {
-  my ($self) = @_;
-
-  return t8('AR Transaction')                         if $self->invoice_type eq 'ar_transaction';
-  return t8('Credit Note')                            if $self->invoice_type eq 'credit_note';
-  return t8('Invoice') . "(" . t8('Storno') . ")"     if $self->invoice_type eq 'invoice_storno';
-  return t8('Credit Note') . "(" . t8('Storno') . ")" if $self->invoice_type eq 'credit_note_storno';
-  return t8('Invoice');
-}
-
-sub displayable_name {
-  join ' ', grep $_, map $_[0]->$_, qw(displayable_type record_number);
-};
-
-sub abbreviation {
-  my ($self) = @_;
-
-  return t8('AR Transaction (abbreviation)')         if $self->invoice_type eq 'ar_transaction';
-  return t8('Credit note (one letter abbreviation)') if $self->invoice_type eq 'credit_note';
-  return t8('Invoice (one letter abbreviation)') . "(" . t8('Storno (one letter abbreviation)') . ")" if $self->invoice_type eq 'invoice_storno';
-  return t8('Credit note (one letter abbreviation)') . "(" . t8('Storno (one letter abbreviation)') . ")"  if $self->invoice_type eq 'credit_note_storno';
-  return t8('Invoice (one letter abbreviation)');
-}
-
-sub oneline_summary {
-  my $self = shift;
-
-  return sprintf("%s: %s %s %s (%s)", $self->abbreviation, $self->invnumber, $self->customer->name,
-                                      $::form->format_amount(\%::myconfig, $self->amount,2), $self->transdate->to_kivitendo);
-}
-
 sub date {
   goto &transdate;
 }
@@ -574,15 +538,13 @@ sub customervendor {
   goto &customer;
 }
 
-sub url_link {
-  return ($_[0]->invoice ? "is" : "ar") . '.pl?action=edit&type=invoice&id=' . $_[0]->id;
-}
-
-sub link {
-  my ($self) = @_;
-
-  return SL::Presenter->get->invoice($self, display => 'inline');
-}
+sub abbreviation      { $_[0]->presenter->abbreviation }
+sub displayable_name  { $_[0]->presenter->id           }
+sub displayable_state { $_[0]->presenter->state        }
+sub displayable_type  { $_[0]->presenter->type         }
+sub link              { $_[0]->presenter->link_tag;    }
+sub oneline_summary   { $_[0]->presenter->gist         }
+sub url_link          { $_[0]->presenter->url          }
 
 sub mark_as_paid {
   my ($self) = @_;
