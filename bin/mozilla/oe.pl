@@ -1174,6 +1174,12 @@ sub save_and_close {
     $::dispatcher->end_request;
   }
 
+  if ($::myconfig{mandatory_departments} && !$form->{department_id}) {
+    $form->{saved_message} = '<span class="redrow1">'.$::locale->text('You have to specify a department.').'</span>';
+    update();
+    $::dispatcher->end_request;
+  }
+
   $form->{id} = 0 if $form->{saveasnew};
 
   my ($numberfld, $ordnumber, $err);
@@ -1275,6 +1281,12 @@ sub save {
     IS->get_customer(\%myconfig, $form) if $vc eq 'customer';
     IR->get_vendor(\%myconfig, $form)   if $vc eq 'vendor';
 
+    update();
+    $::dispatcher->end_request;
+  }
+
+  if ($myconfig{mandatory_departments} && !$form->{department_id}) {
+    $form->{saved_message} = '<span class="redrow1">'.$::locale->text('You have to specify a department.').'</span>';
     update();
     $::dispatcher->end_request;
   }
