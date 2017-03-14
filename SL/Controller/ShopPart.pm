@@ -143,6 +143,7 @@ sub action_get_categories {
 
   my $categories = $shop->connector->get_categories;
 
+$main::lxdebug->dump(0, 'WH:KAT ',$categories);
   $self->js
     ->run(
       'kivi.shop_part.shop_part_dialog',
@@ -152,7 +153,6 @@ sub action_get_categories {
     ->reinit_widgets;
     $self->js->render;
 
-  $self->js->render;
 }
 
 sub action_update {
