@@ -112,12 +112,12 @@
   icon: ar
   order: 200
 - parent: ar
-  id: ar_add_requirement_spec
-  name: Add Requirement Spec
+  id: ar_requirement_specs
+  name: Requirement Specs
   order: 100
   access: requirement_spec_edit
   params:
-    action: RequirementSpec/new
+    action: RequirementSpec/list
 - parent: ar
   id: ar_add_quotation
   name: Add Quotation
@@ -203,13 +203,6 @@
   name: Reports
   icon: ar_report
   order: 900
-- parent: ar_reports
-  id: ar_reports_requirement_specs
-  name: Requirement Specs
-  order: 100
-  access: requirement_spec_edit
-  params:
-    action: RequirementSpec/list
 - parent: ar_reports
   id: ar_reports_quotations
   name: Quotations
