@@ -84,12 +84,12 @@
     filter.active: active
     filter.valid: valid
 - parent: master_data
-  id: master_data_add_requirement_spec_template
-  name: Add Requirement Spec Template
+  id: master_data_requirement_spec_templates
+  name: Requirement Spec Templates
   order: 700
   access: requirement_spec_edit
   params:
-    action: RequirementSpec/new
+    action: RequirementSpec/list
     is_template: 1
 - parent: master_data
   id: master_data_update_prices
@@ -107,19 +107,6 @@
   params:
     action: PriceRule/list
     filter.obsolete: 0
-- parent: master_data
-  id: master_data_reports
-  name: Reports
-  icon: master_data_report
-  order: 1000
-- parent: master_data_reports
-  id: master_data_reports_requirement_spec_templates
-  name: Requirement Spec Templates
-  order: 800
-  access: requirement_spec_edit
-  params:
-    action: RequirementSpec/list
-    is_template: 1
 - id: ar
   name: AR
   icon: ar

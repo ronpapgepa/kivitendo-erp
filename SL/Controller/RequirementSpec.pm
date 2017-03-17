@@ -53,9 +53,14 @@ my %sort_columns = (
 sub action_list {
   my ($self) = @_;
 
-  $self->_setup_search_action_bar;
   $self->prepare_report;
-  $self->report_generator_list_objects(report => $self->{report}, objects => $self->models->get);
+  $self->report_generator_list_objects(
+    report  => $self->{report},
+    objects => $self->models->get,
+    options => {
+      action_bar_setup_hook => sub { $self->_setup_search_action_bar(report_generator_actions => [ @_ ]) },
+    },
+  );
 }
 
 sub action_new {
@@ -714,6 +719,11 @@ sub _setup_search_action_bar {
         submit    => [ '#search_form', { action => 'RequirementSpec/list' } ],
         accesskey => 'enter',
       ],
+
+      'separator',
+
+      @{ $params{report_generator_actions} },
+
       link => [
         t8('Add'),
         link => $self->url_for(action => 'new', is_template => $::form->{is_template}),
