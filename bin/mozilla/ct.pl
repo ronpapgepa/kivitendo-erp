@@ -51,6 +51,7 @@ use POSIX qw(strftime);
 use SL::CT;
 use SL::CTI;
 use SL::CVar;
+use SL::Controller::CustomerVendor;
 use SL::Request qw(flatten);
 use SL::DB::Business;
 use SL::DB::Default;
@@ -300,8 +301,7 @@ sub list_names {
     $report->add_data($row);
   }
 
-  setup_ct_list_names_action_bar();
-  $report->generate_with_headers();
+  $report->generate_with_headers(action_bar_setup_hook => sub { setup_ct_list_names_action_bar(report_generator_actions => [ @_ ]) });
 
   $main::lxdebug->leave_sub();
 }
@@ -447,6 +447,13 @@ sub setup_ct_search_action_bar {
         submit    => [ '#form', { action => 'list_names' } ],
         accesskey => 'enter',
       ],
+
+      'separator',
+
+      link => [
+        t8('Add'),
+        link => SL::Controller::CustomerVendor->new->url_for(action => 'add', db => $::form->{db}),
+      ],
     );
   }
 }
@@ -456,10 +463,13 @@ sub setup_ct_list_names_action_bar {
 
   for my $bar ($::request->layout->get('actionbar')) {
     $bar->add(
-      action => [
+      @{ $params{report_generator_actions} },
+
+      'separator',
+
+      link => [
         t8('Add'),
-        submit    => [ '#new_form', { action => 'CustomerVendor/add' } ],
-        accesskey => 'enter',
+        link => SL::Controller::CustomerVendor->new->url_for(action => 'add', db => $::form->{db}),
       ],
     );
   }

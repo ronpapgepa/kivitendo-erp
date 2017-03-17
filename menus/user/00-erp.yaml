@@ -28,23 +28,31 @@
   icon: master_data
   order: 100
 - parent: master_data
-  id: master_data_add_customer
-  name: Add Customer
-  icon: customer_add
+  id: master_data_customers
+  name: Customers
+  icon: customer_report
   order: 100
   access: customer_vendor_edit
   params:
-    action: CustomerVendor/add
+    action: CustomerVendor/search
     db: customer
 - parent: master_data
-  id: master_data_add_vendor
-  name: Add Vendor
-  icon: vendor_add
+  id: master_data_vendors
+  name: Vendors
+  icon: vendor_report
   order: 200
   access: customer_vendor_edit
   params:
-    action: CustomerVendor/add
+    action: CustomerVendor/search
     db: vendor
+- parent: master_data
+  id: master_data_contacts
+  name: Contacts
+  order: 300
+  access: customer_vendor_edit
+  params:
+    action: CustomerVendor/search_contact
+    db: customer
 - parent: master_data
   id: master_data_add_part
   name: Add Part
@@ -114,32 +122,6 @@
   name: Reports
   icon: master_data_report
   order: 1000
-- parent: master_data_reports
-  id: master_data_reports_customers
-  name: Customers
-  icon: customer_report
-  order: 100
-  access: customer_vendor_edit
-  params:
-    action: CustomerVendor/search
-    db: customer
-- parent: master_data_reports
-  id: master_data_reports_vendors
-  name: Vendors
-  icon: vendor_report
-  order: 200
-  access: customer_vendor_edit
-  params:
-    action: CustomerVendor/search
-    db: vendor
-- parent: master_data_reports
-  id: master_data_reports_contacts
-  name: Contacts
-  order: 300
-  access: customer_vendor_edit
-  params:
-    action: CustomerVendor/search_contact
-    db: customer
 - parent: master_data_reports
   id: master_data_reports_articles
   name: Articles
