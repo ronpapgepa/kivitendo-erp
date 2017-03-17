@@ -119,24 +119,24 @@
   params:
     action: RequirementSpec/list
 - parent: ar
-  id: ar_add_quotation
-  name: Add Quotation
-  icon: quotation_add
+  id: ar_quotations
+  name: Quotations
+  icon: report_quotations
   order: 200
   access: sales_quotation_edit
   module: oe.pl
   params:
-    action: add
+    action: search
     type: sales_quotation
 - parent: ar
-  id: ar_add_sales_order
-  name: Add Sales Order
-  icon: sales_order_add
+  id: ar_sales_orders
+  name: Sales Orders
+  icon: report_sales_orders
   order: 300
   access: sales_order_edit
   module: oe.pl
   params:
-    action: add
+    action: search
     type: sales_order
 - parent: ar
   id: ar_add_delivery_order
@@ -203,26 +203,6 @@
   name: Reports
   icon: ar_report
   order: 900
-- parent: ar_reports
-  id: ar_reports_quotations
-  name: Quotations
-  icon: report_quotations
-  order: 200
-  access: sales_quotation_edit
-  module: oe.pl
-  params:
-    action: search
-    type: sales_quotation
-- parent: ar_reports
-  id: ar_reports_sales_orders
-  name: Sales Orders
-  icon: report_sales_orders
-  order: 300
-  access: sales_order_edit
-  module: oe.pl
-  params:
-    action: search
-    type: sales_order
 - parent: ar_reports
   id: ar_reports_delivery_orders
   name: Delivery Orders

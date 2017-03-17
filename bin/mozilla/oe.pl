@@ -441,6 +441,13 @@ sub setup_oe_search_action_bar {
         submit    => [ '#form' ],
         accesskey => 'enter',
       ],
+
+      'separator',
+
+      link => [
+        t8('Add'),
+        link => 'oe.pl?action=add&type=' . E($::form->{type}),
+      ],
     );
   }
 }
@@ -448,16 +455,25 @@ sub setup_oe_search_action_bar {
 sub setup_oe_orders_action_bar {
   my %params = @_;
 
-  return unless $::form->{type} eq 'sales_order';
-
   for my $bar ($::request->layout->get('actionbar')) {
     $bar->add(
-      action => [
-        t8('New sales order'),
-        submit    => [ '#form', { action => 'edit' } ],
-        checks    => [ [ 'kivi.check_if_entries_selected', '[name^=multi_id_]' ] ],
-        accesskey => 'enter',
-      ],
+      @{ $params{report_generator_actions} },
+
+      'separator',
+
+      combobox => [
+        link => [
+          t8('Add'),
+          link => 'oe.pl?action=add&type=' . E($::form->{type}),
+        ],
+
+        action => [
+          t8('Merge selected entries into new order'),
+          submit  => [ '#form', { action => 'edit' } ],
+          checks  => [ [ 'kivi.check_if_entries_selected', '[name^=multi_id_]' ] ],
+          only_if => $::form->{type} eq 'sales_order',
+        ],
+      ], # end of combobox "add"
     );
   }
 }
@@ -1266,8 +1282,7 @@ sub orders {
   $report->add_separator();
   $report->add_data(create_subtotal_row(\%totals, \@columns, \%column_alignment, \@subtotal_columns, 'listtotal'));
 
-  setup_oe_orders_action_bar();
-  $report->generate_with_headers();
+  $report->generate_with_headers(action_bar_setup_hook => sub { setup_oe_orders_action_bar(report_generator_actions => \@_) });
 
   $main::lxdebug->leave_sub();
 }
