@@ -37,6 +37,7 @@ use Carp;
 use POSIX qw(strftime);
 
 use SL::DB::Order;
+use SL::Controller::Order;
 use SL::DO;
 use SL::FU;
 use SL::OE;
@@ -465,6 +466,12 @@ sub setup_oe_orders_action_bar {
         link => [
           t8('Add'),
           link => 'oe.pl?action=add&type=' . E($::form->{type}),
+        ],
+
+        link => [
+          t8('Add (experimental)'),
+          link    => SL::Controller::Order->new->url_for(action => 'add', type => $::form->{type}),
+          only_if => $::form->{type} =~ m{_order$},
         ],
 
         action => [
