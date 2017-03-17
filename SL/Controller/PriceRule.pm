@@ -34,11 +34,17 @@ sub action_list {
 
   my $price_rules = $self->models->get;
 
-  $self->setup_search_action_bar;
-
   $self->prepare_report;
 
-  $self->report_generator_list_objects(report => $self->{report}, objects => $price_rules, $::form->{inline} ? (layout => 0, header => 0) : ());
+  $self->report_generator_list_objects(
+    report  => $self->{report},
+    objects => $price_rules,
+    layout  => !$::form->{inline},
+    header  => !$::form->{inline},
+    options => {
+      action_bar_setup_hook => sub { $self->setup_search_action_bar(report_generator_actions => [ @_ ]) },
+    },
+  );
 }
 
 sub action_new {
@@ -315,6 +321,10 @@ sub setup_search_action_bar {
         submit    => [ '#search_form', { action => 'PriceRule/list' } ],
         accesskey => 'enter',
       ],
+
+      'separator',
+
+      @{ $params{report_generator_actions} },
 
       combobox => [
         action => [
