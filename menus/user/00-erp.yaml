@@ -74,13 +74,15 @@
     action: search
     searchitems: article
 - parent: master_data
-  id: master_data_add_project
-  name: Add Project
-  icon: project_add
+  id: master_data_projects
+  name: Projects
+  icon: project_report
   order: 600
   access: project_edit
   params:
-    action: Project/new
+    action: Project/list
+    filter.active: active
+    filter.valid: valid
 - parent: master_data
   id: master_data_add_requirement_spec_template
   name: Add Requirement Spec Template
@@ -110,16 +112,6 @@
   name: Reports
   icon: master_data_report
   order: 1000
-- parent: master_data_reports
-  id: master_data_reports_projects
-  name: Projects
-  icon: project_report
-  order: 700
-  access: project_edit
-  params:
-    action: Project/list
-    filter.active: active
-    filter.valid: valid
 - parent: master_data_reports
   id: master_data_reports_requirement_spec_templates
   name: Requirement Spec Templates

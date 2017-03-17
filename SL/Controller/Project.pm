@@ -59,13 +59,17 @@ sub action_search {
 sub action_list {
   my ($self) = @_;
 
-  $self->setup_search_action_bar;
-
   $self->make_filter_summary;
 
   $self->prepare_report;
 
-  $self->report_generator_list_objects(report => $self->{report}, objects => $self->models->get);
+  $self->report_generator_list_objects(
+    report  => $self->{report},
+    objects => $self->models->get,
+    options => {
+      action_bar_setup_hook => sub { $self->setup_search_action_bar(report_generator_actions => [ @_ ]) },
+    },
+  );
 }
 
 sub action_new {
@@ -426,6 +430,11 @@ sub setup_search_action_bar {
         submit    => [ '#search_form', { action => 'Project/list' } ],
         accesskey => 'enter',
       ],
+
+      @{ $params{report_generator_actions} || [] },
+
+      'separator',
+
       link => [
         t8('Add'),
         link => $self->url_for(action => 'new'),
