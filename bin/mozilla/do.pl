@@ -365,6 +365,14 @@ sub setup_do_search_action_bar {
         submit    => [ '#form' ],
         accesskey => 'enter',
       ],
+
+      'separator',
+
+      link => [
+        t8('Add'),
+        link   => 'do.pl?action=add&type=' . E($::form->{type}),
+        not_if => ($::form->{type} eq 'purchase_delivery_order') && !$::instance_conf->get_allow_new_purchase_delivery_order,
+      ],
     );
   }
 }
@@ -375,15 +383,27 @@ sub setup_do_orders_action_bar {
   for my $bar ($::request->layout->get('actionbar')) {
     $bar->add(
       action => [
-        t8('New invoice'),
-        submit    => [ '#form', { action => 'invoice_multi' } ],
-        checks    => [ [ 'kivi.check_if_entries_selected', '#form tbody input[type=checkbox]' ] ],
-        accesskey => 'enter',
-      ],
-      action => [
         t8('Print'),
         call   => [ 'kivi.SalesPurchase.show_print_dialog', 'js:kivi.MassDeliveryOrderPrint.submitMultiOrders' ],
         checks => [ [ 'kivi.check_if_entries_selected', '#form tbody input[type=checkbox]' ] ],
+      ],
+
+      'separator',
+
+      @{ $params{report_generator_actions} },
+
+      combobox => [
+        link => [
+          t8('Add'),
+          link   => 'do.pl?action=add&type=' . E($::form->{type}),
+          not_if => ($::form->{type} eq 'purchase_delivery_order') && !$::instance_conf->get_allow_new_purchase_delivery_order,
+        ],
+
+        action => [
+          t8('Merge selected entries into new invoice'),
+          submit => [ '#form', { action => 'invoice_multi' } ],
+          checks => [ [ 'kivi.check_if_entries_selected', '#form tbody input[type=checkbox]' ] ],
+        ],
       ],
     );
   }
@@ -856,9 +876,7 @@ sub orders {
     $idx++;
   }
 
-  setup_do_orders_action_bar();
-
-  $report->generate_with_headers();
+  $report->generate_with_headers(action_bar_setup_hook => sub { setup_do_orders_action_bar(report_generator_actions => \@_) });
 
   $main::lxdebug->leave_sub();
 }

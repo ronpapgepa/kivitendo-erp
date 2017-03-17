@@ -139,14 +139,14 @@
     action: search
     type: sales_order
 - parent: ar
-  id: ar_add_delivery_order
-  name: Add Delivery Order
-  icon: delivery_order_add
+  id: ar_delivery_orders
+  name: Delivery Orders
+  icon: delivery_order_report
   order: 400
   access: sales_delivery_order_edit
   module: do.pl
   params:
-    action: add
+    action: search
     type: sales_delivery_order
 - parent: ar
   id: ar_add_sales_invoice
@@ -203,16 +203,6 @@
   name: Reports
   icon: ar_report
   order: 900
-- parent: ar_reports
-  id: ar_reports_delivery_orders
-  name: Delivery Orders
-  icon: delivery_order_report
-  order: 400
-  access: sales_delivery_order_edit
-  module: do.pl
-  params:
-    action: search
-    type: sales_delivery_order
 - parent: ar_reports
   id: ar_reports_invoices_credit_notes_ar_transactions
   name: Invoices, Credit Notes & AR Transactions
@@ -304,13 +294,13 @@
     action: search
     type: purchase_order
 - parent: ap
-  id: ap_add_delivery_note
-  name: Add Delivery Note
+  id: aports_delivery_orders
+  name: Delivery Orders
   order: 300
-  access: client/allow_new_purchase_delivery_order & purchase_delivery_order_edit
+  access: purchase_delivery_order_edit
   module: do.pl
   params:
-    action: add
+    action: search
     type: purchase_delivery_order
 - parent: ap
   id: ap_add_vendor_invoice
@@ -334,15 +324,6 @@
   name: Reports
   icon: ap_report
   order: 500
-- parent: ap_reports
-  id: ap_reports_delivery_orders
-  name: Delivery Orders
-  order: 300
-  access: purchase_delivery_order_edit
-  module: do.pl
-  params:
-    action: search
-    type: purchase_delivery_order
 - parent: ap_reports
   id: ap_reports_vendor_invoices_ap_transactions
   name: Vendor Invoices & AP Transactions
