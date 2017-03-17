@@ -54,37 +54,25 @@
     action: CustomerVendor/search_contact
     db: customer
 - parent: master_data
-  id: master_data_add_part
-  name: Add Part
-  icon: part_add
-  order: 300
-  access: part_service_assembly_edit
-  params:
-    action: Part/add_part
-- parent: master_data
-  id: master_data_add_service
-  name: Add Service
-  icon: service_add
+  id: master_data_articles
+  name: Articles
+  icon: part_report
   order: 400
-  access: part_service_assembly_edit
+  access: part_service_assembly_details
+  module: ic.pl
   params:
-    action: Part/add_service
+    action: search
+    searchitems: article
 - parent: master_data
-  id: master_data_add_assembly
-  name: Add Assembly
-  icon: assembly_add
+  id: master_data_articles
+  name: Articles
+  icon: part_report
   order: 500
-  access: part_service_assembly_edit
+  access: part_service_assembly_details
+  module: ic.pl
   params:
-    action: Part/add_assembly
-- parent: master_data
-  id: master_data_add_assortment
-  name: Add Assortment
-  icon: assortment_add
-  order: 550
-  access: part_service_assembly_edit
-  params:
-    action: Part/add_assortment
+    action: search
+    searchitems: article
 - parent: master_data
   id: master_data_add_project
   name: Add Project
@@ -122,16 +110,6 @@
   name: Reports
   icon: master_data_report
   order: 1000
-- parent: master_data_reports
-  id: master_data_reports_articles
-  name: Articles
-  icon: part_report
-  order: 500
-  access: part_service_assembly_details
-  module: ic.pl
-  params:
-    action: search
-    searchitems: article
 - parent: master_data_reports
   id: master_data_reports_projects
   name: Projects

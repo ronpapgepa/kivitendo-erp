@@ -38,6 +38,7 @@ use List::MoreUtils qw(any);
 
 use SL::AM;
 use SL::CVar;
+use SL::Controller::Part;
 use SL::IC;
 use SL::Helper::Flash qw(flash);
 use SL::HTML::Util;
@@ -587,14 +588,16 @@ sub generate_report {
     $report->add_data($row);
   }
 
-  setup_ic_generate_report_action_bar();
-  $report->generate_with_headers();
+  $report->generate_with_headers(action_bar_setup_hook => sub { setup_ic_generate_report_action_bar(report_generator_actions => [ @_ ]) });
 
   $lxdebug->leave_sub();
 }    #end generate_report
 
 sub setup_ic_search_action_bar {
   my %params = @_;
+
+  my $have_access = $::auth->assert('part_service_assembly_edit', 1);
+  my $controller  = SL::Controller::Part->new;
 
   for my $bar ($::request->layout->get('actionbar')) {
     $bar->add(
@@ -608,6 +611,32 @@ sub setup_ic_search_action_bar {
         t8('TOP100'),
         submit => [ '#form', { action => 'top100' } ],
       ],
+
+      'separator',
+
+      combobox => [
+        action => [ t8('Add') ],
+        link => [
+          t8('Add Part'),
+          link     => $controller->url_for(action => 'add_part'),
+          disabled => $have_access ? undef : t8('You do not have the permissions to access this function.'),
+        ],
+        link => [
+          t8('Add Service'),
+          link     => $controller->url_for(action => 'add_service'),
+          disabled => $have_access ? undef : t8('You do not have the permissions to access this function.'),
+        ],
+        link => [
+          t8('Add Assembly'),
+          link     => $controller->url_for(action => 'add_assembly'),
+          disabled => $have_access ? undef : t8('You do not have the permissions to access this function.'),
+        ],
+        link => [
+          t8('Add Assortment'),
+          link     => $controller->url_for(action => 'add_assortment'),
+          disabled => $have_access ? undef : t8('You do not have the permissions to access this function.'),
+        ],
+      ], # end of combobox "Add"
     );
   }
 }
@@ -615,30 +644,38 @@ sub setup_ic_search_action_bar {
 sub setup_ic_generate_report_action_bar {
   my %params = @_;
 
+  my $have_access = $::auth->assert('part_service_assembly_edit', 1);
+  my $controller  = SL::Controller::Part->new;
+
   for my $bar ($::request->layout->get('actionbar')) {
     $bar->add(
+      @{ $params{report_generator_actions} },
+
+      'separator',
+
       combobox => [
-        action => [
-          t8('Add'),
-        ],
-        action => [
+        action => [ t8('Add') ],
+        link => [
           t8('Add Part'),
-          submit    => [ '#new_form', { action => 'Part/add_part' } ],
-          accesskey => 'enter',
+          link     => $controller->url_for(action => 'add_part'),
+          disabled => $have_access ? undef : t8('You do not have the permissions to access this function.'),
         ],
-        action => [
+        link => [
           t8('Add Service'),
-          submit    => [ '#new_form', { action => 'Part/add_service' } ],
+          link     => $controller->url_for(action => 'add_service'),
+          disabled => $have_access ? undef : t8('You do not have the permissions to access this function.'),
         ],
-        action => [
+        link => [
           t8('Add Assembly'),
-          submit    => [ '#new_form', { action => 'Part/add_assembly' } ],
+          link     => $controller->url_for(action => 'add_assembly'),
+          disabled => $have_access ? undef : t8('You do not have the permissions to access this function.'),
         ],
-        action => [
+        link => [
           t8('Add Assortment'),
-          submit    => [ '#new_form', { action => 'Part/add_assortment' } ],
+          link     => $controller->url_for(action => 'add_assortment'),
+          disabled => $have_access ? undef : t8('You do not have the permissions to access this function.'),
         ],
-      ], # end of combobox "Add part"
+      ], # end of combobox "Add"
     );
   }
 }
