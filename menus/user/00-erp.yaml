@@ -284,24 +284,24 @@
   icon: ap
   order: 300
 - parent: ap
-  id: ap_add_rfq
-  name: Add RFQ
-  icon: rfq_add
+  id: ap_rfqs
+  name: RFQs
+  icon: rfq_report
   order: 100
   access: request_quotation_edit
   module: oe.pl
   params:
-    action: add
+    action: search
     type: request_quotation
 - parent: ap
-  id: ap_add_purchase_order
-  name: Add Purchase Order
-  icon: purchase_order_add
+  id: ap_purchase_orders
+  name: Purchase Orders
+  icon: purchase_order_report
   order: 200
   access: purchase_order_edit
   module: oe.pl
   params:
-    action: add
+    action: search
     type: purchase_order
 - parent: ap
   id: ap_add_delivery_note
@@ -334,26 +334,6 @@
   name: Reports
   icon: ap_report
   order: 500
-- parent: ap_reports
-  id: ap_reports_rfqs
-  name: RFQs
-  icon: rfq_report
-  order: 100
-  access: request_quotation_edit
-  module: oe.pl
-  params:
-    action: search
-    type: request_quotation
-- parent: ap_reports
-  id: ap_reports_purchase_orders
-  name: Purchase Orders
-  icon: purchase_order_report
-  order: 200
-  access: purchase_order_edit
-  module: oe.pl
-  params:
-    action: search
-    type: purchase_order
 - parent: ap_reports
   id: ap_reports_delivery_orders
   name: Delivery Orders

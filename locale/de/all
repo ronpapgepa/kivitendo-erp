@@ -172,7 +172,6 @@ $self->{texts} = {
   'Add Purchase Order'          => 'Lieferantenauftrag erfassen',
   'Add Purchase Order (experimental)' => 'Lieferantenauftrag erfassen (experimentell)',
   'Add Quotation'               => 'Angebot erfassen',
-  'Add RFQ'                     => 'Preisanfrage erfassen',
   'Add Request for Quotation'   => 'Anfrage erfassen',
   'Add Sales Delivery Order'    => 'Lieferschein (Verkauf) erfassen',
   'Add Sales Invoice'           => 'Rechnung erfassen',
