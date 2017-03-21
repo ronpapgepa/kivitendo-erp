@@ -168,14 +168,6 @@
   params:
     action: add
 - parent: ar
-  id: ar_add_letter
-  name: Add Letter
-  order: 800
-  access: sales_letter_edit
-  params:
-    action: Letter/add
-    is_sales: 1
-- parent: ar
   id: ar_invoices
   name: Invoices
   icon: sales_invoice_add
@@ -188,6 +180,14 @@
   params:
     noshow: 1
     action: MassInvoiceCreatePrint/list_sales_delivery_orders
+- parent: ar
+  id: ar_letters
+  name: Letters
+  order: 900
+  access: sales_letter_report
+  params:
+    action: Letter/list
+    is_sales: 1
 - parent: ar
   id: ar_reports
   name: Reports
@@ -241,14 +241,6 @@
   access: sales_order_edit
   params:
     action: FinancialControllingReport/list
-- parent: ar_reports
-  id: ar_reports_letters
-  name: Letters
-  order: 1100
-  access: sales_letter_report
-  params:
-    action: Letter/list
-    is_sales: 1
 - id: ap
   name: AP
   icon: ap
@@ -292,12 +284,12 @@
     action: add
     type: invoice
 - parent: ap
-  id: ap_add_letter
-  name: Add Letter
+  id: ap_letters
+  name: Letters
   order: 450
-  access: purchase_letter_edit
+  access: purchase_letter_report
   params:
-    action: Letter/add
+    action: Letter/list
     is_sales: 0
 - parent: ap
   id: ap_reports
@@ -328,14 +320,6 @@
   params:
     action: DeliveryValueReport/list
     vc: vendor
-- parent: ap_reports
-  id: ap_reports_letters
-  name: Letters
-  order: 1100
-  access: purchase_letter_report
-  params:
-    action: Letter/list
-    is_sales: 0
 - id: warehouse
   name: Warehouse
   icon: warehouse

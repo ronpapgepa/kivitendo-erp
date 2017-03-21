@@ -171,12 +171,19 @@ sub action_delete_letter_drafts {
 sub action_list {
   my ($self, %params) = @_;
 
-  $self->setup_list_action_bar;
   $self->make_filter_summary;
   $self->prepare_report;
 
   my $letters = $self->models->get;
-  $self->report_generator_list_objects(report => $self->{report}, objects => $letters);
+  $self->report_generator_list_objects(
+    report  => $self->{report},
+    objects => $letters,
+    options => {
+      action_bar_setup_hook => sub { $self->setup_list_action_bar(report_generator_actions => \@_) },
+    },
+  );
+
+  $self->setup_list_action_bar;
 
 }
 
@@ -650,6 +657,8 @@ sub setup_display_action_bar {
         disabled => !$self->letter->id ? t8('The object has not been saved yet.') : undef,
       ],
 
+      'separator',
+
       combobox => [
         action => [ t8('Export') ],
         action => [
@@ -676,6 +685,15 @@ sub setup_list_action_bar {
         t8('Update'),
         submit    => [ '#search_form', { action => 'Letter/list' } ],
         accesskey => 'enter',
+      ],
+
+      'separator',
+
+      @{ $params{report_generator_actions} },
+
+      link => [
+        t8('Add'),
+        link => $self->url_for(action => 'add', is_sales => $self->is_sales),
       ],
     );
   }
