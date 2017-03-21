@@ -605,6 +605,13 @@ sub setup_dn_search_action_bar {
         submit    => [ '#form', { action => "show_dunning" } ],
         accesskey => 'enter',
       ],
+
+      'separator',
+
+      link => [
+        t8('Add'),
+        link => 'dn.pl?action=add',
+      ],
     );
   }
 }

@@ -159,14 +159,14 @@
     action: search
     nextsub: ar_transactions
 - parent: ar
-  id: ar_add_dunning
-  name: Add Dunning
-  icon: dunning_add
+  id: ar_dunnings
+  name: Dunnings
+  icon: dunnings_report
   order: 600
   access: dunning_edit
   module: dn.pl
   params:
-    action: add
+    action: search
 - parent: ar
   id: ar_invoices_mass_add_sales_invoice
   name: Mass Create Print Sales Invoice from Delivery Order
@@ -197,15 +197,6 @@
   params:
     action: search_invoice
     nextsub: invoice_transactions
-- parent: ar_reports
-  id: ar_reports_dunnings
-  name: Dunnings
-  icon: dunnings_report
-  order: 700
-  access: dunning_edit
-  module: dn.pl
-  params:
-    action: search
 - parent: ar_reports
   id: ar_order_item_search
   name: Order item search
