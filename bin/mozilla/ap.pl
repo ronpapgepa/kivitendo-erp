@@ -1106,8 +1106,7 @@ sub ap_transactions {
   $report->add_separator();
   $report->add_data(create_subtotal_row(\%totals, \@columns, \%column_alignment, \@subtotal_columns, 'listtotal'));
 
-  setup_ap_transactions_action_bar();
-  $report->generate_with_headers();
+  $report->generate_with_headers(action_bar_setup_hook => sub { setup_ap_transactions_action_bar(report_generator_actions => \@_) });
 
   $main::lxdebug->leave_sub();
 }
@@ -1155,6 +1154,22 @@ sub setup_ap_search_action_bar {
         submit    => [ '#form', { action => "ap_transactions" } ],
         accesskey => 'enter',
       ],
+
+      'separator',
+
+      combobox => [
+        action => [ t8('Add') ],
+        link => [
+          t8('Purchase Invoice'),
+          link     => [ 'ir.pl?action=add' ],
+          disabled => $::auth->assert('vendor_invoice_edit', 1) ? undef : t8('You do not have the permissions to access this function.'),
+        ],
+        link => [
+          t8('AP Transaction'),
+          link     => [ 'ap.pl?action=add' ],
+          disabled => $::auth->assert('ap_transactions', 1) ? undef : t8('You do not have the permissions to access this function.'),
+        ],
+      ], # end of combobox "Add"
     );
   }
 }
@@ -1164,15 +1179,19 @@ sub setup_ap_transactions_action_bar {
 
   for my $bar ($::request->layout->get('actionbar')) {
     $bar->add(
+      @{ $params{report_generator_actions} },
+
       combobox => [
         action => [ t8('Add') ],
         link => [
           t8('Purchase Invoice'),
-          link => [ 'ir.pl?action=add' ],
+          link     => [ 'ir.pl?action=add' ],
+          disabled => $::auth->assert('vendor_invoice_edit', 1) ? undef : t8('You do not have the permissions to access this function.'),
         ],
         link => [
           t8('AP Transaction'),
-          link => [ 'ap.pl?action=add' ],
+          link     => [ 'ap.pl?action=add' ],
+          disabled => $::auth->assert('ap_transactions', 1) ? undef : t8('You do not have the permissions to access this function.'),
         ],
       ], # end of combobox "Add"
     );

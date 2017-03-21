@@ -261,14 +261,13 @@
     action: search
     type: purchase_delivery_order
 - parent: ap
-  id: ap_add_vendor_invoice
-  name: Add Vendor Invoice
+  id: ap_vendor_invoices_ap_transactions
+  name: Vendor Invoices & AP Transactions
   order: 400
-  access: client/allow_new_purchase_invoice & vendor_invoice_edit
-  module: ir.pl
+  access: vendor_invoice_edit
+  module: ap.pl
   params:
-    action: add
-    type: invoice
+    action: search
 - parent: ap
   id: ap_letters
   name: Letters
@@ -282,14 +281,6 @@
   name: Reports
   icon: ap_report
   order: 500
-- parent: ap_reports
-  id: ap_reports_vendor_invoices_ap_transactions
-  name: Vendor Invoices & AP Transactions
-  order: 400
-  access: vendor_invoice_edit
-  module: ap.pl
-  params:
-    action: search
 - parent: ap_reports
   id: ap_reports_delivery_plan
   name: Delivery Plan
@@ -384,15 +375,6 @@
   order: 100
   access: gl_transactions
   module: gl.pl
-  params:
-    action: add
-- parent: general_ledger
-  id: general_ledger_add_ap_transaction
-  name: Add AP Transaction
-  icon: ap_transaction_add
-  order: 300
-  access: ap_transactions
-  module: ap.pl
   params:
     action: add
 - parent: general_ledger
