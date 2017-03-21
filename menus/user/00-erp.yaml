@@ -149,30 +149,20 @@
     action: search
     type: sales_delivery_order
 - parent: ar
-  id: ar_add_sales_invoice
-  name: Add Sales Invoice
-  icon: sales_invoice_add
+  id: ar_invoices_credit_notes_ar_transactions
+  name: Invoices, Credit Notes & AR Transactions
+  icon: invoices_report
   order: 500
   access: invoice_edit
-  module: is.pl
+  module: ar.pl
   params:
-    action: add
-    type: invoice
-- parent: ar
-  id: ar_add_credit_note
-  name: Add Credit Note
-  icon: credit_note_add
-  order: 600
-  access: invoice_edit
-  module: is.pl
-  params:
-    action: add
-    type: credit_note
+    action: search
+    nextsub: ar_transactions
 - parent: ar
   id: ar_add_dunning
   name: Add Dunning
   icon: dunning_add
-  order: 700
+  order: 600
   access: dunning_edit
   module: dn.pl
   params:
@@ -203,16 +193,6 @@
   name: Reports
   icon: ar_report
   order: 900
-- parent: ar_reports
-  id: ar_reports_invoices_credit_notes_ar_transactions
-  name: Invoices, Credit Notes & AR Transactions
-  icon: invoices_report
-  order: 500
-  access: invoice_edit
-  module: ar.pl
-  params:
-    action: search
-    nextsub: ar_transactions
 - parent: ar_reports
   id: ar_reports_sales_report
   name: Sales Report
@@ -434,15 +414,6 @@
   order: 100
   access: gl_transactions
   module: gl.pl
-  params:
-    action: add
-- parent: general_ledger
-  id: general_ledger_add_ar_transaction
-  name: Add AR Transaction
-  icon: ar_transaction_add
-  order: 200
-  access: ar_transactions
-  module: ar.pl
   params:
     action: add
 - parent: general_ledger

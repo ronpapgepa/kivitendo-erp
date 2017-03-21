@@ -873,6 +873,30 @@ sub setup_ar_search_action_bar {
         submit    => [ '#form' ],
         accesskey => 'enter',
       ],
+
+      'separator',
+
+      combobox => [
+        action => [ t8('Add') ],
+
+        link => [
+          t8('Add Sales Invoice'),
+          link     => 'is.pl?action=add&type=invoice',
+          disabled => $::auth->assert('invoice_edit', 1) ? undef : t8('You do not have the permissions to access this function.'),
+        ],
+
+        link => [
+          t8('Add Credit Note'),
+          link     => 'is.pl?action=add&type=credit_note',
+          disabled => $::auth->assert('invoice_edit', 1) ? undef : t8('You do not have the permissions to access this function.'),
+        ],
+
+        link => [
+          t8('Add AR Transaction'),
+          link     => 'ar.pl?action=add',
+          disabled => $::auth->assert('ar_transactions', 1) ? undef : t8('You do not have the permissions to access this function.'),
+        ],
+      ], # end of combobox "add"
     );
   }
 }
@@ -888,17 +912,45 @@ sub setup_ar_transactions_action_bar {
         disabled => !$params{num_rows} ? $::locale->text('The report doesn\'t contain entries.') : undef,
       ],
 
+      @{ $params{report_generator_actions} },
+
+      'separator',
+
       combobox => [
-        action => [ $::locale->text('Create new') ],
-        action => [
-          $::locale->text('AR Transaction'),
-          submit => [ '#create_new_form', { action => 'ar_transaction' } ],
+        action => [ t8('Add') ],
+
+        link => [
+          t8('Add Sales Invoice'),
+          link     => 'is.pl?action=add&type=invoice',
+          disabled => $::auth->assert('invoice_edit', 1) ? undef : t8('You do not have the permissions to access this function.'),
         ],
-        action => [
-          $::locale->text('Sales Invoice'),
-          submit => [ '#create_new_form', { action => 'sales_invoice' } ],
+
+        link => [
+          t8('Add Credit Note'),
+          link     => 'is.pl?action=add&type=credit_note',
+          disabled => $::auth->assert('invoice_edit', 1) ? undef : t8('You do not have the permissions to access this function.'),
         ],
-      ], # end of combobox "Create new"
+
+        link => [
+          t8('Add AR Transaction'),
+          link     => 'ar.pl?action=add',
+          disabled => $::auth->assert('ar_transactions', 1) ? undef : t8('You do not have the permissions to access this function.'),
+        ],
+
+        action => [
+          $::locale->text('Merge selected entries into new invoice'),
+          checks   => [ [ 'kivi.check_if_entries_selected', '[type=checkbox][name^=id]' ] ],
+          submit   => [ '#create_new_form', { action => 'sales_invoice' } ],
+          disabled => $::auth->assert('invoice_edit', 1) ? undef : t8('You do not have the permissions to access this function.'),
+        ],
+
+        action => [
+          $::locale->text('Merge selected entries into new AR transaction'),
+          checks   => [ [ 'kivi.check_if_entries_selected', '[type=checkbox][name^=id]' ] ],
+          submit   => [ '#create_new_form', { action => 'ar_transaction' } ],
+          disabled => $::auth->assert('ar_transactions', 1) ? undef : t8('You do not have the permissions to access this function.'),
+        ],
+      ], # end of combobox "add"
     );
   }
 }
@@ -1199,9 +1251,8 @@ sub ar_transactions {
   $report->add_data(create_subtotal_row(\%totals, \@columns, \%column_alignment, \@subtotal_columns, 'listtotal'));
 
   $::request->layout->add_javascripts('kivi.MassInvoiceCreatePrint.js');
-  setup_ar_transactions_action_bar(num_rows => scalar(@{ $form->{AR} }));
 
-  $report->generate_with_headers();
+  $report->generate_with_headers(action_bar_setup_hook => sub { setup_ar_transactions_action_bar(num_rows => scalar(@{ $form->{AR} }), report_generator_actions => \@_) });
 
   $main::lxdebug->leave_sub();
 }
