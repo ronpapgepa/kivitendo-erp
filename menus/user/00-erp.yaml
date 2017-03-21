@@ -403,25 +403,20 @@
   params:
     action: YearEndTransactions/filter
 - parent: general_ledger
-  id: general_ledger_reports
-  name: Reports
-  icon: gl_report
-  order: 500
-- parent: general_ledger_reports
-  id: general_ledger_reports_ar_aging
+  id: general_ledger_ar_aging
   name: AR Aging
   icon: ar_aging
-  order: 100
+  order: 500
   access: general_ledger
   module: rp.pl
   params:
     action: report
     report: ar_aging
-- parent: general_ledger_reports
-  id: general_ledger_reports_ap_aging
+- parent: general_ledger
+  id: general_ledger_ap_aging
   name: AP Aging
   icon: ap_aging
-  order: 200
+  order: 600
   access: general_ledger
   module: rp.pl
   params:
