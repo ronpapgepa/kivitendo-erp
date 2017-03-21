@@ -631,9 +631,7 @@ sub generate_report {
 
   $report->set_options('raw_bottom_info_text' => $raw_bottom_info_text);
 
-  setup_gl_transactions_action_bar(num_rows => scalar(@{$form->{GL}}));
-
-  $report->generate_with_headers();
+  $report->generate_with_headers(action_bar_setup_hook => sub { setup_gl_transactions_action_bar(report_generator_actions => \@_) });
 
   $main::lxdebug->leave_sub();
 }
@@ -1030,6 +1028,30 @@ sub setup_gl_search_action_bar {
         submit    => [ '#form', { action => 'continue', nextsub => 'generate_report' } ],
         accesskey => 'enter',
       ],
+
+      'separator',
+
+      combobox => [
+        action => [ t8('Add') ],
+
+        link => [
+          t8('GL Transaction'),
+          link     => [ 'gl.pl?action=add' ],
+          disabled => $::auth->assert('gl_transactions', 1) ? undef : t8('You do not have the permissions to access this function.'),
+        ],
+
+        link => [
+          t8('AR Transaction'),
+          link     => [ 'ar.pl?action=add' ],
+          disabled => $::auth->assert('ar_transactions', 1) ? undef : t8('You do not have the permissions to access this function.'),
+        ],
+
+        link => [
+          t8('AP Transaction'),
+          link     => [ 'ap.pl?action=add' ],
+          disabled => $::auth->assert('ap_transactions', 1) ? undef : t8('You do not have the permissions to access this function.'),
+        ],
+      ], # end of combobox "Add"
     );
   }
 }
@@ -1039,29 +1061,29 @@ sub setup_gl_transactions_action_bar {
 
   for my $bar ($::request->layout->get('actionbar')) {
     $bar->add(
+      @{ $params{report_generator_actions} },
+
       combobox => [
-        action => [ $::locale->text('Create new') ],
-        action => [
-          $::locale->text('GL Transaction'),
-          submit => [ '#create_new_form', { action => 'gl_transaction' } ],
+        action => [ $::locale->text('Add') ],
+
+        link => [
+          t8('GL Transaction'),
+          link     => [ 'gl.pl?action=add' ],
+          disabled => $::auth->assert('gl_transactions', 1) ? undef : t8('You do not have the permissions to access this function.'),
         ],
-        action => [
-          $::locale->text('AR Transaction'),
-          submit => [ '#create_new_form', { action => 'ar_transaction' } ],
+
+        link => [
+          t8('AR Transaction'),
+          link     => [ 'ar.pl?action=add' ],
+          disabled => $::auth->assert('ar_transactions', 1) ? undef : t8('You do not have the permissions to access this function.'),
         ],
-        action => [
-          $::locale->text('AP Transaction'),
-          submit => [ '#create_new_form', { action => 'ap_transaction' } ],
+
+        link => [
+          t8('AP Transaction'),
+          link     => [ 'ap.pl?action=add' ],
+          disabled => $::auth->assert('ap_transactions', 1) ? undef : t8('You do not have the permissions to access this function.'),
         ],
-        action => [
-          $::locale->text('Sales Invoice'),
-          submit => [ '#create_new_form', { action => 'sales_invoice'  } ],
-        ],
-        action => [
-          $::locale->text('Vendor Invoice'),
-          submit => [ '#create_new_form', { action => 'vendor_invoice' } ],
-        ],
-      ], # end of combobox "Create new"
+      ], # end of combobox "Add"
     );
   }
 }

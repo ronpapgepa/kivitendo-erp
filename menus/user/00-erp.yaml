@@ -369,14 +369,14 @@
   icon: gl
   order: 500
 - parent: general_ledger
-  id: general_ledger_add_transaction
-  name: Add Transaction
-  icon: transaction_add
+  id: general_ledger_journal
+  name: Journal
+  icon: journal
   order: 100
-  access: gl_transactions
+  access: general_ledger | gl_transactions
   module: gl.pl
   params:
-    action: add
+    action: search
 - parent: general_ledger
   id: general_ledger_datev_export_assistent
   name: DATEV - Export Assistent
@@ -427,15 +427,6 @@
   params:
     action: report
     report: ap_aging
-- parent: general_ledger_reports
-  id: general_ledger_reports_journal
-  name: Journal
-  icon: journal
-  order: 300
-  access: general_ledger | gl_transactions
-  module: gl.pl
-  params:
-    action: search
 - id: cash
   name: Cash
   icon: cash
