@@ -136,8 +136,8 @@ sub report {
     ap_aging             => $::locale->text('Search AP Aging'),
     tax_collected        => $::locale->text('Tax collected'),
     tax_paid             => $::locale->text('Tax paid'),
-    receipts             => $::locale->text('Receipts'),
-    payments             => $::locale->text('Payments'),
+    receipts             => $::locale->text('List Receipts'),
+    payments             => $::locale->text('List Payments'),
     projects             => $::locale->text('Project Transactions'),
     bwa                  => $::locale->text('Business evaluation'),
   );
@@ -1907,6 +1907,17 @@ sub setup_rp_report_action_bar {
         accesskey => 'enter',
       ],
     );
+
+    if ($::form->{report} =~ m{^(?:payments|receipts)$}) {
+      $bar->add(
+        'separator',
+
+        link => [
+          t8('Post'),
+          link => 'cp.pl?action=payment&type=' . ($::form->{report} eq 'receipts' ? 'receipt&vc=customer' : 'payment&vc=vendor'),
+        ],
+      );
+    }
   }
 }
 

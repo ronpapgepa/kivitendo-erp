@@ -427,27 +427,25 @@
   icon: cash
   order: 600
 - parent: cash
-  id: cash_receipt
-  name: Receipt
-  icon: receipt
+  id: cash_receipts
+  name: Receipts
+  icon: receipt_report
   order: 100
   access: cash
-  module: cp.pl
+  module: rp.pl
   params:
-    action: payment
-    vc: customer
-    type: receipt
+    action: report
+    report: receipts
 - parent: cash
-  id: cash_payment
-  name: Payment
-  icon: payment
+  id: cash_payments
+  name: Payments
+  icon: payment_report
   order: 200
   access: cash
-  module: cp.pl
+  module: rp.pl
   params:
-    action: payment
-    vc: vendor
-    type: check
+    action: report
+    report: payments
 - parent: cash
   id: cash_bank_collection_via_sepa
   name: Bank collection via SEPA
@@ -501,26 +499,6 @@
   name: Reports
   icon: cash_report
   order: 900
-- parent: cash_reports
-  id: cash_reports_receipts
-  name: Receipts
-  icon: receipt_report
-  order: 100
-  access: cash
-  module: rp.pl
-  params:
-    action: report
-    report: receipts
-- parent: cash_reports
-  id: cash_reports_payments
-  name: Payments
-  icon: payment_report
-  order: 200
-  access: cash
-  module: rp.pl
-  params:
-    action: report
-    report: payments
 - parent: cash_reports
   id: cash_reports_bank_collections_via_sepa
   name: Bank collections via SEPA

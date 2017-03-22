@@ -16,7 +16,7 @@
 [% L.hidden_tag('ARAP', ARAP) %]
 [% L.hidden_tag('openinvoices', openinvoices) %]
 
-<h1>[% is_receipt ? LxERP.t8('Receipt') : LxERP.t8('Payment') %]</h1>
+<h1>[% is_receipt ? LxERP.t8('Post Receipt') : LxERP.t8('Post Outgoing Payment') %]</h1>
 
 <table>
   <tr valign=top>
