@@ -196,7 +196,7 @@ sub bank_transfer_search {
   my $locale = $main::locale;
   my $vc     = $form->{vc} eq 'customer' ? 'customer' : 'vendor';
 
-  $form->{title}    = $vc eq 'customer' ? $::locale->text('List of bank collections') : $locale->text('List of bank transfers');
+  $form->{title}    = $vc eq 'customer' ? $::locale->text('Show bank collections via SEPA') : $locale->text('Show bank transfers via SEPA');
 
   setup_sepa_search_transfer_action_bar();
 
@@ -666,6 +666,13 @@ sub setup_sepa_search_transfer_action_bar {
         t8('Search'),
         submit    => [ '#form', { action => 'bank_transfer_list' } ],
         accesskey => 'enter',
+      ],
+
+      'separator',
+
+      link => [
+        t8('Add'),
+        link => 'sepa.pl?action=bank_transfer_add&vc=' . ($::form->{vc} eq 'customer' ? 'customer' : 'vendor'),
       ],
     );
   }

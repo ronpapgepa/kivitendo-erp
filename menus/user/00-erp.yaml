@@ -447,22 +447,22 @@
     action: report
     report: payments
 - parent: cash
-  id: cash_bank_collection_via_sepa
-  name: Bank collection via SEPA
+  id: cash_bank_collections_via_sepa
+  name: Bank collections via SEPA
   order: 300
   access: cash
   module: sepa.pl
   params:
-    action: bank_transfer_add
+    action: bank_transfer_search
     vc: customer
 - parent: cash
-  id: cash_bank_transfer_via_sepa
-  name: Bank transfer via SEPA
+  id: cash_bank_transfers_via_sepa
+  name: Bank transfers via SEPA
   order: 400
   access: cash
   module: sepa.pl
   params:
-    action: bank_transfer_add
+    action: bank_transfer_search
     vc: vendor
 - parent: cash
   id: cash_bank_import
@@ -499,24 +499,6 @@
   name: Reports
   icon: cash_report
   order: 900
-- parent: cash_reports
-  id: cash_reports_bank_collections_via_sepa
-  name: Bank collections via SEPA
-  order: 300
-  access: cash
-  module: sepa.pl
-  params:
-    action: bank_transfer_search
-    vc: customer
-- parent: cash_reports
-  id: cash_reports_bank_transfers_via_sepa
-  name: Bank transfers via SEPA
-  order: 400
-  access: cash
-  module: sepa.pl
-  params:
-    action: bank_transfer_search
-    vc: vendor
 - parent: cash_reports
   id: cash_reports_bank_transactions
   name: Bank transactions
