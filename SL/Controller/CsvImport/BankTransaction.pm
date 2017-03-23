@@ -76,7 +76,7 @@ sub check_existing {
     # * amount
     my $num;
     if ( $num = SL::DB::Manager::BankTransaction->get_all_count(query =>[ remote_account_number => $object->remote_account_number, transdate => $object->transdate, purpose => $object->purpose, amount => $object->amount] ) ) {
-      push(@{$entry->{errors}}, $::locale->text('Skipping due to existing bank transaction in database'));
+      push(@{$entry->{errors}}, $::locale->text('Skipping due to existing account movement in database'));
     };
   } else {
       push(@{$entry->{errors}}, $::locale->text('Skipping because transfer amount is empty.'));

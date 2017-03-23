@@ -15,6 +15,6 @@
  </form>
  [% ELSE %]
  <p>
- [% "Please create a CSV import profile called \"MT940\" for the import type bank transactions:" | $T8 %] <a href="[% SELF.url_for(controller => 'CsvImport', action => 'new', 'profile.type' => 'bank_transactions' ) %]">CsvImport</a>
+ [% "Please create a CSV import profile called \"MT940\" for the import type account movements:" | $T8 %] <a href="[% SELF.url_for(controller => 'CsvImport', action => 'new', 'profile.type' => 'bank_transactions' ) %]">CsvImport</a>
  </p>
  [% END %]

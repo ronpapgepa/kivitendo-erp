@@ -639,12 +639,12 @@ sub setup_search_action_bar {
         action => [ t8('Account') ],
 
         link => [
-          t8('Import Bank Statement'),
+          t8('Import Account Statement'),
           link => $self->url_for(controller => 'BankImport', action => 'upload_mt940'),
         ],
 
         link => [
-          t8('Post Bank Statement'),
+          t8('Post Account Statement'),
           link => $self->url_for(controller => 'BankTransaction', action => 'search'),
         ],
 
@@ -674,12 +674,12 @@ sub setup_reconciliation_action_bar {
         action => [ t8('Account') ],
 
         link => [
-          t8('Import Bank Statement'),
+          t8('Import Account Statement'),
           link => $self->url_for(controller => 'BankImport', action => 'upload_mt940'),
         ],
 
         link => [
-          t8('Post Bank Statement'),
+          t8('Post Account Statement'),
           link => $self->url_for(controller => 'BankTransaction', action => 'search'),
         ],
 

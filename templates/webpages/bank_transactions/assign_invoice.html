@@ -3,7 +3,7 @@
 [% SET debug = 0 %]
 
 <form method="post" action="javascript:kivi.BankTransaction.filter_invoices();" id="assign_invoice_window_form" data-bank-transaction-id="[% HTML.escape(SELF.transaction.id) %]">
-  <b>[%- LxERP.t8("Bank transaction") %]:</b>
+  <b>[%- LxERP.t8("Account movement") %]:</b>
   <table>
    <tr class="listheading">
     [% IF debug %]<td>[%- LxERP.t8("ID") %]:</td>[% END %]

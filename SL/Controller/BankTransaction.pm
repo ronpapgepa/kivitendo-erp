@@ -50,7 +50,7 @@ sub action_search {
 
   $self->setup_search_action_bar;
   $self->render('bank_transactions/search',
-                title          => t8('Post Bank Statement'),
+                title          => t8('Post Account Statement'),
                  BANK_ACCOUNTS => $bank_accounts);
 }
 
@@ -272,7 +272,7 @@ sub action_list {
   $::request->layout->add_javascripts("kivi.BankTransaction.js");
   $self->setup_list_action_bar;
   $self->render('bank_transactions/list',
-                title             => t8('Bank transactions MT940'),
+                title             => t8('Post Account Statement'),
                 BANK_TRANSACTIONS => $bank_transactions,
                 PROPOSALS         => \@proposals,
                 bank_account      => $bank_account,
@@ -632,7 +632,7 @@ sub save_single_bank_transaction {
         return {
           %data,
           result  => 'error',
-          message => $::locale->text("Bank transaction with id #1 has already been linked to #2.", $bank_transaction->id, $invoice->displayable_name),
+          message => $::locale->text("Account movement with id #1 has already been linked to #2.", $bank_transaction->id, $invoice->displayable_name),
         };
       }
 
@@ -919,7 +919,7 @@ sub setup_search_action_bar {
         action => [ t8('Account') ],
 
         link => [
-          t8('Import Bank Statement'),
+          t8('Import Account Statement'),
           link => $self->url_for(controller => 'BankImport', action => 'upload_mt940'),
         ],
 
@@ -962,7 +962,7 @@ sub setup_list_action_bar {
         action => [ t8('Account') ],
 
         link => [
-          t8('Import Bank Statement'),
+          t8('Import Account Statement'),
           link => $self->url_for(controller => 'BankImport', action => 'upload_mt940'),
         ],
 
@@ -999,12 +999,12 @@ sub setup_list_all_action_bar {
         action => [ t8('Account') ],
 
         link => [
-          t8('Import Bank Statement'),
+          t8('Import Account Statement'),
           link => $self->url_for(controller => 'BankImport', action => 'upload_mt940'),
         ],
 
         link => [
-          t8('Post Bank Statement'),
+          t8('Post Account Statement'),
           link => $self->url_for(controller => 'BankTransaction', action => 'search'),
         ],
 

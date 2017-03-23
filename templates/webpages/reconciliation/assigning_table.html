@@ -17,7 +17,7 @@
       <tr class="listrow" id='element[% element.type %][% element.id %]'>
        <td><a href=# onclick="delete_element('[% element.id %]', '[% element.type %]')">x</a></td>
        <td>[% HTML.escape(element.id) %]</td>
-       <td>[% IF element.type == 'BT' %][% 'Bank transaction' | $T8 %][% ELSE %][% 'Acc transaction' | $T8 %][% END %]</td>
+       <td>[% IF element.type == 'BT' %][% 'Account movement' | $T8 %][% ELSE %][% 'Acc transaction' | $T8 %][% END %]</td>
        <td>[% HTML.escape(element.transdate_as_date) %]</td>
        <td align="right">[% IF element.type == 'BT' %][% HTML.escape(element.amount_as_number) %][% END %]</td>
        <td align="right">[% IF element.type == 'BB' %][% LxERP.format_amount(-1 * element.amount, 2) %][% END %]</td>

@@ -22,7 +22,7 @@
             [% END %]
 
             <td><img width="16px" height="16px" src="image/bank-building.jpg"></td>
-            <td>[% 'Bank Transaction' | $T8 %]</td>
+            <td>[% 'Account movement' | $T8 %]</td>
             [% IF debug %]<td>[% HTML.escape(bt.id) %]</td>[% END %]
             <td align="right" class="[% HTML.escape(bt.class) %]">[% HTML.escape(bt.transdate_as_date) %]</td>
             <td align="right" class="[% HTML.escape(bt.class) %]">[% HTML.escape(bt.amount_as_number) %]</td>
@@ -59,7 +59,7 @@
             </td>
 
             <td><img width="16px" height="16px" src="image/bank-building.jpg"></td>
-            <td>[% 'Bank Transaction' | $T8 %]</td>
+            <td>[% 'Account movement' | $T8 %]</td>
             [% IF debug %]<td>[% HTML.escape(bt.id) %]</td>[% END %]
             <td align="right">[% HTML.escape(bt.transdate_as_date) %]</td>
             <td align="right">[% HTML.escape(bt.amount_as_number) %]</td>

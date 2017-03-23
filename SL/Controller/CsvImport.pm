@@ -335,7 +335,7 @@ sub render_inputs {
             : $self->type eq 'inventories'       ? $::locale->text('CSV import: inventories')
             : $self->type eq 'projects'          ? $::locale->text('CSV import: projects')
             : $self->type eq 'orders'            ? $::locale->text('CSV import: orders')
-            : $self->type eq 'bank_transactions' ? $::locale->text('CSV import: bank transactions')
+            : $self->type eq 'bank_transactions' ? $::locale->text('CSV import: account movements')
             : $self->type eq 'ar_transactions'   ? $::locale->text('CSV import: ar transactions')
             : die;
 
@@ -775,7 +775,7 @@ sub setup_render_inputs_action_bar {
           action => [ t8('Account') ],
 
           link => [
-            t8('Post Bank Statement'),
+            t8('Post Account Statement'),
             link => $self->url_for(controller => 'BankTransaction', action => 'search'),
           ],
 

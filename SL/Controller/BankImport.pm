@@ -70,7 +70,7 @@ sub setup_upload_mt940_action_bar {
         action => [ t8('Account') ],
 
         link => [
-          t8('Post Bank Statement'),
+          t8('Post Account Statement'),
           link => $self->url_for(controller => 'BankTransaction', action => 'search'),
         ],
 

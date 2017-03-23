@@ -18,7 +18,7 @@
           </td>
 
           <td><img width="16px" height="16px" src="image/bank-building.jpg"></td>
-          <td>[% 'Bank Transaction' | $T8 %]</td>
+          <td>[% 'Account movement' | $T8 %]</td>
            [% IF debug %] <td>[% HTML.escape(proposal.BT.id) %]</td>[% END %]
           <td align="right">[% HTML.escape(proposal.BT.transdate_as_date) %]</td>
           <td align="right">[% HTML.escape(proposal.BT.amount_as_number) %]</td>
@@ -50,4 +50,3 @@
       </tbody>
   [% END %]
 [% END %]
-

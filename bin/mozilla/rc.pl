@@ -180,12 +180,12 @@ sub setup_rc_reconciliation_action_bar {
         action => [ t8('Account') ],
 
         link => [
-          t8('Import Bank Statement'),
+          t8('Import Account Statement'),
           link => 'controller.pl?action=BankImport/upload_mt940',
         ],
 
         link => [
-          t8('Post Bank Statement'),
+          t8('Post Account Statement'),
           link => 'controller.pl?action=BankTransaction/search',
         ],
 
