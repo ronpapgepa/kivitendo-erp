@@ -302,62 +302,23 @@
   icon: warehouse
   order: 400
 - parent: warehouse
-  id: warehouse_stock
-  name: Stock
-  order: 100
-  access: warehouse_management
-  params:
-    action: Inventory/stock_in
-- parent: warehouse
-  id: warehouse_produce_assembly
-  name: Produce Assembly
-  icon: assembly_produce
-  order: 200
-  access: warehouse_management
-  module: wh.pl
-  params:
-    action: transfer_warehouse_selection
-    trans_type: assembly
-- parent: warehouse
-  id: warehouse_transfer
-  name: Transfer
-  order: 300
-  access: warehouse_management
-  module: wh.pl
-  params:
-    action: transfer_warehouse_selection
-    trans_type: transfer
-- parent: warehouse
-  id: warehouse_removal
-  name: Removal
-  order: 400
-  access: warehouse_management
-  module: wh.pl
-  params:
-    action: transfer_warehouse_selection
-    trans_type: removal
-- parent: warehouse
-  id: warehouse_reports
-  name: Reports
-  order: 500
-- parent: warehouse_reports
-  id: warehouse_reports_warehouse_content
+  id: warehouse_warehouse_content
   name: Warehouse content
   order: 100
   access: warehouse_contents | warehouse_management
   module: wh.pl
   params:
     action: report
-- parent: warehouse_reports
-  id: warehouse_reports_whjournal
+- parent: warehouse
+  id: warehouse_whjournal
   name: WHJournal
   order: 200
   access: warehouse_management
   module: wh.pl
   params:
     action: journal
-- parent: warehouse_reports
-  id: warehouse_reports_whusage
+- parent: warehouse
+  id: warehouse_whusage
   name: WHUsage
   icon: warehouse_usage
   order: 300

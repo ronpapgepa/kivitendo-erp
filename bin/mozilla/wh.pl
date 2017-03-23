@@ -740,7 +740,7 @@ sub generate_journal {
       $report->set_options('raw_bottom_info_text' => $form->parse_html_template('common/paginate',
                                                             { 'pages' => $pages , 'base_url' => $href.'&sort='.$form->{sort}.'&order='.$form->{order}}) );
   }
-  $report->generate_with_headers();
+  $report->generate_with_headers(action_bar_setup_hook => sub { setup_wh_generate_journal_action_bar(report_generator_actions => \@_) });
 
   $main::lxdebug->leave_sub();
 }
@@ -973,7 +973,7 @@ sub generate_report {
                                                                               {'pages' => $pages , 'base_url' => $href}) );
   }
 
-  $report->generate_with_headers();
+  $report->generate_with_headers(action_bar_setup_hook => sub { setup_wh_generate_report_action_bar(report_generator_actions => \@_) });
 
   $main::lxdebug->leave_sub();
 }
@@ -1140,8 +1140,6 @@ sub setup_wh_removal_parts_selection_action_bar {
 }
 
 sub setup_wh_report_action_bar {
-  my ($action) = @_;
-
   for my $bar ($::request->layout->get('actionbar')) {
     $bar->add(
       action => [
@@ -1149,13 +1147,73 @@ sub setup_wh_report_action_bar {
         submit    => [ '#form', { action => 'generate_report' } ],
         accesskey => 'enter',
       ],
+
+      'separator',
+
+      combobox => [
+        action => [ t8('Warehouse') ],
+
+        link => [
+          t8('Stock'),
+          link => 'controller.pl?action=Inventory/stock_in',
+        ],
+
+        link => [
+          t8('Produce Assembly'),
+          link => 'wh.pl?action=transfer_warehouse_selection&trans_type=assembly',
+        ],
+
+        link => [
+          t8('Transfer'),
+          link => 'wh.pl?action=transfer_warehouse_selection&trans_type=transfer',
+        ],
+
+        link => [
+          t8('Removal'),
+          link => 'wh.pl?action=transfer_warehouse_selection&trans_type=removal',
+        ],
+
+      ], # end of combobox "Warehouse"
+    );
+  }
+}
+
+sub setup_wh_generate_report_action_bar {
+  my (%params) = @_;
+
+  for my $bar ($::request->layout->get('actionbar')) {
+    $bar->add(
+      @{ $params{report_generator_actions} },
+
+      combobox => [
+        action => [ t8('Warehouse') ],
+
+        link => [
+          t8('Stock'),
+          link => 'controller.pl?action=Inventory/stock_in',
+        ],
+
+        link => [
+          t8('Produce Assembly'),
+          link => 'wh.pl?action=transfer_warehouse_selection&trans_type=assembly',
+        ],
+
+        link => [
+          t8('Transfer'),
+          link => 'wh.pl?action=transfer_warehouse_selection&trans_type=transfer',
+        ],
+
+        link => [
+          t8('Removal'),
+          link => 'wh.pl?action=transfer_warehouse_selection&trans_type=removal',
+        ],
+
+      ], # end of combobox "Warehouse"
     );
   }
 }
 
 sub setup_wh_journal_action_bar {
-  my ($action) = @_;
-
   for my $bar ($::request->layout->get('actionbar')) {
     $bar->add(
       action => [
@@ -1163,6 +1221,68 @@ sub setup_wh_journal_action_bar {
         submit    => [ '#form', { action => 'generate_journal' } ],
         accesskey => 'enter',
       ],
+
+      'separator',
+
+      combobox => [
+        action => [ t8('Warehouse') ],
+
+        link => [
+          t8('Stock'),
+          link => 'controller.pl?action=Inventory/stock_in',
+        ],
+
+        link => [
+          t8('Produce Assembly'),
+          link => 'wh.pl?action=transfer_warehouse_selection&trans_type=assembly',
+        ],
+
+        link => [
+          t8('Transfer'),
+          link => 'wh.pl?action=transfer_warehouse_selection&trans_type=transfer',
+        ],
+
+        link => [
+          t8('Removal'),
+          link => 'wh.pl?action=transfer_warehouse_selection&trans_type=removal',
+        ],
+
+      ], # end of combobox "Warehouse"
+    );
+  }
+}
+
+sub setup_wh_generate_journal_action_bar {
+  my (%params) = @_;
+
+  for my $bar ($::request->layout->get('actionbar')) {
+    $bar->add(
+      @{ $params{report_generator_actions} },
+
+      combobox => [
+        action => [ t8('Warehouse') ],
+
+        link => [
+          t8('Stock'),
+          link => 'controller.pl?action=Inventory/stock_in',
+        ],
+
+        link => [
+          t8('Produce Assembly'),
+          link => 'wh.pl?action=transfer_warehouse_selection&trans_type=assembly',
+        ],
+
+        link => [
+          t8('Transfer'),
+          link => 'wh.pl?action=transfer_warehouse_selection&trans_type=transfer',
+        ],
+
+        link => [
+          t8('Removal'),
+          link => 'wh.pl?action=transfer_warehouse_selection&trans_type=removal',
+        ],
+
+      ], # end of combobox "Warehouse"
     );
   }
 }

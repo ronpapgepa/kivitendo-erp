@@ -367,7 +367,8 @@ sub action_usage {
 
       $report->set_options('raw_bottom_info_text' => $self->render('inventory/report_bottom', { output => 0 }) );
   }
-  $report->generate_with_headers();
+
+  $report->generate_with_headers(action_bar_setup_hook => sub { $self->setup_usage_action_bar(report_generator_actions => \@_) });
 
   $main::lxdebug->leave_sub();
 
@@ -648,6 +649,68 @@ sub setup_stock_usage_action_bar {
         submit    => [ '#form', { action => 'Inventory/usage' } ],
         accesskey => 'enter',
       ],
+
+      'separator',
+
+      combobox => [
+        action => [ t8('Warehouse') ],
+
+        link => [
+          t8('Stock'),
+          link => $self->url_for(action => 'stock_in'),
+        ],
+
+        link => [
+          t8('Produce Assembly'),
+          link => 'wh.pl?action=transfer_warehouse_selection&trans_type=assembly',
+        ],
+
+        link => [
+          t8('Transfer'),
+          link => 'wh.pl?action=transfer_warehouse_selection&trans_type=transfer',
+        ],
+
+        link => [
+          t8('Removal'),
+          link => 'wh.pl?action=transfer_warehouse_selection&trans_type=removal',
+        ],
+
+      ], # end of combobox "Warehouse"
+    );
+  }
+}
+
+sub setup_usage_action_bar {
+  my ($self, %params) = @_;
+
+  for my $bar ($::request->layout->get('actionbar')) {
+    $bar->add(
+      @{ $params{report_generator_actions} },
+
+      combobox => [
+        action => [ t8('Warehouse') ],
+
+        link => [
+          t8('Stock'),
+          link => $self->url_for(action => 'stock_in'),
+        ],
+
+        link => [
+          t8('Produce Assembly'),
+          link => 'wh.pl?action=transfer_warehouse_selection&trans_type=assembly',
+        ],
+
+        link => [
+          t8('Transfer'),
+          link => 'wh.pl?action=transfer_warehouse_selection&trans_type=transfer',
+        ],
+
+        link => [
+          t8('Removal'),
+          link => 'wh.pl?action=transfer_warehouse_selection&trans_type=removal',
+        ],
+
+      ], # end of combobox "Warehouse"
     );
   }
 }
