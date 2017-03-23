@@ -458,7 +458,7 @@ sub _bank_transactions {
 
   return $self->record_list(
     $list,
-    title   => $::locale->text('Bank transactions'),
+    title   => $::locale->text('Account movements'),
     type    => 'bank_transactions',
     columns => [
       [ $::locale->text('Transdate'),            'transdate'                      ],

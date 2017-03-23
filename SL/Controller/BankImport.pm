@@ -19,7 +19,7 @@ sub action_upload_mt940 {
   my ($self, %params) = @_;
 
   $self->setup_upload_mt940_action_bar;
-  $self->render('bankimport/form', title => $::locale->text('MT940 import'), profile => $self->profile ? 1 : 0);
+  $self->render('bankimport/form', title => $::locale->text('Import statement (MT940 format)'), profile => $self->profile ? 1 : 0);
 }
 
 sub action_import_mt940 {
@@ -62,6 +62,27 @@ sub setup_upload_mt940_action_bar {
         $::locale->text('Preview'),
         submit    => [ '#form', { action => 'BankImport/import_mt940' } ],
         accesskey => 'enter',
+      ],
+
+      'separator',
+
+      combobox => [
+        action => [ t8('Account') ],
+
+        link => [
+          t8('Post Bank Statement'),
+          link => $self->url_for(controller => 'BankTransaction', action => 'search'),
+        ],
+
+        link => [
+          t8('Reconciliation with bank'),
+          link => $self->url_for(controller => 'Reconciliation', action => 'search'),
+        ],
+
+        link => [
+          t8('Manual Reconciliation'),
+          link => $self->url_for(controller => 'rc.pl', action => 'reconciliation'),
+        ],
       ],
     );
   }

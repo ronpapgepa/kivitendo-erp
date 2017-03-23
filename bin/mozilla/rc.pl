@@ -173,6 +173,27 @@ sub setup_rc_reconciliation_action_bar {
         submit    => [ '#form', { action => "get_payments" } ],
         accesskey => 'enter',
       ],
+
+      'separator',
+
+      combobox => [
+        action => [ t8('Account') ],
+
+        link => [
+          t8('Import Bank Statement'),
+          link => 'controller.pl?action=BankImport/upload_mt940',
+        ],
+
+        link => [
+          t8('Post Bank Statement'),
+          link => 'controller.pl?action=BankTransaction/search',
+        ],
+
+        link => [
+          t8('Reconciliation with bank'),
+          link => 'controller.pl?action=Reconciliation/search',
+        ],
+      ],
     );
   }
 }

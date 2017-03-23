@@ -766,6 +766,31 @@ sub setup_render_inputs_action_bar {
         id        => 'action_import',
       ],
     );
+
+    if ($self->profile && ($self->profile->{type} eq 'bank_transactions')) {
+      $bar->add(
+        'separator',
+
+        combobox => [
+          action => [ t8('Account') ],
+
+          link => [
+            t8('Post Bank Statement'),
+            link => $self->url_for(controller => 'BankTransaction', action => 'search'),
+          ],
+
+          link => [
+            t8('Reconciliation with bank'),
+            link => $self->url_for(controller => 'Reconciliation', action => 'search'),
+          ],
+
+          link => [
+            t8('Manual Reconciliation'),
+            link => $self->url_for(controller => 'rc.pl', action => 'reconciliation'),
+          ],
+        ],
+      );
+    }
   }
 }
 

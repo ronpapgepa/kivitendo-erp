@@ -50,6 +50,7 @@ sub action_search {
 
   $self->setup_search_action_bar;
   $self->render('bank_transactions/search',
+                title          => t8('Post Bank Statement'),
                  BANK_ACCOUNTS => $bank_accounts);
 }
 
@@ -59,8 +60,13 @@ sub action_list_all {
   $self->make_filter_summary;
   $self->prepare_report;
 
-  $self->setup_list_all_action_bar;
-  $self->report_generator_list_objects(report => $self->{report}, objects => $self->models->get);
+  $self->report_generator_list_objects(
+    report  => $self->{report},
+    objects => $self->models->get,
+    options => {
+      action_bar_setup_hook => sub { $self->setup_list_all_action_bar(report_generator_actions => \@_) },
+    },
+  );
 }
 
 sub action_list {
@@ -264,6 +270,7 @@ sub action_list {
   $bank_transactions = [ sort { $b->{agreement} <=> $a->{agreement} } @{ $bank_transactions } ] if $::form->{sort_by} eq 'proposal' and $::form->{sort_dir} == 0;
 
   $::request->layout->add_javascripts("kivi.BankTransaction.js");
+  $self->setup_list_action_bar;
   $self->render('bank_transactions/list',
                 title             => t8('Bank transactions MT940'),
                 BANK_TRANSACTIONS => $bank_transactions,
@@ -813,8 +820,8 @@ sub prepare_report {
     std_column_visibility => 1,
     controller_class      => 'BankTransaction',
     output_format         => 'HTML',
-    top_info_text         => $::locale->text('Bank transactions'),
-    title                 => $::locale->text('Bank transactions'),
+    top_info_text         => $::locale->text('Show account movements'),
+    title                 => $::locale->text('Show account movements'),
     allow_pdf_export      => 1,
     allow_csv_export      => 1,
   );
@@ -905,6 +912,70 @@ sub setup_search_action_bar {
         submit    => [ '#search_form', { action => 'BankTransaction/list' } ],
         accesskey => 'enter',
       ],
+
+      'separator',
+
+      combobox => [
+        action => [ t8('Account') ],
+
+        link => [
+          t8('Import Bank Statement'),
+          link => $self->url_for(controller => 'BankImport', action => 'upload_mt940'),
+        ],
+
+        link => [
+          t8('Reconciliation with bank'),
+          link => $self->url_for(controller => 'Reconciliation', action => 'search'),
+        ],
+
+        link => [
+          t8('Manual Reconciliation'),
+          link => $self->url_for(controller => 'rc.pl', action => 'reconciliation'),
+        ],
+      ],
+    );
+  }
+}
+
+sub setup_list_action_bar {
+  my ($self, %params) = @_;
+
+  for my $bar ($::request->layout->get('actionbar')) {
+    $bar->add(
+      combobox => [
+        action => [ t8('Save') ],
+
+        action => [
+          t8('Save assigned invoices'),
+          submit => [ '#list_all_form', { action => 'BankTransaction/save_invoices' } ],
+        ],
+
+        action => [
+          t8('Save selected proposals'),
+          submit => [ '#list_automatic_form', { action => 'BankTransaction/save_proposals' } ],
+        ],
+      ], # end of combobox "Save"
+
+      'separator',
+
+      combobox => [
+        action => [ t8('Account') ],
+
+        link => [
+          t8('Import Bank Statement'),
+          link => $self->url_for(controller => 'BankImport', action => 'upload_mt940'),
+        ],
+
+        link => [
+          t8('Reconciliation with bank'),
+          link => $self->url_for(controller => 'Reconciliation', action => 'search'),
+        ],
+
+        link => [
+          t8('Manual Reconciliation'),
+          link => $self->url_for(controller => 'rc.pl', action => 'reconciliation'),
+        ],
+      ], # end of combobox "Account"
     );
   }
 }
@@ -918,6 +989,34 @@ sub setup_list_all_action_bar {
         t8('Filter'),
         submit    => [ '#filter_form', { action => 'BankTransaction/list_all' } ],
         accesskey => 'enter',
+      ],
+
+      'separator',
+
+      @{ $params{report_generator_actions} },
+
+      combobox => [
+        action => [ t8('Account') ],
+
+        link => [
+          t8('Import Bank Statement'),
+          link => $self->url_for(controller => 'BankImport', action => 'upload_mt940'),
+        ],
+
+        link => [
+          t8('Post Bank Statement'),
+          link => $self->url_for(controller => 'BankTransaction', action => 'search'),
+        ],
+
+        link => [
+          t8('Reconciliation with bank'),
+          link => $self->url_for(controller => 'Reconciliation', action => 'search'),
+        ],
+
+        link => [
+          t8('Manual Reconciliation'),
+          link => $self->url_for(controller => 'rc.pl', action => 'reconciliation'),
+        ],
       ],
     );
   }

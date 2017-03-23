@@ -4,7 +4,6 @@
 [% L.hidden_tag('filter.bank_account', FORM.filter.bank_account) %]
 [% L.hidden_tag('filter.fromdate', FORM.filter.fromdate) %]
 [% L.hidden_tag('filter.todate',   FORM.filter.todate) %]
-[% L.hidden_tag('action', 'BankTransaction/dispatch') %]
 [% L.hidden_tag('ui_tab', ui_tab) %]
 
 <table id="bank_transactions_proposals">
@@ -84,7 +83,6 @@
 </table>
 
 <p>
- [% L.submit_tag('action_save_proposals', LxERP.t8('Save proposals')) %]
  [% L.button_tag('kivi.BankTransaction.show_set_all_sources_memos_dialog("#list_automatic_form [name^=\\"sources.\\"]", "#list_automatic_form [name^=\\"memos.\\"]")', LxERP.t8('Set all source and memo fields')) %]
 </p>
 

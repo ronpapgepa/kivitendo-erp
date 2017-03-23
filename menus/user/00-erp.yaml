@@ -465,43 +465,8 @@
     action: bank_transfer_search
     vc: vendor
 - parent: cash
-  id: cash_bank_import
-  name: Bank Import
-  order: 500
-  access: bank_transaction
-  params:
-    action: BankImport/upload_mt940
-- parent: cash
-  id: cash_bank_transactions_mt940
-  name: Bank transactions MT940
-  order: 600
-  access: bank_transaction
-  params:
-    action: BankTransaction/search
-- parent: cash
-  id: cash_reconciliation_with_bank
-  name: Reconciliation with bank
-  order: 700
-  access: bank_transaction
-  params:
-    action: Reconciliation/search
-- parent: cash
-  id: cash_reconciliation
-  name: Reconciliation
-  icon: reconcilliation
-  order: 800
-  access: cash
-  module: rc.pl
-  params:
-    action: reconciliation
-- parent: cash
-  id: cash_reports
-  name: Reports
-  icon: cash_report
-  order: 900
-- parent: cash_reports
-  id: cash_reports_bank_transactions
-  name: Bank transactions
+  id: cash_bank_transactions
+  name: Account movements
   order: 500
   access: bank_transaction
   params:

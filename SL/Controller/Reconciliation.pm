@@ -45,7 +45,7 @@ sub action_reconciliation {
   $self->setup_reconciliation_action_bar;
   $self->render('reconciliation/form',
                 ui_tab => scalar(@{$self->{PROPOSALS}}) > 0?1:0,
-                title => t8('Reconciliation'));
+                title  => t8('Reconciliation with bank'));
 }
 
 sub action_load_overview {
@@ -632,6 +632,27 @@ sub setup_search_action_bar {
         submit    => [ '#search_form', { action => 'Reconciliation/reconciliation' } ],
         accesskey => 'enter',
       ],
+
+      'separator',
+
+      combobox => [
+        action => [ t8('Account') ],
+
+        link => [
+          t8('Import Bank Statement'),
+          link => $self->url_for(controller => 'BankImport', action => 'upload_mt940'),
+        ],
+
+        link => [
+          t8('Post Bank Statement'),
+          link => $self->url_for(controller => 'BankTransaction', action => 'search'),
+        ],
+
+        link => [
+          t8('Manual Reconciliation'),
+          link => $self->url_for(controller => 'rc.pl', action => 'reconciliation'),
+        ],
+      ],
     );
   }
 }
@@ -645,6 +666,27 @@ sub setup_reconciliation_action_bar {
         t8('Filter'),
         call      => [ 'filter_table' ],
         accesskey => 'enter',
+      ],
+
+      'separator',
+
+      combobox => [
+        action => [ t8('Account') ],
+
+        link => [
+          t8('Import Bank Statement'),
+          link => $self->url_for(controller => 'BankImport', action => 'upload_mt940'),
+        ],
+
+        link => [
+          t8('Post Bank Statement'),
+          link => $self->url_for(controller => 'BankTransaction', action => 'search'),
+        ],
+
+        link => [
+          t8('Manual Reconciliation'),
+          link => $self->url_for(controller => 'rc.pl', action => 'reconciliation'),
+        ],
       ],
     );
   }
