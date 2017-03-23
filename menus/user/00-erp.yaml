@@ -683,13 +683,9 @@
   params:
     action: edit_access_rights
 - parent: productivity
-  id: productivity_reports
-  name: Reports
-  order: 400
-- parent: productivity_reports
-  id: productivity_reports_email_journal
+  id: productivity_email_journal
   name: Email journal
-  order: 200
+  order: 400
   module: controller.pl
   icon: mail_journal
   params:
