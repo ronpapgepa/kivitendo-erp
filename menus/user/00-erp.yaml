@@ -669,12 +669,12 @@
   params:
     action: show_todo_list
 - parent: productivity
-  id: productivity_add_follow_up
-  name: Add Follow-Up
+  id: productivity_follow_ups
+  name: Follow-Ups
   order: 200
   module: fu.pl
   params:
-    action: add
+    action: search
 - parent: productivity
   id: productivity_edit_access_rights
   name: Edit Access Rights
@@ -686,13 +686,6 @@
   id: productivity_reports
   name: Reports
   order: 400
-- parent: productivity_reports
-  id: productivity_reports_follow_ups
-  name: Follow-Ups
-  order: 100
-  module: fu.pl
-  params:
-    action: search
 - parent: productivity_reports
   id: productivity_reports_email_journal
   name: Email journal

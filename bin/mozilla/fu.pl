@@ -492,6 +492,13 @@ sub setup_fu_search_action_bar {
         submit    => [ '#form', { action => "report" } ],
         accesskey => 'enter',
       ],
+
+      'separator',
+
+      link => [
+        t8('Add'),
+        link => 'fu.pl?action=add',
+      ],
     );
   }
 }
