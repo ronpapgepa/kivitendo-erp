@@ -11,7 +11,7 @@ JOBID: [% job.id %] <p>
  [% LxERP.t8("This status output will be refreshed every five seconds.") %]
 </p>
 <p>
-[% # Dumper.dump_html(data) %]
+[%  Dumper.dump_html(data) %]
 </p>
 <p>
  [% L.link("#", LxERP.t8("Close window"), onclick="kivi.ShopOrder.processClose();") %]
@@ -44,14 +44,14 @@ JOBID: [% job.id %] <p>
 [% ELSE %]
     <table>
      <tr class="listheader">
-      <th>[% LxERP.t8("Delivery Order") %]</th>
+      <th>[% LxERP.t8("Shoporder") %]</th>
       <th>[% LxERP.t8("Error") %]</th>
      </tr>
 
  [% FOREACH error = data.conversion_errors %]
      <tr>
-      <td valign="top">[% IF error.id %][% L.link(SELF.url_for(controller='do.pl', action='edit', type='sales_delivery_order', id=error.id), HTML.escape(error.number), target="_blank") %][% ELSE %]–[% END %]</td>
-      <td valign="top">[% HTML.escape(error.message) %]</td>
+      <td valign="top">[% HTML.escape(error.number) %]</td>
+      <td valign="top">[% FOREACH message = error.message %][% HTML.escape(message) %]<br>[% END %]</td>
      </tr>
  [% END %]
     </table>
