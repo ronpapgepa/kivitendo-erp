@@ -77,13 +77,11 @@ sub convert_to_sales_order {
                                                         )) {
         $shipto_id = $address->{shipto_id};
       } else {
-        my $gender = $self->{delivery_greeting} eq "Frau" ? 'f' : 'm';
         my $deliveryaddress = SL::DB::Shipto->new;
         $deliveryaddress->assign_attributes(
           shiptoname          => $self->{delivery_firstname} . " " . $self->{delivery_lastname},
           shiptodepartment_1  => $self->{delivery_company},
           shiptodepartment_2  => $self->{delivery_department},
-          shiptocp_gender     => $gender,
           shiptostreet        => $self->{delivery_street},
           shiptozipcode       => $self->{delivery_zipcode},
           shiptocity          => $self->{delivery_city},
