@@ -33,6 +33,7 @@ sub action_get_orders {
     my $new_orders = $shop->connector->get_new_orders;
     push @{ $orders_fetched },@{ $new_orders };
   };
+  flash_later('info', t8('#1 shoporders has been fetched', scalar(@{$orders_fetched})-1));
   $self->action_list;
 }
 
@@ -120,9 +121,9 @@ sub action_show {
                 title       => t8('Shoporder'),
                 IMPORT      => $shop_order,
                 PROPOSALS   => $proposals,
-                C_ADDRESS   => $c_address,
-                B_ADDRESS   => $b_address,
-                D_ADDRESS   => $d_address,
+#                C_ADDRESS   => $c_address,
+#                B_ADDRESS   => $b_address,
+#                D_ADDRESS   => $d_address,
               );
 
 }
