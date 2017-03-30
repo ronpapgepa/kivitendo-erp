@@ -1,12 +1,12 @@
 [%- USE HTML -%][%- USE LxERP -%][%- USE L -%][%- USE T8 -%]
 [% USE Dumper %]
 
-<h1>[% title %]</h1>
+<h1>[% title %]<span style="float:right;">[% 'Number data sets' | $T8 %]: [% SHOPORDERS.size %]</span></h1>
 [%- PROCESS 'shop_order/_filter.html' filter=SELF.models.filtered.laundered %]
 
 <hr>
- <div class="table_info">[% 'Number data sets' | $T8 %]: [% SHOPORDERS.size %]</div>
- <table id="shoplist">
+
+ <table id="shoplist" width="100%">
   <thead>
    <tr class="listheading">
     <th>[% 'Shop Host' | $T8 %]</th>

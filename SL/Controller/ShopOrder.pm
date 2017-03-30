@@ -34,7 +34,6 @@ sub action_get_orders {
     push @{ $orders_fetched },@{ $new_orders };
   };
   $self->action_list;
-  #TODO Flashinfo how many orders from wich shop have been fetched. infos in $orders_fetched
 }
 
 sub action_list {
@@ -153,7 +152,6 @@ sub action_transfer {
   die "Can't load shop_order form form->import_id" unless $self->shop_order;
 
   my $order = $self->shop_order->convert_to_sales_order(customer => $customer, employee => $employee);
-  $main::lxdebug->dump(0, 'WH:OOO ',$order);
 
   if ($order->{error}){
     flash_later('error',@{$order->{errors}});

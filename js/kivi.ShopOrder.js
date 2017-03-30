@@ -4,7 +4,6 @@ namespace('kivi.ShopOrder', function(ns) {
       id: 'status_mass_transfer',
       dialog: {
         title: kivi.t8('Status Shoptransfer'),
-        close: function(event, ui) { alert('CLOSE'); },
       }
     });
   };
