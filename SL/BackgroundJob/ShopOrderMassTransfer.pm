@@ -5,10 +5,6 @@ use warnings;
 
 use parent qw(SL::BackgroundJob::Base);
 
-#
-# Workflow Dreschflegel Shoporder import -> wo geht automatisch nach Order(Auftrag) und DeliveryOrder (Lieferschein) mit auslagern transferieren
-#
-
 use SL::DBUtils;
 use SL::DB::ShopOrder;
 use SL::DB::ShopOrderItem;
