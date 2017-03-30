@@ -129,25 +129,27 @@ sub get_new_orders {
       $shop_order->{positions} = $position-1;
 
       # Only Customers which are not found will be applied
-      my $proposals = SL::DB::Manager::Customer->get_all_count(
-           where => [
-                       or => [
-                                and  => [ # when matching names also match zipcode
-                                          or => [ 'name' => { ilike => "%$shop_order->billing_lastname%"},
-                                                  'name' => { ilike => "%$shop_order->billing_company%" },
-                                                ],
-                                          'zipcode' => { ilike => $shop_order->billing_zipcode },
-                                        ],
-                                and  => [ # matching street and zipcode
-                                         'street' => { ilike => "%$shop_order->billing_street%" },
-                                         'zipcode' => { ilike => $shop_order->billing_zipcode }
-                                        ],
-                                or   => [ 'email' => { ilike => $shop_order->billing_email } ],
-                             ],
-                    ],
-      );
+      my $name = $shop_order->billing_lastname ne '' ? "%" . $shop_order->billing_firstname . "%" . $shop_order->billing_lastname . "%" : '';
+      my $lastname = $shop_order->billing_lastname ne '' ? "%" . $shop_order->billing_lastname . "%" : '';
+      my $company = $shop_order->billing_company ne '' ? "%" . $shop_order->billing_company . "%" : '';
+      my $street = $shop_order->billing_street ne '' ?  $shop_order->billing_street : '';
+      # Fuzzysearch for street to find e.g. "Dorfstrasse - Dorfstr. - Dorfstraße"
+      my $dbh = $::form->get_standard_dbh();
+      my $fs_query = "SELECT id FROM customer WHERE ( ( (    name ILIKE ?
+                                                          OR name ILIKE ?
+                                                        )
+                                                        AND zipcode ILIKE ?
+                                                      )
+                                                      OR ( street % ?
+                                                           AND zipcode ILIKE ?
+                                                         )
+                                                      OR email ILIKE ?
+                                                    )";
+      my @values = ($lastname, $company, $shop_order->billing_zipcode, $street, $shop_order->billing_zipcode, $shop_order->billing_email);
+      my @c_ids = selectall_array_query($::form, $dbh, $fs_query, @values);
 
-      if(!$proposals){
+      if(!scalar(@c_ids)){
+
         my %address = ( 'name'                  => $shop_order->billing_firstname . " " . $shop_order->billing_lastname,
                         'department_1'          => $shop_order->billing_company,
                         'department_2'          => $shop_order->billing_department,
@@ -168,6 +170,8 @@ sub get_new_orders {
                         #'payment_id'            => 7345,# TODO hardcoded
                       );
         my $customer = SL::DB::Customer->new(%address);
+        $main::lxdebug->dump(0, 'WH:CUSTOMER ',\$customer);
+
         $customer->save;
         my $snumbers = "customernumber_" . $customer->customernumber;
         SL::DB::History->new(
@@ -177,19 +181,17 @@ sub get_new_orders {
                           addition    => 'SAVED',
                           what_done   => 'Shopimport',
                         )->save();
+        $shop_order->{kivi_customer_id} = $customer->id;
+        $shop_order->save;
 
+      }elsif(scalar(@c_ids) == 1){
+        my $customer = SL::DB::Manager::Customer->get_first( query => [ id => $c_ids[0], email => $shop_order->billing_email ] );
+
+        if(ref $customer){
+          $shop_order->{kivi_customer_id} = $customer->id;
+          $shop_order->save;
+        }
       }
-      my %billing_address = ( 'name'     => $shop_order->billing_lastname,
-                              'company'  => $shop_order->billing_company,
-                              'street'   => $shop_order->billing_street,
-                              'zipcode'  => $shop_order->billing_zipcode,
-                              'city'     => $shop_order->billing_city,
-                            );
-      my $b_address = SL::Controller::ShopOrder->check_address(%billing_address);
-      if ($b_address) {
-        $shop_order->{kivi_customer_id} = $b_address->{id};
-      }
-      $shop_order->save;
 
       my $attributes->{last_order_number} = $ordnumber;
       $self->config->assign_attributes( %{ $attributes } );
@@ -330,36 +332,31 @@ sub update_part {
                    );
   }elsif($todo eq "all"){
   # mapping to shopware still missing attributes,metatags
-    %shop_data =  (  name              => $part->{description},
-                     tax               => $taxrate,
-                     mainDetail        => { number   => $part->{partnumber},
-                                            inStock  => $part->{onhand},
-                                            active   => $shop_part->active,
-                                            prices   =>  [ { from              => 1,
-                                                             price             => $price,
-                                                             customerGroupKey  => 'EK',
-                                                           },
-                                                         ],
-                                          },
-                     supplier          => $cvars->{freifeld_7}->{value},
-                     descriptionLong   => $shop_part->{shop_description},
-                     active            => $shop_part->active,
-                     images            => [ @upload_img ],
-                     __options_images  => { replace => 1, },
-                     categories        => [ @cat ],
-                     description       => $shop_part->{shop_description},
-                     active            => $shop_part->active,
-                     images            => [ @upload_img ],
-                     __options_images  => { replace => 1, },
-                     categories        => [ @cat ],
-                   );
-  }else{
-    my %shop_data =  ( mainDetail => { number   => $part->{partnumber}, });
+    %shop_data =  (   name              => $part->{description},
+                      mainDetail        => { number   => $part->{partnumber},
+                                             inStock  => $part->{onhand},
+                                             prices   =>  [ {          from   => 1,
+                                                                       price  => $price,
+                                                            customerGroupKey  => 'EK',
+                                                            },
+                                                          ],
+                                            attribute => { attr1  => $cvars->{botanischer_name}->{value}, } ,
+                                       },
+                      supplier          => $part->{microfiche},
+                      descriptionLong   => $shop_part->{shop_description},
+                      active            => $shop_part->active,
+                      images            => [ @upload_img ],
+                      __options_images  => { replace => 1, },
+                      categories        => [ @cat ],
+                      description       => $shop_part->{shop_description},
+                      categories        => [ @cat ],
+                      tax               => $taxrate,
+                    )
+                  ;
   }
 
   my $dataString = SL::JSON::to_json(\%shop_data);
   $dataString = encode_utf8($dataString);
-
   my $upload_content;
   if($import->{success}){
     #update
