@@ -47,7 +47,7 @@ sub get_new_orders {
         billing_email           => $import->{data}->{customer}->{email},
         billing_fax             => $import->{data}->{billing}->{fax},
         billing_firstname       => $import->{data}->{billing}->{firstName},
-        billing_greeting        => ($import->{data}->{billing}->{salutation} eq 'mr' ? 'Herr' : 'Frau'),
+        #billing_greeting        => ($import->{data}->{billing}->{salutation} eq 'mr' ? 'Herr' : 'Frau'),
         billing_lastname        => $import->{data}->{billing}->{lastName},
         billing_phone           => $import->{data}->{billing}->{phone},
         billing_street          => $import->{data}->{billing}->{street},
@@ -60,7 +60,7 @@ sub get_new_orders {
         customer_email          => $import->{data}->{customer}->{email},
         customer_fax            => $import->{data}->{billing}->{fax},
         customer_firstname      => $import->{data}->{billing}->{firstName},
-        customer_greeting       => ($import->{data}->{billing}->{salutation} eq 'mr' ? 'Herr' : 'Frau'),
+        #customer_greeting       => ($import->{data}->{billing}->{salutation} eq 'mr' ? 'Herr' : 'Frau'),
         customer_lastname       => $import->{data}->{billing}->{lastName},
         customer_phone          => $import->{data}->{billing}->{phone},
         customer_street         => $import->{data}->{billing}->{street},
@@ -74,7 +74,7 @@ sub get_new_orders {
         delivery_email          => "",
         delivery_fax            => $import->{data}->{shipping}->{fax},
         delivery_firstname      => $import->{data}->{shipping}->{firstName},
-        delivery_greeting       => ($import->{data}->{shipping}->{salutation} eq 'mr' ? 'Herr' : 'Frau'),
+        #delivery_greeting       => ($import->{data}->{shipping}->{salutation} eq 'mr' ? 'Herr' : 'Frau'),
         delivery_lastname       => $import->{data}->{shipping}->{lastName},
         delivery_phone          => $import->{data}->{shipping}->{phone},
         delivery_street         => $import->{data}->{shipping}->{street},
@@ -170,7 +170,6 @@ sub get_new_orders {
                         #'payment_id'            => 7345,# TODO hardcoded
                       );
         my $customer = SL::DB::Customer->new(%address);
-        $main::lxdebug->dump(0, 'WH:CUSTOMER ',\$customer);
 
         $customer->save;
         my $snumbers = "customernumber_" . $customer->customernumber;
@@ -199,11 +198,9 @@ sub get_new_orders {
       $ordnumber++;
     }
   }
-    my $shop = $self->config->description;
-
-    my @fetched_orders = ($shop,$i);
-
-    return \@fetched_orders;
+  my $shop = $self->config->description;
+  my @fetched_orders = ($shop,$i);
+  return \@fetched_orders;
 };
 
 sub get_categories {
@@ -340,9 +337,9 @@ sub update_part {
                                                             customerGroupKey  => 'EK',
                                                             },
                                                           ],
-                                            attribute => { attr1  => $cvars->{botanischer_name}->{value}, } ,
+                                             #attribute => { attr1  => $cvars->{CVARNAME}->{value}, } , #HowTo handle attributes
                                        },
-                      supplier          => $part->{microfiche},
+                      supplier          => 'Is needed by Shopware', #$part->{microfiche},
                       descriptionLong   => $shop_part->{shop_description},
                       active            => $shop_part->active,
                       images            => [ @upload_img ],
