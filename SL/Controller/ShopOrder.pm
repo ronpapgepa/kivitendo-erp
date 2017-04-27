@@ -10,6 +10,7 @@ use SL::DB::ShopOrder;
 use SL::DB::ShopOrderItem;
 use SL::DB::Shop;
 use SL::DB::History;
+use SL::DBUtils;
 use SL::Shop;
 use SL::Presenter;
 use SL::Helper::Flash;
@@ -96,24 +97,43 @@ sub action_show {
   my $d_address = $self->check_address(%delivery_address);
   ####
 
-  my $lastname = $shop_order->customer_lastname;
+  # Only Customers which are not found will be applied
+  my $name = $shop_order->billing_lastname ne '' ? "%" . $shop_order->billing_firstname . "%" . $shop_order->billing_lastname . "%" : '';
+  my $lastname = $shop_order->billing_lastname ne '' ? "%" . $shop_order->billing_lastname . "%" : '';
+  my $company = $shop_order->billing_company ne '' ? "%" . $shop_order->billing_company . "%" : '';
+  my $street = $shop_order->billing_street ne '' ?  $shop_order->billing_street : '';
+  # Fuzzysearch for street to find e.g. "Dorfstrasse - Dorfstr. - Dorfstraße"
+  my $dbh = $::form->get_standard_dbh();
+  my $fs_query = "SELECT id FROM customer WHERE ( ( (    name ILIKE ?
+                                                      OR name ILIKE ?
+                                                    )
+                                                    AND zipcode ILIKE ?
+                                                  )
+                                                  OR ( street % ?
+                                                       AND zipcode ILIKE ?
+                                                     )
+                                                  OR email ILIKE ?
+                                                )";
+  my @values = ($lastname, $company, $shop_order->billing_zipcode, $street, $shop_order->billing_zipcode, $shop_order->billing_email);
+  my @c_ids = selectall_array_query($::form, $dbh, $fs_query, @values);
+$main::lxdebug->dump(0, 'WH:C_IDs ',\@c_ids);
 
   my $proposals = SL::DB::Manager::Customer->get_all(
-       where => [
-                   or => [
-                            and => [ # when matching names also match zipcode
-                                     or => [ 'name' => { ilike => "%$lastname%"},
-                                             'name' => { ilike => $shop_order->customer_company },
-                                           ],
-                                     'zipcode' => { ilike => $shop_order->customer_zipcode },
-                                   ],
-                            and => [ # check for street and zipcode
-                                     and => [ 'street'  => { ilike => "%".$shop_order->customer_street."%" },
-                                              'zipcode' => { ilike => $shop_order->customer_zipcode },
-                                            ],
-                                   ],
-                            or  => [ 'email' => { ilike => $shop_order->customer_email } ],
-                         ],
+       query => [ id => [ @c_ids ],
+#                   or => [
+#                            and => [ # when matching names also match zipcode
+#                                     or => [ 'name' => { ilike => "%$lastname%"},
+#                                             'name' => { ilike => $shop_order->customer_company },
+#                                           ],
+#                                     'zipcode' => { ilike => $shop_order->customer_zipcode },
+#                                   ],
+#                            and => [ # check for street and zipcode
+#                                     and => [ 'street'  => { ilike => "%".$shop_order->customer_street."%" },
+#                                              'zipcode' => { ilike => $shop_order->customer_zipcode },
+#                                            ],
+#                                   ],
+#                            or  => [ 'email' => { ilike => $shop_order->customer_email } ],
+#                         ],
                 ],
   );
 

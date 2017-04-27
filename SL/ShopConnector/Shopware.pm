@@ -130,7 +130,7 @@ sub get_new_orders {
       $shop_order->{positions} = $position-1;
 
       # Only Customers which are not found will be applied
-      my $name     = $shop_order->billing_lastname ne '' ? "%" . $shop_order->billing_firstname . "%" . $shop_order->billing_lastname . "%" : '';
+      my $name = $shop_order->billing_lastname ne '' ? $shop_order->billing_firstname . " " . $shop_order->billing_lastname : '';
       my $lastname = $shop_order->billing_lastname ne '' ? "%" . $shop_order->billing_lastname . "%" : '';
       my $company  = $shop_order->billing_company ne '' ? "%" . $shop_order->billing_company . "%" : '';
       my $street   = $shop_order->billing_street ne '' ?  $shop_order->billing_street : '';
@@ -160,6 +160,7 @@ sub get_new_orders {
                         'email'                 => $shop_order->billing_email,
                         'country'               => $shop_order->billing_country,
                         'greeting'              => $shop_order->billing_greeting,
+                        'contact'               => ($shop_order->billing_greeting eq "Herr" ? "Sehr geehrter Herr $lastname" : "Sehr geehrte Frau $lastname"),
                         'fax'                   => $shop_order->billing_fax,
                         'phone'                 => $shop_order->billing_phone,
                         'ustid'                 => $shop_order->billing_vat,
@@ -185,7 +186,36 @@ sub get_new_orders {
         $shop_order->save;
 
       }elsif(scalar(@c_ids) == 1){
-        my $customer = SL::DB::Manager::Customer->get_first( query => [ id => $c_ids[0], email => $shop_order->billing_email ] );
+        my $customer = SL::DB::Manager::Customer->get_first( query => [
+                                                                  id      => $c_ids[0],
+                                                                  email   => $shop_order->billing_email,
+                                                                  street  => $shop_order->billing_street,
+                                                                  zipcode => $shop_order->billing_zipcode,
+                                                                  city    => $shop_order->billing_city,
+                                                                  name    => $name,
+                                                                ]);
+        $main::lxdebug->dump(0, 'WH:CUS ',\$customer);
+
+        if(ref $customer){
+          $shop_order->{kivi_customer_id} = $customer->id;
+          $shop_order->save;
+        }
+      }else{
+        my $customer = SL::DB::Manager::Customer->get_first( query => [   #or => [id      => \@c_ids ],
+                                                                        name    => $name,
+                                                                        street  => $shop_order->billing_street,
+                                                                        zipcode => $shop_order->billing_zipcode,
+                                                                        email   => $shop_order->billing_email,
+                                                                      ]
+                                                           );
+        $main::lxdebug->dump(0, 'WH:CUS ',\$customer);
+
+        if(ref $customer){
+          $shop_order->{kivi_customer_id} = $customer->id;
+          $shop_order->save;
+        }
+      }
+      # DF Versandkosten als Position am ende einfügen Dreschflegelspezifisch event. konfigurierbar machen
 
         if(ref $customer){
           $shop_order->{kivi_customer_id} = $customer->id;
