@@ -144,6 +144,20 @@ namespace('kivi.shop_part', function(ns) {
     $('.ui-dialog-titlebar button.ui-dialog-titlebar-close').prop('disabled', '')
   };
 
+  ns.imageUpload = function(id,type,filetype,upload_title,gl) {
+    kivi.popup_dialog({ url:     'controller.pl',
+                        data:    { action: 'File/ajax_upload',
+                                   file_type:   filetype,
+                                   object_type: type,
+                                   object_id:   id,
+                                   is_global:   gl
+                                 },
+                        id:     'files_upload',
+                        dialog: { title: upload_title, width: 650, height: 240 } });
+    return true;
+  }
+
+
   ns.setup = function() {
     kivi.shop_part.massUploadInitialize();
     kivi.submit_ajax_form('controller.pl?action=ShopPart/mass_upload','[name=shop_parts]');

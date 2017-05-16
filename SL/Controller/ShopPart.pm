@@ -10,6 +10,7 @@ use Data::Dumper;
 use SL::Locale::String qw(t8);
 use SL::DB::ShopPart;
 use SL::DB::File;
+use SL::DB::ShopImage;
 use SL::Controller::FileUploader;
 use SL::DB::Default;
 use SL::Helper::Flash;
@@ -65,8 +66,14 @@ sub action_update_shop {
 
 sub action_show_files {
   my ($self) = @_;
+$main::lxdebug->message(0, "WH:ShowFiles ");
+$main::lxdebug->dump(0, 'WH:FORM ',$::form);
+$main::lxdebug->dump(0, 'WH:FORM ',$::form->{part});
 
-  my $images = SL::DB::Manager::File->get_all_sorted( where => [ trans_id => $::form->{id}, modul => $::form->{modul}, file_content_type => { like => 'image/%' } ], sort_by => 'position' );
+  #my $images = SL::DB::Manager::File->get_all_sorted( where => [ trans_id => $::form->{id}, modul => $::form->{modul}, file_content_type => { like => 'image/%' } ], sort_by => 'position' );
+  #my $images = SL::DB::Manager::ShopImage->get_all_sorted( where => [ partnumber => $::form->{part}{partnumber}, ], with_object => 'file', sort_by => 'position' );
+  my $images = SL::DB::Manager::ShopImage->get_all( where => [ 'files.object_id' => $::form->{id}, ], with_objects => 'file', sort_by => 'position' );
+$main::lxdebug->dump(0, 'WH:ShowFiles1 ',$images);
 
   $self->render('shop_part/_list_images', { header => 0 }, IMAGES => $images);
 }
@@ -143,7 +150,6 @@ sub action_get_categories {
 
   my $categories = $shop->connector->get_categories;
 
-$main::lxdebug->dump(0, 'WH:KAT ',$categories);
   $self->js
     ->run(
       'kivi.shop_part.shop_part_dialog',
@@ -303,9 +309,9 @@ sub action_reorder {
 sub action_list_articles {
   my ($self) = @_;
 
-  my %filter = ($::form->{filter} ? parse_filter($::form->{filter}) : query => [ transferred => 0 ]);
+  my %filter      = ($::form->{filter} ? parse_filter($::form->{filter}) : query => [ transferred => 0 ]);
   my $transferred = $::form->{filter}->{transferred_eq_ignore_empty} ne '' ? $::form->{filter}->{transferred_eq_ignore_empty} : '';
-  my $sort_by = $::form->{sort_by} ? $::form->{sort_by} : 'part.partnumber';
+  my $sort_by     = $::form->{sort_by} ? $::form->{sort_by} : 'part.partnumber';
   $sort_by .=$::form->{sort_dir} ? ' DESC' : ' ASC';
 
   my $articles = SL::DB::Manager::ShopPart->get_all(where => [ 'shop.obsolete' => 0 ],with_objects => [ 'part','shop' ], sort_by => $sort_by );
@@ -390,13 +396,13 @@ sub get_price_n_pricesource {
   #TODO Price must be formatted. Translations for $price_grp_str
   my $price;
   if ($price_src_str eq "master_data") {
-    my $part = SL::DB::Manager::Part->get_all( where => [id => $self->shop_part->part_id], with_objects => ['prices'],limit => 1)->[0];
-    $price = $part->$price_src_id;
+    my $part       = SL::DB::Manager::Part->get_all( where => [id => $self->shop_part->part_id], with_objects => ['prices'],limit => 1)->[0];
+    $price         = $part->$price_src_id;
     $price_src_str = $price_src_id;
-  }else{
-    my $part = SL::DB::Manager::Part->get_all( where => [id => $self->shop_part->part_id, 'prices.'.pricegroup_id => $price_src_id], with_objects => ['prices'],limit => 1)->[0];
-    my $pricegrp = SL::DB::Manager::Pricegroup->find_by( id => $price_src_id )->pricegroup;
-    $price =  $part->prices->[0]->price;
+    }else{
+    my $part       = SL::DB::Manager::Part->get_all( where => [id => $self->shop_part->part_id, 'prices.'.pricegroup_id => $price_src_id], with_objects => ['prices'],limit => 1)->[0];
+    my $pricegrp   = SL::DB::Manager::Pricegroup->find_by( id => $price_src_id )->pricegroup;
+    $price         = $part->prices->[0]->price;
     $price_src_str = $pricegrp;
   }
   return($price,$price_src_str);
