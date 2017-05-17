@@ -464,7 +464,6 @@ __END__
 
 =over 4
 
-
 =item C<action_update_shop>
 
   To be called from the "Update" button of the shoppart, for manually syncing/upload one part with its shop. Generates a  Calls some ClientJS functions to modifiy original page.
@@ -472,6 +471,8 @@ __END__
 =item C<action_get_n_write_categories>
 
   Can be used to sync the categories of a shoppart with the categories from online.
+
+=back
 
 =head1 AUTHORS
 
