@@ -66,14 +66,8 @@ sub action_update_shop {
 
 sub action_show_files {
   my ($self) = @_;
-$main::lxdebug->message(0, "WH:ShowFiles ");
-$main::lxdebug->dump(0, 'WH:FORM ',$::form);
-$main::lxdebug->dump(0, 'WH:FORM ',$::form->{part});
 
-  #my $images = SL::DB::Manager::File->get_all_sorted( where => [ trans_id => $::form->{id}, modul => $::form->{modul}, file_content_type => { like => 'image/%' } ], sort_by => 'position' );
-  #my $images = SL::DB::Manager::ShopImage->get_all_sorted( where => [ partnumber => $::form->{part}{partnumber}, ], with_object => 'file', sort_by => 'position' );
   my $images = SL::DB::Manager::ShopImage->get_all( where => [ 'files.object_id' => $::form->{id}, ], with_objects => 'file', sort_by => 'position' );
-$main::lxdebug->dump(0, 'WH:ShowFiles1 ',$images);
 
   $self->render('shop_part/_list_images', { header => 0 }, IMAGES => $images);
 }

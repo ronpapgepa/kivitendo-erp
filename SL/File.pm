@@ -191,7 +191,6 @@ sub save {
 
 sub _save {
   my ($self, %params) = @_;
-  $main::lxdebug->dump(0, 'WH: PARAMS', \%params);
   my $file = $params{dbfile};
   my $exists = 0;
 
@@ -247,7 +246,6 @@ sub _save {
   if($file->object_type eq "shop_image"){
     my $image_content = $params{file_contents};
     my $thumbnail = file_probe_type($image_content);
-    $main::lxdebug->dump(0, 'WH: THUMB ',$thumbnail);
     my $shopimage = SL::DB::ShopImage->new();
     $shopimage->assign_attributes(
                                   file_id                => $file->id,
