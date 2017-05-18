@@ -15,7 +15,6 @@ require Exporter;
 our @ISA      = qw(Exporter);
 our @EXPORT   = qw(file_create_thumbnail file_update_thumbnail file_probe_type file_probe_image_type file_update_type_and_dimensions);
 
-# TODO PDFs and others like odt,txt,...
 our %supported_mime_types = (
   'image/gif'  => { extension => 'gif', convert_to_png => 1, },
   'image/png'  => { extension => 'png' },
@@ -26,7 +25,6 @@ our %supported_mime_types = (
 sub file_create_thumbnail {
   my ($thumb) = @_;
   croak "No picture set yet" if !$thumb->{content};
-$main::lxdebug->dump(0, 'WH: CTHUMB ', $thumb);
   my $image            = GD::Image->new($thumb->{content});
   my ($width, $height) = $image->getBounds;
   my $max_dim          = 64;
@@ -42,10 +40,6 @@ $main::lxdebug->dump(0, 'WH: CTHUMB ', $thumb);
   $thumb->{thumbnail_img_content_type} = "image/png";
   $thumb->{thumbnail_img_width} = $new_width;
   $thumb->{thumbnail_img_height} = $new_height;
-  #$self->thumbnail_img_content($thumbnail->png);
-  #$self->thumbnail_img_content_type('image/png');
-  #$self->thumbnail_img_width($new_width);
-  #$self->thumbnail_img_height($new_height);
   return $thumb;
 
 }
@@ -71,12 +65,8 @@ sub file_probe_image_type {
 
 sub file_probe_type {
   my ($content) = @_;
-  #$main::lxdebug->dump(0, 'WH: FPT Content', $content);
   return (t8("No file uploaded yet")) if !$content;
-  #my $mime_type = File::MimeInfo::Magic::magic($content);
-  #$main::lxdebug->dump(0, 'WH: MIME ', $mime_type);
   my $info = Image::Info::image_info(\$content);
-  #$main::lxdebug->dump(0, 'WH: INFO', $info);
   if (!$info || $info->{error} || !$info->{file_media_type} || !$supported_mime_types{ $info->{file_media_type} }) {
     $::lxdebug->warn("Image::Info error: " . $info->{error}) if $info && $info->{error};
     return (t8('Unsupported image type (supported types: #1)', join(' ', sort keys %supported_mime_types)));
@@ -87,10 +77,6 @@ sub file_probe_type {
   $thumbnail->{file_image_width} = $info->{width};
   $thumbnail->{file_image_height} = $info->{height};
   $thumbnail->{content} = $content;
-  #$self->file_content_type($info->{file_media_type});
-  #$self->files_img_width($info->{width});
-  #$self->files_img_height($info->{height});
-  #$self->files_mtime(DateTime->now_local);
 
   $thumbnail = &file_create_thumbnail($thumbnail);
 

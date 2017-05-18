@@ -1480,8 +1480,6 @@ sub transfer_out {
 
 sub _determine_wh_and_bin {
   $::lxdebug->enter_sub(2);
-  # DF funktioniert so ist aber nicht gut
-  if (@_ == 6) {my $dummy = shift;}
 
   my ($dbh, $conf, $part_id, $qty, $unit) = @_;
   my @errors;
