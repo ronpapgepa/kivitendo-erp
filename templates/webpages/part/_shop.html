@@ -29,14 +29,14 @@
    <td>[% L.html_tag('span','Price', id => 'price_' _ shop_part.id) %]</td>
    <td>[% L.html_tag('span','Stock', id => 'stock_' _ shop_part.id) %]</td>
    <td>[% L.html_tag('span', shop_part.last_update.to_kivitendo('precision' => 'minute'), id => 'shop_part_last_update_' _ shop_part.id ) %]</td>
-   <td>[% L.button_tag("kivi.shop_part.edit_shop_part(" _ shop_part.id _ ")", LxERP.t8("Edit"))  %]</td>
-   <td>[% L.button_tag("kivi.shop_part.update_shop_part(" _ shop_part.id _ ")", LxERP.t8("Upload"))  %]</td>
-   <td>[% L.button_tag("kivi.shop_part.get_all_categories(" _ shop_part.id _ ")", LxERP.t8("Shopcategories"))  %]<br>[% HTML.escape(shop_part.part.partsgroup.partsgroup) %]</td>
+   <td>[% L.button_tag("kivi.ShopPart.edit_shop_part(" _ shop_part.id _ ")", LxERP.t8("Edit"))  %]</td>
+   <td>[% L.button_tag("kivi.ShopPart.update_shop_part(" _ shop_part.id _ ")", LxERP.t8("Upload"))  %]</td>
+   <td>[% L.button_tag("kivi.ShopPart.get_all_categories(" _ shop_part.id _ ")", LxERP.t8("Shopcategories"))  %]<br>[% HTML.escape(shop_part.part.partsgroup.partsgroup) %]</td>
   </tr>
   <script type="text/javascript">
     $(function() {
-      kivi.shop_part.update_price_n_price_source([% shop_part.id %],'[% shop_part.active_price_source %]');
-      kivi.shop_part.update_stock([% shop_part.id %]);
+      kivi.ShopPart.update_price_n_price_source([% shop_part.id %],'[% shop_part.active_price_source %]');
+      kivi.ShopPart.update_stock([% shop_part.id %]);
     });
   </script>
   [% END %]
@@ -49,7 +49,7 @@
    <td></td>
    <td></td>
    <td></td>
-   <td>[% L.button_tag("kivi.shop_part.create_shop_part(" _ id _ ", " _ shop.id _ ")", LxERP.t8("Add"))  %]</td>
+   <td>[% L.button_tag("kivi.ShopPart.create_shop_part(" _ id _ ", " _ shop.id _ ")", LxERP.t8("Add"))  %]</td>
   </tr>
   </thead>
   [%- END %]
@@ -61,7 +61,7 @@
   [%- IF shop_part.part_id %]
     <script type="text/javascript">
       $(function() {
-        kivi.shop_part.show_images([% shop_part.part_id %]);
+        kivi.ShopPart.show_images([% shop_part.part_id %]);
       });
     </script>
     <div id="shop_images" border=1 ></div>

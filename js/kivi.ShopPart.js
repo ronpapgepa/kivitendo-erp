@@ -1,4 +1,4 @@
-namespace('kivi.shop_part', function(ns) {
+namespace('kivi.ShopPart', function(ns) {
   var $dialog;
 
   // this is called by sub render, with a certain prerendered html (edit.html,categories.html)
@@ -159,7 +159,7 @@ namespace('kivi.shop_part', function(ns) {
 
 
   ns.setup = function() {
-    kivi.shop_part.massUploadInitialize();
+    kivi.ShopPart.massUploadInitialize();
     kivi.submit_ajax_form('controller.pl?action=ShopPart/mass_upload','[name=shop_parts]');
   };
 

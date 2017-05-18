@@ -11,7 +11,6 @@ use SL::Locale::String qw(t8);
 use SL::DB::ShopPart;
 use SL::DB::File;
 use SL::DB::ShopImage;
-use SL::Controller::FileUploader;
 use SL::DB::Default;
 use SL::Helper::Flash;
 use MIME::Base64;
@@ -94,7 +93,7 @@ sub action_ajax_upload_file{
 
   $self->js
     ->dialog->close('#jqueryui_popup_dialog')
-    ->run('kivi.shop_part.show_images',$self->file->trans_id)
+    ->run('kivi.ShopPart.show_images',$self->file->trans_id)
     ->render();
 }
 
@@ -123,7 +122,7 @@ sub action_ajax_update_file{
 
   $self->js
     ->dialog->close('#jqueryui_popup_dialog')
-    ->run('kivi.shop_part.show_images',$self->file->trans_id)
+    ->run('kivi.ShopPart.show_images',$self->file->trans_id)
     ->render();
 }
 
@@ -132,7 +131,7 @@ sub action_ajax_delete_file {
   $self->file->delete;
 
   $self->js
-    ->run('kivi.shop_part.show_images',$self->file->trans_id)
+    ->run('kivi.ShopPart.show_images',$self->file->trans_id)
     ->render();
 }
 
@@ -146,7 +145,7 @@ sub action_get_categories {
 
   $self->js
     ->run(
-      'kivi.shop_part.shop_part_dialog',
+      'kivi.ShopPart.shop_part_dialog',
       t8('Shopcategories'),
       $self->render('shop_part/categories', { output => 0 }, CATEGORIES => $categories )
     )
@@ -239,7 +238,7 @@ sub create_or_update {
            ->html('#shop_part_active_' . $self->shop_part->id, $self->shop_part->active)
            ->html('#price_' . $self->shop_part->id, $::form->format_amount(\%::myconfig,$price,2))
            ->html('#active_price_source_' . $self->shop_part->id, $price_src_str)
-           ->run('kivi.shop_part.close_dialog')
+           ->run('kivi.ShopPart.close_dialog')
            ->flash('info', t8("Updated shop part"))
            ->render;
 }
@@ -251,7 +250,7 @@ sub render_shop_part_edit_dialog {
   # or a new shop_part with only part_id and shop_id set
   $self->js
     ->run(
-      'kivi.shop_part.shop_part_dialog',
+      'kivi.ShopPart.shop_part_dialog',
       t8('Shop part'),
       $self->render('shop_part/edit', { output => 0 }) #, shop_part => $self->shop_part)
     )
@@ -286,7 +285,7 @@ sub action_save_categories {
 
   flash('info', t8('The categories has been saved.'));
 
-  $self->js->run('kivi.shop_part.close_dialog')
+  $self->js->run('kivi.ShopPart.close_dialog')
            ->flash('info', t8("Updated categories"))
            ->render;
 }
@@ -324,7 +323,7 @@ sub action_upload_status {
   my $html    = $self->render('shop_part/_upload_status', { output => 0 }, job => $job);
 
   $self->js->html('#status_mass_upload', $html);
-  $self->js->run('kivi.shop_part.massUploadFinished') if $job->data_as_hash->{status} == SL::BackgroundJob::ShopPartMassUpload->DONE();
+  $self->js->run('kivi.ShopPart.massUploadFinished') if $job->data_as_hash->{status} == SL::BackgroundJob::ShopPartMassUpload->DONE();
   $self->js->render;
 }
 
@@ -350,7 +349,7 @@ sub action_mass_upload {
 
    $self->js
       ->html('#status_mass_upload', $html)
-      ->run('kivi.shop_part.massUploadStarted')
+      ->run('kivi.ShopPart.massUploadStarted')
       ->render;
 }
 
@@ -358,7 +357,7 @@ sub action_mass_upload {
 # internal stuff
 #
 sub add_javascripts  {
-  $::request->{layout}->add_javascripts(qw(kivi.shop_part.js));
+  $::request->{layout}->add_javascripts(qw(kivi.ShopPart.js));
 }
 
 sub load_pricesources {
