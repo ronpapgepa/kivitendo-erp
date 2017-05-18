@@ -75,9 +75,9 @@
       </td>
       <td style="vertical-align:middle;text-align:center;">
         [% IF shop_part.active %]
-        <div id="toogle_[% shop_part.id %]" style="background-image:url(image/gruener_punkt.gif);background-repeat:no-repeat;witdh:15px;height:15px;" onclick="kivi.shop_part.part_toggle_active([% shop_part.id %] ,[% shop_part.active %]);" onMouseOver="this.style.cursor='pointer'">&nbsp; </div>
+        <div id="toogle_[% shop_part.id %]" style="background-image:url(image/gruener_punkt.gif);background-repeat:no-repeat;witdh:15px;height:15px;" onclick="kivi.ShopPart.part_toggle_active([% shop_part.id %] ,[% shop_part.active %]);" onMouseOver="this.style.cursor='pointer'">&nbsp; </div>
         [% ELSE %]
-        <div id="toogle_[% shop_part.id %]" style="background-image:url(image/roter_punkt.gif);background-repeat:no-repeat;witdh:15px;height:15px;" onclick="kivi.shop_part.part_toggle_active([% shop_part.id %] ,[% shop_part.active %]);" onMouseOver="this.style.cursor='pointer'">&nbsp; </div>
+        <div id="toogle_[% shop_part.id %]" style="background-image:url(image/roter_punkt.gif);background-repeat:no-repeat;witdh:15px;height:15px;" onclick="kivi.ShopPart.part_toggle_active([% shop_part.id %] ,[% shop_part.active %]);" onMouseOver="this.style.cursor='pointer'">&nbsp; </div>
         [% END %]
       </td>
       <td>[% L.html_tag('span',LxERP.t8(), id => 'active_price_source_' _ shop_part.id) %] </td>
@@ -104,8 +104,8 @@
       </td>
     <script type="text/javascript">
       $(function() {
-         kivi.shop_part.update_price_n_price_source([% shop_part.id %],'[% shop_part.active_price_source %]');
-         kivi.shop_part.update_stock([% shop_part.id %]);
+         kivi.ShopPart.update_price_n_price_source([% shop_part.id %],'[% shop_part.active_price_source %]');
+         kivi.ShopPart.update_stock([% shop_part.id %]);
       });
     </script>
     </tr>
@@ -119,7 +119,7 @@
     [% L.radio_button_tag('upload_todo', value='price', label= LxERP.t8('Only Price')) %]
     [% L.radio_button_tag('upload_todo', value='stock', label= LxERP.t8('Only Stock')) %]
     [% L.radio_button_tag('upload_todo', value='price_stock', checked=1, label= LxERP.t8('Price and Stock')) %]
-    [% L.button_tag("kivi.shop_part.setup();", LxERP.t8("Upload all marked"), id="mass_transfer") %]
+    [% L.button_tag("kivi.ShopPart.setup();", LxERP.t8("Upload all marked"), id="mass_transfer") %]
   </div>
   <div id="status_mass_upload" style="display: none;">
     [%- INCLUDE 'shop_part/_upload_status.html' %]
