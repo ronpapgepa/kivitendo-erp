@@ -16,6 +16,8 @@ use Data::Dumper;
 use Sort::Naturally ();
 use SL::Helper::Flash;
 use Encode qw(encode_utf8);
+use SL::File;
+use File::Slurp;
 
 use Rose::Object::MakeMethods::Generic (
   'scalar --get_set_init' => [ qw(connector url) ],
@@ -248,25 +250,29 @@ sub update_part {
     push ( @cat, $temp );
   }
 
-  my $images = SL::DB::Manager::File->get_all( where => [ modul => 'shop_part', trans_id => $part->{id} ]);
+  # my $images = SL::DB::Manager::File->get_all( where => [ modul => 'shop_part', trans_id => $part->{id} ]);
+  my $images = SL::DB::Manager::ShopImage->get_all( where => [ 'files.object_id' => $part->{id}, ], with_objects => 'file', sort_by => 'position' );
   my @upload_img = ();
   foreach my $img (@{ $images }) {
-    my ($path, $extension) = (split /\./, $img->{filename});
-    my $temp ={ ( link        => 'data:' . $img->{file_content_type} . ';base64,' . MIME::Base64::encode($img->{file_content},''),
-                  description => $img->{title},
-                  position    => $img->{position},
+    my $file = SL::File->get(id => $img->file->id );
+    my $file_path = $file->get_file;
+    my ($path, $extension) = (split /\./, $file->file_name);
+    my $content = File::Slurp::read_file($file->get_file);
+    my $temp ={ ( link        => 'data:' . $file->mime_type . ';base64,' . MIME::Base64::encode($content),
+                  description => $img->file->title,
+                  position    => $img->position,
                   extension   => $extension,
                       )}    ;
     push( @upload_img, $temp);
   }
 
   my ($import,$data,$data_json);
-  if( $shop_part->last_update){
+#  if( $shop_part->last_update){
     my $partnumber = $::form->escape($part->{partnumber});#shopware don't accept / in articlenumber
     $data = $self->connector->get("http://$url/api/articles/$partnumber?useNumberAsId=true");
     $data_json = $data->content;
     $import = SL::JSON::decode_json($data_json);
-  }
+#  }
 
   # get the right price
   my ( $price_src_str, $price_src_id ) = split(/\//,$shop_part->active_price_source);
@@ -339,7 +345,7 @@ sub update_part {
                                                           ],
                                              #attribute => { attr1  => $cvars->{CVARNAME}->{value}, } , #HowTo handle attributes
                                        },
-                      supplier          => 'Is needed by Shopware', #$part->{microfiche},
+                      supplier          => 'AR', # Is needed by shopware,
                       descriptionLong   => $shop_part->{shop_description},
                       active            => $shop_part->active,
                       images            => [ @upload_img ],
