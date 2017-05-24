@@ -292,9 +292,8 @@ sub action_save_categories {
 
 sub action_reorder {
   my ($self) = @_;
-
-  require SL::DB::File;
-  SL::DB::File->reorder_list(@{ $::form->{image_id} || [] });
+  require SL::DB::ShopImage;
+  SL::DB::ShopImage->reorder_list(@{ $::form->{image_id} || [] });
 
   $self->render(\'', { type => 'json' });
 }

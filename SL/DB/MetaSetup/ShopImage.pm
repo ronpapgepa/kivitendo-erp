@@ -13,6 +13,7 @@ __PACKAGE__->meta->columns(
   id                     => { type => 'serial', not_null => 1 },
   itime                  => { type => 'timestamp', default => 'now()' },
   mtime                  => { type => 'timestamp' },
+  object_id              => { type => 'text', not_null => 1 },
   org_file_height        => { type => 'integer' },
   org_file_width         => { type => 'integer' },
   position               => { type => 'integer' },

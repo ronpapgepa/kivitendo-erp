@@ -253,6 +253,7 @@ sub _save {
                                   org_file_height        => $thumbnail->{file_image_height},
                                   org_file_width         => $thumbnail->{file_image_width},
                                   thumbnail_content_type => $thumbnail->{thumbnail_img_content_type},
+                                  object_id              => $file->object_id,
                                  );
     $shopimage->save;
   }
