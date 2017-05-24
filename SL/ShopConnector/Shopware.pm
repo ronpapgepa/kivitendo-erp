@@ -385,7 +385,7 @@ sub get_article {
   my ($self,$partnumber) = @_;
 
   my $url = $self->url;
-  my $partnumber = $::form->escape($partnumber);#shopware don't accept / in articlenumber
+  $partnumber = $::form->escape($partnumber);#shopware don't accept / in articlenumber
   my $data = $self->connector->get("http://$url/api/articles/$partnumber?useNumberAsId=true");
   my $data_json = $data->content;
   return SL::JSON::decode_json($data_json);
