@@ -97,34 +97,34 @@ sub action_ajax_upload_file{
     ->render();
 }
 
-sub action_ajax_update_file{
-  my ($self, %params) = @_;
+#sub action_ajax_update_file{
+# my ($self, %params) = @_;
 
-  my $attributes                   = $::form->{ $::form->{form_prefix} } || die "Missing attributes";
+# my $attributes                   = $::form->{ $::form->{form_prefix} } || die "Missing attributes";
 
-  if (!$attributes->{file_content}) {
-    delete $attributes->{file_content};
-  } else {
-    $attributes->{filename} = ((($::form->{ATTACHMENTS} || {})->{ $::form->{form_prefix} } || {})->{file_content} || {})->{filename};
-  }
+# if (!$attributes->{file_content}) {
+#   delete $attributes->{file_content};
+# } else {
+#   $attributes->{filename} = ((($::form->{ATTACHMENTS} || {})->{ $::form->{form_prefix} } || {})->{file_content} || {})->{filename};
+# }
 
-  my @errors;
-  my @type_error = SL::Controller::FileUploader->validate_filetype($attributes->{filename},$::form->{aft});
-  push @errors,@type_error if @type_error;
-  $self->file->assign_attributes(%{ $attributes });
-  my @file_errors = $self->file->validate if $attributes->{file_content};;
-  push @errors,@file_errors if @file_errors;
+# my @errors;
+# my @type_error = SL::Controller::FileUploader->validate_filetype($attributes->{filename},$::form->{aft});
+# push @errors,@type_error if @type_error;
+# $self->file->assign_attributes(%{ $attributes });
+# my @file_errors = $self->file->validate if $attributes->{file_content};;
+# push @errors,@file_errors if @file_errors;
 
-  return $self->js->error(@errors)->render($self) if @errors;
+# return $self->js->error(@errors)->render($self) if @errors;
 
-  $self->file->file_update_type_and_dimensions if $attributes->{file_content};
-  $self->file->save;
+# $self->file->file_update_type_and_dimensions if $attributes->{file_content};
+# $self->file->save;
 
-  $self->js
-    ->dialog->close('#jqueryui_popup_dialog')
-    ->run('kivi.ShopPart.show_images',$self->file->trans_id)
-    ->render();
-}
+# $self->js
+#   ->dialog->close('#jqueryui_popup_dialog')
+#   ->run('kivi.ShopPart.show_images',$self->file->trans_id)
+#   ->render();
+#}
 
 sub action_ajax_delete_file {
   my ( $self ) = @_;
