@@ -104,7 +104,7 @@ namespace('kivi.ShopPart', function(ns) {
   }
 
   ns.show_images = function(id) {
-    var url = 'controller.pl?action=ShopPart/show_files&modul=shop_part&id='+id;
+    var url = 'controller.pl?action=ShopPart/show_files&id='+id;
     $('#shop_images').load(url);
   }
 
@@ -154,6 +154,7 @@ namespace('kivi.ShopPart', function(ns) {
                                  },
                         id:     'files_upload',
                         dialog: { title: upload_title, width: 650, height: 240 } });
+    kivi.ShopPart.show_image(id);
     return true;
   }
 
