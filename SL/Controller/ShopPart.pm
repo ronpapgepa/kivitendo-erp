@@ -131,7 +131,7 @@ sub action_ajax_delete_file {
   $self->file->delete;
 
   $self->js
-    ->run('kivi.ShopPart.show_images',$self->file->trans_id)
+    ->run('kivi.ShopPart.show_images',$self->file->object_id)
     ->render();
 }
 

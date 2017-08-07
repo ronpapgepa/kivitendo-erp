@@ -262,6 +262,7 @@ sub update_part {
                   description => $img->file->title,
                   position    => $img->position,
                   extension   => $extension,
+                  path        => $path,
                       )}    ;
     push( @upload_img, $temp);
   }
@@ -360,6 +361,7 @@ sub update_part {
 
   my $dataString = SL::JSON::to_json(\%shop_data);
   $dataString = encode_utf8($dataString);
+  $main::lxdebug->dump(0, 'WH:UPLOAD ', $dataString);
   my $upload_content;
   if($import->{success}){
     #update
