@@ -250,7 +250,6 @@ sub update_part {
     push ( @cat, $temp );
   }
 
-  # my $images = SL::DB::Manager::File->get_all( where => [ modul => 'shop_part', trans_id => $part->{id} ]);
   my $images = SL::DB::Manager::ShopImage->get_all( where => [ 'files.object_id' => $part->{id}, ], with_objects => 'file', sort_by => 'position' );
   my @upload_img = ();
   foreach my $img (@{ $images }) {
@@ -270,6 +269,8 @@ sub update_part {
   my ($import,$data,$data_json);
 #  if( $shop_part->last_update){
     my $partnumber = $::form->escape($part->{partnumber});#shopware don't accept / in articlenumber
+# Shopware RestApi schreibt Fehleremail wenn Artikel nicht gefunden. es braucht aber irgendeine Abfrage, ob der Artikel schon im Shop ist.
+# LWP->post = neuanlegen LWP->put = update
     $data = $self->connector->get("http://$url/api/articles/$partnumber?useNumberAsId=true");
     $data_json = $data->content;
     $import = SL::JSON::decode_json($data_json);
@@ -288,6 +289,7 @@ sub update_part {
   }
 
   # get the right taxrate for the article
+  # TODO In extra Helper??
   my $taxrate;
   my $dbh = $::form->get_standard_dbh();
   my $b_id = $part->buchungsgruppen_id;
@@ -361,25 +363,26 @@ sub update_part {
 
   my $dataString = SL::JSON::to_json(\%shop_data);
   $dataString = encode_utf8($dataString);
-  $main::lxdebug->dump(0, 'WH:UPLOAD ', $dataString);
   my $upload_content;
+  my $upload;
   if($import->{success}){
     #update
     my $partnumber = $::form->escape($part->{partnumber});#shopware don't accept / in articlenumber
-    my $upload = $self->connector->put("http://$url/api/articles/$partnumber?useNumberAsId=true",Content => $dataString);
+    $upload = $self->connector->put("http://$url/api/articles/$partnumber?useNumberAsId=true",Content => $dataString);
     my $data_json = $upload->content;
     $upload_content = SL::JSON::decode_json($data_json);
   }else{
     #upload
-    my $upload = $self->connector->post("http://$url/api/articles/",Content => $dataString);
+    $upload = $self->connector->post("http://$url/api/articles/",Content => $dataString);
     my $data_json = $upload->content;
     $upload_content = SL::JSON::decode_json($data_json);
   }
   # Don't know if this is needed
   if(@upload_img) {
     my $partnumber = $::form->escape($part->{partnumber});#shopware don't accept / in articlenumber
-    $self->connector->put("http://$url/api/generateArticleImages/$partnumber?useNumberAsId=true");
+    my $imgup = $self->connector->put("http://$url/api/generateArticleImages/$partnumber?useNumberAsId=true");
   }
+
   return $upload_content->{success};
 }
 

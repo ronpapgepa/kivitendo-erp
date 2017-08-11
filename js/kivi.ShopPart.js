@@ -154,7 +154,6 @@ namespace('kivi.ShopPart', function(ns) {
                                  },
                         id:     'files_upload',
                         dialog: { title: upload_title, width: 650, height: 240 } });
-    kivi.ShopPart.show_image(id);
     return true;
   }
 
