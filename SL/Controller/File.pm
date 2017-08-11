@@ -379,7 +379,14 @@ sub _do_list {
                                  file_type   => $self->file_type  );
   }
   $self->files(\@files);
-  $self->_mk_render('file/list',1,0,$json);
+
+  if($self->object_type eq 'shop_image'){
+    $self->js
+      ->run('kivi.ShopPart.show_images',$self->object_id)
+      ->render();
+  }else{
+    $self->_mk_render('file/list',1,0,$json);
+  }
 }
 
 sub _get_from_import {

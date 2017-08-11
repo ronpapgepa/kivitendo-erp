@@ -71,61 +71,6 @@ sub action_show_files {
   $self->render('shop_part/_list_images', { header => 0 }, IMAGES => $images);
 }
 
-sub action_ajax_upload_file{
-  my ($self, %params) = @_;
-
-  my $attributes                   = $::form->{ $::form->{form_prefix} } || die "Missing attributes";
-
-  $attributes->{filename} = ((($::form->{ATTACHMENTS} || {})->{ $::form->{form_prefix} } || {})->{file_content} || {})->{filename};
-
-  my @errors;
-  my @file_errors = SL::DB::File->new(%{ $attributes })->validate;
-  push @errors,@file_errors if @file_errors;
-
-  my @type_error = SL::Controller::FileUploader->validate_filetype($attributes->{filename},$::form->{aft});
-  push @errors,@type_error if @type_error;
-
-  return $self->js->error(@errors)->render($self) if @errors;
-
-  $self->file->assign_attributes(%{ $attributes });
-  $self->file->file_update_type_and_dimensions;
-  $self->file->save;
-
-  $self->js
-    ->dialog->close('#jqueryui_popup_dialog')
-    ->run('kivi.ShopPart.show_images',$self->file->trans_id)
-    ->render();
-}
-
-#sub action_ajax_update_file{
-# my ($self, %params) = @_;
-
-# my $attributes                   = $::form->{ $::form->{form_prefix} } || die "Missing attributes";
-
-# if (!$attributes->{file_content}) {
-#   delete $attributes->{file_content};
-# } else {
-#   $attributes->{filename} = ((($::form->{ATTACHMENTS} || {})->{ $::form->{form_prefix} } || {})->{file_content} || {})->{filename};
-# }
-
-# my @errors;
-# my @type_error = SL::Controller::FileUploader->validate_filetype($attributes->{filename},$::form->{aft});
-# push @errors,@type_error if @type_error;
-# $self->file->assign_attributes(%{ $attributes });
-# my @file_errors = $self->file->validate if $attributes->{file_content};;
-# push @errors,@file_errors if @file_errors;
-
-# return $self->js->error(@errors)->render($self) if @errors;
-
-# $self->file->file_update_type_and_dimensions if $attributes->{file_content};
-# $self->file->save;
-
-# $self->js
-#   ->dialog->close('#jqueryui_popup_dialog')
-#   ->run('kivi.ShopPart.show_images',$self->file->trans_id)
-#   ->render();
-#}
-
 sub action_ajax_delete_file {
   my ( $self ) = @_;
   $self->file->delete;
@@ -232,7 +177,6 @@ sub create_or_update {
 
   my ( $price, $price_src_str ) = $self->get_price_n_pricesource($self->shop_part->active_price_source);
 
-  #TODO Price must be formatted. $price_src_str must be translated
   flash('info', $is_new ? t8('The shop part has been created.') : t8('The shop part has been saved.'));
   $self->js->html('#shop_part_description_' . $self->shop_part->id, $self->shop_part->shop_description)
            ->html('#shop_part_active_' . $self->shop_part->id, $self->shop_part->active)
@@ -252,7 +196,7 @@ sub render_shop_part_edit_dialog {
     ->run(
       'kivi.ShopPart.shop_part_dialog',
       t8('Shop part'),
-      $self->render('shop_part/edit', { output => 0 }) #, shop_part => $self->shop_part)
+      $self->render('shop_part/edit', { output => 0 })
     )
     ->reinit_widgets;
 
@@ -309,7 +253,7 @@ sub action_list_articles {
   my $articles = SL::DB::Manager::ShopPart->get_all(where => [ 'shop.obsolete' => 0 ],with_objects => [ 'part','shop' ], sort_by => $sort_by );
 
   foreach my $article (@{ $articles}) {
-    my $images = SL::DB::Manager::File->get_all_count( where => [ trans_id => $article->part->id, modul => 'shop_part', file_content_type => { like => 'image/%' } ], sort_by => 'position' );
+    my $images = SL::DB::Manager::ShopImage->get_all_count( where => [ 'files.object_id' => $article->part->id, ], with_objects => 'file', sort_by => 'position' );
     $article->{images} = $images;
   }
 
@@ -385,7 +329,6 @@ sub get_price_n_pricesource {
 
   require SL::DB::Pricegroup;
   require SL::DB::Part;
-  #TODO Price must be formatted. Translations for $price_grp_str
   my $price;
   if ($price_src_str eq "master_data") {
     my $part       = SL::DB::Manager::Part->get_all( where => [id => $self->shop_part->part_id], with_objects => ['prices'],limit => 1)->[0];
@@ -410,7 +353,6 @@ sub init_shop_part {
     SL::DB::Manager::ShopPart->find_by(id => $::form->{shop_part_id});
   } else {
     SL::DB::ShopPart->new(shop_id => $::form->{shop_id}, part_id => $::form->{part_id});
-    #SL::DB::ShopPart->new;
   };
 }
 
@@ -465,6 +407,10 @@ __END__
   Can be used to sync the categories of a shoppart with the categories from online.
 
 =back
+
+=head1 TODO
+
+  Pricesrules, pricessources aren't fully implemented yet.
 
 =head1 AUTHORS
 
