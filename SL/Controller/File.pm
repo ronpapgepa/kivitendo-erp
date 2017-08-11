@@ -290,27 +290,6 @@ sub action_download {
   my $file = SL::File->get(id => $id );
   $file->version($version) if $version;
   my $ref  = $file->get_content;
-                                     );
-          unlink($sfile->file_name);
-        }
-        1;
-      } or do {
-        $self->js->flash(       'error', t8('internal error (see details)'))
-                 ->flash_detail('error', $@)->render;
-        return;
-      }
-    }
-  }
-  $self->existing(\@existing);
-  $self->_do_list(1);
-}
-
-sub action_download {
-  my ($self) = @_;
-  my ($id, $version) = split /_/, $::form->{id};
-  my $file = SL::File->get(id => $id );
-  $file->version($version) if $version;
-  my $ref  = $file->get_content;
   if ( $file && $ref ) {
     return $self->send_file($ref,
       type => $file->mime_type,
@@ -400,7 +379,14 @@ sub _do_list {
                                 );
   }
   $self->files(\@files);
-  $self->_mk_render('file/list', 1, 0, $json);
+
+  if($self->object_type eq 'shop_image'){
+    $self->js
+      ->run('kivi.ShopPart.show_images', $self->object_id)
+      ->render();
+  }else{
+    $self->_mk_render('file/list', 1, 0, $json);
+  }
 }
 
 sub _get_from_import {
