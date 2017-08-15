@@ -57,7 +57,7 @@ sub action_list {
     );
     $shop_order->{open_invoices} = $open_invoices;
   }
-
+  $self->_setup_list_action_bar;
   $self->render('shop_order/list',
                 title       => t8('ShopOrders'),
                 SHOPORDERS  => $shop_orders,
@@ -301,6 +301,30 @@ sub init_transferred {
   [ { title => t8("all"),             value => '' },
     { title => t8("transferred"),     value => 1  },
     { title => t8("not transferred"), value => 0  }, ]
+}
+
+sub _setup_list_action_bar {
+  my ($self) = @_;
+
+  for my $bar ($::request->layout->get('actionbar')) {
+    $bar->add(
+        action => [
+          t8('Search'),
+          submit    => [ '#shoporders', { action => "ShopOrder/list" } ],
+        ],
+         link => [
+          t8('Shoporders'),
+          link => [ $self->url_for(action => 'get_orders') ],
+          tooltip => t8('New shop orders'),
+        ],
+        'separator',
+        action => [
+          t8('Apply'),
+          call => [ 'kivi.ShopOrder.setup', id => "mass_transfer" ],
+          tooltip => t8('Transfer all marked'),
+        ],
+    );
+  }
 }
 
 1;
