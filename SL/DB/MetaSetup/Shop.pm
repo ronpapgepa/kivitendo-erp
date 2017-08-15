@@ -17,12 +17,15 @@ __PACKAGE__->meta->columns(
   obsolete          => { type => 'boolean', default => 'false', not_null => 1 },
   orders_to_fetch   => { type => 'integer' },
   password          => { type => 'text' },
+  path              => { type => 'text', default => '/', not_null => 1 },
   port              => { type => 'integer' },
   price_source      => { type => 'text' },
   pricetype         => { type => 'text' },
+  protocol          => { type => 'text', default => 'http', not_null => 1 },
+  realm             => { type => 'text' },
+  server            => { type => 'text' },
   sortkey           => { type => 'integer' },
   taxzone_id        => { type => 'integer' },
-  url               => { type => 'text' },
 );
 
 __PACKAGE__->meta->primary_key_columns([ 'id' ]);
