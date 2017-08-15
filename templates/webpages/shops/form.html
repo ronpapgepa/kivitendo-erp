@@ -6,7 +6,7 @@
 
 <h1>[% HTML.escape(title) %]</h1>
 [% #Dumper.dump_html(SELF.shop) %]
-<form action="controller.pl" method="post">
+<form id="form" action="controller.pl" method="post">
 
 [%- INCLUDE 'common/flash.html' %]
 
@@ -34,19 +34,32 @@
     <td>[% L.select_tag('shop.taxzone_id', SELF.taxzone_id, value_key = 'id', title_key = 'name', with_empty = 0, default = SELF.shop.taxzone_id, default_value_key='id' ) %]</td>
   </tr>
   <tr>
-    <th align="right">[% 'URL' | $T8 %]</th>
-    <td>[%- L.input_tag("shop.url", SELF.shop.url, size=size) %]</td>
+    <th align="right">[% 'Protocol' | $T8 %]</th>
+    <td>[% L.select_tag('shop.protocol', SELF.protocols value_key = 'id', title_key = 'name', with_empty = 0, default = SELF.shop.protocol, default_value_key='id' ) %]</td>
+  </tr>
+  <tr>
+    <th align="right">[% 'Server' | $T8 %]</th>
+    <td>[%- L.input_tag("shop.server", SELF.shop.server, size=size) %]</td>
   </tr>
   <tr>
     <th align="right">[% 'Port' | $T8 %]</th>
     <td>[%- L.input_tag("shop.port", SELF.shop.port, size=5) %]</td>
-   <tr>
+  </tr>
+  <tr>
+    <th align="right">[% 'Path' | $T8 %]</th>
+    <td>[%- L.input_tag("shop.path", SELF.shop.path, size=size) %]</td>
+  </tr>
+  <tr>
+    <th align="right">[% 'Realm' | $T8 %]</th>
+    <td>[%- L.input_tag("shop.realm", SELF.shop.realm, size=size) %]</td>
+  </tr>
+  <tr>
     <th align="right">[% 'User' | $T8 %]</th>
-    <td>[%- L.input_tag("shop.login", SELF.shop.login, size=12) %]</td>
+    <td>[%- L.input_tag("shop.login", SELF.shop.login, size=size) %]</td>
   </tr>
   <tr>
     <th align="right">[% 'Password' | $T8 %]</th>
-    <td>[%- L.input_tag("shop.password", SELF.shop.password, size=12) %]</td>
+    <td>[%- L.input_tag("shop.password", SELF.shop.password, size=size) %]</td>
   </tr>
   <tr>
     <th align="right">[% 'Last ordernumber' | $T8 %]</th>
@@ -62,31 +75,7 @@
   </tr>
 </table>
 
- <p>
-  [% L.hidden_tag("action", "Shop/dispatch") %]
-  [% L.submit_tag("action_" _  (SELF.shop.id ? "update" : "create"), LxERP.t8('Save'), onclick="return check_prerequisites();") %]
-  [%- IF SELF.shop.id -%]
-    [% L.submit_tag("action_delete", LxERP.t8('Delete')) %]
-  [%- END %]
-  <a href="[% SELF.url_for(action='list') %]">[%- LxERP.t8("Cancel") %]</a>
- </p>
-
  <hr>
- <table>
-  <tr>
-    <th align="right">[% 'Description' | $T8 %]</th>
-    <th>Last update</th>
-    <th>[% 'Available qty' | $T8 %]</th>
-  </tr>
- [%- FOREACH shop_part = SELF.shop.updatable_parts %]
-  <tr>
-   <td>[% P.part(shop_part.part) %]</td>
-   <td>[% shop_part.last_update.to_kivitendo %]</td>
-   <td>[% shop_part.part.get_stock %]</td>
-  </tr>
- [%- END %]
- </table>
-
 
 <script type="text/javascript">
 <!--

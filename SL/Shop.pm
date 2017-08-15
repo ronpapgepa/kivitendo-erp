@@ -62,7 +62,7 @@ __END__
 =head1 SYNOPSIS
 
   my $config = SL::DB::Manager::Shop->get_first();
-  my $shop = SL::WebShop->new( config => $config );
+  my $shop = SL::Shop->new( config => $config );
 
   From the config we know which Connector class to load, save in $shop->connector
   and do stuff from there:
