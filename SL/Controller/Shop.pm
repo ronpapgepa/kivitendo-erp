@@ -12,7 +12,7 @@ use SL::DB::Pricegroup;
 use SL::DB::TaxZone;
 
 use Rose::Object::MakeMethods::Generic (
-  scalar                  => [ qw(connectors price_types price_sources taxzone_id) ],
+  scalar                  => [ qw(connectors price_types price_sources taxzone_id protocols) ],
   'scalar --get_set_init' => [ qw(shop) ]
 );
 
@@ -26,34 +26,25 @@ __PACKAGE__->run_before('load_types',    only => [ qw(new edit) ]);
 sub action_list {
   my ($self) = @_;
 
+  $self->_setup_list_action_bar;
   $self->render('shops/list',
                 title => t8('Shops'),
                 SHOPS => SL::DB::Manager::Shop->get_all_sorted,
                );
 }
 
-sub action_new {
-  my ($self) = @_;
-
-  $self->shop(SL::DB::Shop->new);
-  $self->render('shops/form', title       => t8('Add shop'));
-};
-
 sub action_edit {
   my ($self) = @_;
 
-  $self->render('shops/form', title       => t8('Edit shop'));
+  my $is_new = !$self->shop->id;
+  $self->_setup_form_action_bar;
+  $self->render('shops/form', title       => ($is_new ? t8('Add shop') : t8('Edit shop')));
 }
 
-sub action_create {
+sub action_save {
   my ($self) = @_;
 
-  $self->shop(SL::DB::Shop->new);
-  $self->create_or_update;
-}
-
-sub action_update {
-  my ($self) = @_;
+  my $is_new = !$self->shop->id;
   $self->create_or_update;
 }
 
@@ -75,16 +66,30 @@ sub action_reorder {
   $self->render(\'', { type => 'json' });
 }
 
-#
-# filters
-#
+sub action_check_connectivity {
+  my ($self) = @_;
+
+  my $ok = 0;
+  require SL::Shop;
+  my $shop = SL::Shop->new( config => $self->shop );
+  my $version = $shop->connector->get_version;
+  $ok       = $version->{success};
+
+  if($ok) {
+    flash_later('ok', t8('The connection to the webshop is success. Version: #1 -- Revision: #2', $version->{data}->{version}, $version->{data}->{revision}));
+    return;
+  }else{
+    return $version;
+  }
+}
 
 sub check_auth {
   $::auth->assert('config');
 }
 
 sub init_shop {
-  SL::DB::Shop->new(id => $::form->{id})->load;
+  SL::DB::Manager::Shop->find_by_or_create(id => $::form->{id} || 0)
+                              ->assign_attributes(%{ $::form->{shop} });
 }
 
 #
@@ -95,16 +100,19 @@ sub create_or_update {
   my ($self) = @_;
   my $is_new = !$self->shop->id;
 
-  my $params = delete($::form->{shop}) || { };
-
-  $self->shop->assign_attributes(%{ $params });
-
   my @errors = $self->shop->validate;
-
   if (@errors) {
     flash('error', @errors);
-    $self->render('shops/form',
-                   title => $is_new ? t8('Add shop') : t8('Edit shop'));
+    $self->load_types();
+    $self->action_edit();
+    return;
+  }
+
+  my $version = $self->action_check_connectivity();
+  if ($version) {
+    flash('error', t8('The connection to the webshop is not success. Message: #1 -- URL: #2 -- Datatype: #3', $version->{message}, $version->{data}->{version}, $version->{data}->{revision}));
+    $self->load_types();
+    $self->action_edit();
     return;
   }
 
@@ -118,18 +126,13 @@ sub load_types {
   my ($self) = @_;
   # data for the dropdowns when editing Shop configs
 
-  # hardcoded the possible connectors, which correspond to
-  # SL/ShopConnector/xxxx classes
-  $self->connectors( [ { id => "xtcommerce", description => "XT Commerce"},
-                       { id => "shopware",   description => "Shopware" },
-                       { id => "ideal",      description => "IDeal" }
-                     ]);
+  require SL::ShopConnector::ALL;
+  $self->connectors(SL::ShopConnector::ALL->connectors);
 
-  # whether the shop presents its prices as brutto or netto
   $self->price_types( [ { id => "brutto", name => t8('brutto')}, { id => "netto", name => t8('netto') } ] );
 
-  # the possible default price sources to use for the shops: sellprice, lastcost,
-  # listprice, or one of the pricegroups
+  $self->protocols( [ { id => "http", name => t8('http') }, { id => "https", name => t8('https') } ] );
+
   my $pricesources;
   push( @{ $pricesources } , { id => "master_data/sellprice", name => t8("Master Data")." - ".t8("Sellprice") },
                              { id => "master_data/listprice", name => t8("Master Data")." - ".t8("Listprice") },
@@ -153,6 +156,42 @@ sub load_types {
 
 };
 
+sub _setup_form_action_bar {
+  my ($self) = @_;
+
+  for my $bar ($::request->layout->get('actionbar')) {
+    $bar->add(
+      combobox => [
+        action => [
+          t8('Save'),
+          submit    => [ '#form', { action => "Shop/save" } ],
+          accesskey => 'enter',
+        ],
+         action => [
+          t8('Delete'),
+          submit => [ '#form', { action => "Shop/delete" } ],
+        ],
+        ],
+        action => [
+          t8('Cancel'),
+          submit => [ '#form', { action => "Shop/list" } ],
+        ],
+    );
+  }
+}
+
+sub _setup_list_action_bar {
+  my ($self) = @_;
+
+  for my $bar ($::request->layout->get('actionbar')) {
+    $bar->add(
+        link => [
+          t8('Add'),
+          link => $self->url_for(action => 'edit'),
+        ],
+    );
+  }
+}
 
 1;
 

@@ -16,6 +16,8 @@ sub update_part { die 'update_part needs to be implemented' }
 sub get_article { die 'get_article needs to be implemented' }
 
 sub get_categories { die 'get_order needs to be implemented' }
+
+sub get_version { die 'get_order needs to be implemented' }
 1;
 
 __END__
@@ -24,7 +26,7 @@ __END__
 
 =head1 NAME
 
-SL::ShopConnectorBase - this is the base class for shop connectors
+  SL::ShopConnectorBase - this is the base class for shop connectors
 
 =head1 SYNOPSIS
 
@@ -41,18 +43,25 @@ SL::ShopConnectorBase - this is the base class for shop connectors
 
 =item C<update_part>
 
+=item C<get_article>
+
+=item C<get_categories>
+
+=item C<get_version>
+
 =back
 
 =head1 SEE ALSO
 
-L<SL::ShopConnector::ALL>
+  L<SL::ShopConnector::ALL>
 
 =head1 BUGS
 
-None yet. :)
+  None yet. :)
 
 =head1 AUTHOR
 
-G. Richardson <lt>information@kivitendo-premium.deE<gt>
+  G. Richardson <lt>information@kivitendo-premium.deE<gt>
+  W. Hahn E<lt>wh@futureworldsearch.netE<gt>
 
 =cut

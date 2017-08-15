@@ -26,17 +26,16 @@ use Rose::Object::MakeMethods::Generic (
 sub get_new_orders {
   my ($self, $id) = @_;
 
-  my $url = $self->url;
-
+  my $url       = $self->url;
   my $ordnumber = $self->config->last_order_number + 1;
-  my $otf = $self->config->orders_to_fetch;
+  my $otf       = $self->config->orders_to_fetch;
 
   my $i;
   for ($i=1;$i<=$otf;$i++) {
 
-    my $data = $self->connector->get("http://$url/api/orders/$ordnumber?useNumberAsId=true");
+    my $data      = $self->connector->get($url . "api/orders/$ordnumber?useNumberAsId=true");
     my $data_json = $data->content;
-    my $import = SL::JSON::decode_json($data_json);
+    my $import    = SL::JSON::decode_json($data_json);
     if ($import->{success}){
 
       # Mapping to table shoporders. See http://community.shopware.com/_detail_1690.html#GET_.28Liste.29
@@ -131,12 +130,12 @@ sub get_new_orders {
       $shop_order->{positions} = $position-1;
 
       # Only Customers which are not found will be applied
-      my $name = $shop_order->billing_lastname ne '' ? "%" . $shop_order->billing_firstname . "%" . $shop_order->billing_lastname . "%" : '';
+      my $name     = $shop_order->billing_lastname ne '' ? "%" . $shop_order->billing_firstname . "%" . $shop_order->billing_lastname . "%" : '';
       my $lastname = $shop_order->billing_lastname ne '' ? "%" . $shop_order->billing_lastname . "%" : '';
-      my $company = $shop_order->billing_company ne '' ? "%" . $shop_order->billing_company . "%" : '';
-      my $street = $shop_order->billing_street ne '' ?  $shop_order->billing_street : '';
+      my $company  = $shop_order->billing_company ne '' ? "%" . $shop_order->billing_company . "%" : '';
+      my $street   = $shop_order->billing_street ne '' ?  $shop_order->billing_street : '';
       # Fuzzysearch for street to find e.g. "Dorfstrasse - Dorfstr. - Dorfstraße"
-      my $dbh = $::form->get_standard_dbh();
+      my $dbh      = $::form->get_standard_dbh();
       my $fs_query = "SELECT id FROM customer WHERE ( ( (    name ILIKE ?
                                                           OR name ILIKE ?
                                                         )
@@ -148,7 +147,7 @@ sub get_new_orders {
                                                       OR email ILIKE ?
                                                     )";
       my @values = ($lastname, $company, $shop_order->billing_zipcode, $street, $shop_order->billing_zipcode, $shop_order->billing_email);
-      my @c_ids = selectall_array_query($::form, $dbh, $fs_query, @values);
+      my @c_ids  = selectall_array_query($::form, $dbh, $fs_query, @values);
 
       if(!scalar(@c_ids)){
 
@@ -200,7 +199,7 @@ sub get_new_orders {
       $ordnumber++;
     }
   }
-  my $shop = $self->config->description;
+  my $shop           = $self->config->description;
   my @fetched_orders = ($shop,$i);
   return \@fetched_orders;
 };
@@ -208,13 +207,11 @@ sub get_new_orders {
 sub get_categories {
   my ($self) = @_;
 
-  my $url = $self->url;
-
-  my $data = $self->connector->get("http://$url/api/categories");
-
-  my $data_json = $data->content;
-  my $import = SL::JSON::decode_json($data_json);
-  my @daten = @{$import->{data}};
+  my $url        = $self->url;
+  my $data       = $self->connector->get($url . "api/categories");
+  my $data_json  = $data->content;
+  my $import     = SL::JSON::decode_json($data_json);
+  my @daten      = @{$import->{data}};
   my %categories = map { ($_->{id} => $_) } @daten;
 
   for(@daten) {
@@ -226,11 +223,30 @@ sub get_categories {
   return \@daten;
 }
 
+sub get_version {
+  my ($self) = @_;
+
+  my $url       = $self->url;
+  my $data      = $self->connector->get($url . "api/version");
+  my $type = $data->content_type;
+  my $status_line = $data->status_line;
+
+  if($data->is_success && $type eq 'application/json'){
+    my $data_json = $data->content;
+    return SL::JSON::decode_json($data_json);
+  }else{
+    my %return = ( success => 0,
+                   data  => { version => $url . ": " . $status_line, revision => $type },
+                   message => "Server not found or wrong data type",
+                );
+    return \%return;
+  }
+}
+
 sub get_articles {
   my ($self, $json_data) = @_;
 
 }
-
 
 sub update_part {
   my ($self, $shop_part, $json, $todo) = @_;
@@ -253,10 +269,11 @@ sub update_part {
   my $images = SL::DB::Manager::ShopImage->get_all( where => [ 'files.object_id' => $part->{id}, ], with_objects => 'file', sort_by => 'position' );
   my @upload_img = ();
   foreach my $img (@{ $images }) {
-    my $file = SL::File->get(id => $img->file->id );
-    my $file_path = $file->get_file;
+    my $file               = SL::File->get(id => $img->file->id );
+    my $file_path          = $file->get_file;
     my ($path, $extension) = (split /\./, $file->file_name);
-    my $content = File::Slurp::read_file($file->get_file);
+    my $content            = File::Slurp::read_file($file->get_file);
+
     my $temp ={ ( link        => 'data:' . $file->mime_type . ';base64,' . MIME::Base64::encode($content),
                   description => $img->file->title,
                   position    => $img->position,
@@ -271,9 +288,9 @@ sub update_part {
     my $partnumber = $::form->escape($part->{partnumber});#shopware don't accept / in articlenumber
 # Shopware RestApi schreibt Fehleremail wenn Artikel nicht gefunden. es braucht aber irgendeine Abfrage, ob der Artikel schon im Shop ist.
 # LWP->post = neuanlegen LWP->put = update
-    $data = $self->connector->get("http://$url/api/articles/$partnumber?useNumberAsId=true");
-    $data_json = $data->content;
-    $import = SL::JSON::decode_json($data_json);
+    $data       = $self->connector->get($url . "api/articles/$partnumber?useNumberAsId=true");
+    $data_json  = $data->content;
+    $import     = SL::JSON::decode_json($data_json);
 #  }
 
   # get the right price
@@ -291,7 +308,7 @@ sub update_part {
   # get the right taxrate for the article
   # TODO In extra Helper??
   my $taxrate;
-  my $dbh = $::form->get_standard_dbh();
+  my $dbh  = $::form->get_standard_dbh();
   my $b_id = $part->buchungsgruppen_id;
   my $t_id = $shop_part->shop->taxzone_id;
 
@@ -362,25 +379,25 @@ sub update_part {
   }
 
   my $dataString = SL::JSON::to_json(\%shop_data);
-  $dataString = encode_utf8($dataString);
+  $dataString    = encode_utf8($dataString);
   my $upload_content;
   my $upload;
   if($import->{success}){
     #update
-    my $partnumber = $::form->escape($part->{partnumber});#shopware don't accept / in articlenumber
-    $upload = $self->connector->put("http://$url/api/articles/$partnumber?useNumberAsId=true",Content => $dataString);
-    my $data_json = $upload->content;
+    my $partnumber  = $::form->escape($part->{partnumber});#shopware don't accept / in articlenumber
+    $upload         = $self->connector->put($url . "api/articles/$partnumber?useNumberAsId=true", Content => $dataString);
+    my $data_json   = $upload->content;
     $upload_content = SL::JSON::decode_json($data_json);
   }else{
     #upload
-    $upload = $self->connector->post("http://$url/api/articles/",Content => $dataString);
-    my $data_json = $upload->content;
+    $upload         = $self->connector->post($url . "api/articles/", Content => $dataString);
+    my $data_json   = $upload->content;
     $upload_content = SL::JSON::decode_json($data_json);
   }
-  # Don't know if this is needed
+  # don't know if this is needed
   if(@upload_img) {
     my $partnumber = $::form->escape($part->{partnumber});#shopware don't accept / in articlenumber
-    my $imgup = $self->connector->put("http://$url/api/generateArticleImages/$partnumber?useNumberAsId=true");
+    my $imgup      = $self->connector->put($url . "api/generatearticleimages/$partnumber?usenumberasid=true");
   }
 
   return $upload_content->{success};
@@ -389,12 +406,13 @@ sub update_part {
 sub get_article {
   my ($self,$partnumber) = @_;
 
-  my $url = $self->url;
-  $partnumber = $::form->escape($partnumber);#shopware don't accept / in articlenumber
-  my $data = $self->connector->get("http://$url/api/articles/$partnumber?useNumberAsId=true");
+  my $url       = $self->url;
+  $partnumber   = $::form->escape($partnumber);#shopware don't accept / in articlenumber
+  my $data      = $self->connector->get($url . "api/articles/$partnumber?usenumberasid=true");
   my $data_json = $data->content;
   return SL::JSON::decode_json($data_json);
 }
+
 
 sub set_orderstatus {
   my ($self,$ordernumber);
@@ -402,20 +420,20 @@ sub set_orderstatus {
 
 sub init_url {
   my ($self) = @_;
-  # TODO: validate url and port Mabey in shopconfig test connection
-  $self->url($self->config->url . ":" . $self->config->port);
-};
+  $self->url($self->config->protocol . "://" . $self->config->server . ":" . $self->config->port . $self->config->path);
+}
 
 sub init_connector {
   my ($self) = @_;
   my $ua = LWP::UserAgent->new;
   $ua->credentials(
-      $self->url,
-      "Shopware REST-API", # TODO in config
+      $self->config->server . ":" . $self->config->port,
+      $self->config->realm,
       $self->config->login => $self->config->password
   );
+
   return $ua;
-};
+}
 
 1;
 
@@ -425,13 +443,17 @@ __END__
 
 =head1 NAME
 
-  SL::ShopConnecter::Shopware - connector for Shopware 5
+  SL::Shopconnecter::Shopware - connector for shopware 5
 
 =head1 SYNOPSIS
 
 
 =head1 DESCRIPTION
 
+=head1 TODO
+
+  Pricesrules, pricessources aren't fully implemented yet.
+  Payments aren't implemented( need to map payments from Shopware like invoice, paypal etc. to payments in kivitendo)
 
 =head1 BUGS
 

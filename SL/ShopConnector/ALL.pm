@@ -23,6 +23,13 @@ my @shop_connector_order = qw(
   ideal
 );
 
+my @shop_connectors =
+  (
+    { id => "xtcommerce", description => "XT Commerce"},
+    { id => "shopware",   description => "Shopware" },
+    { id => "ideal",      description => "IDeal" }
+  );
+
 sub all_enabled_shop_connectors {
   my %disabled = map { $_ => 1 } @{ $::instance_conf->get_disabled_shop_connectors || [] };
 
@@ -41,4 +48,7 @@ sub shop_connector_class_by_connector {
   $shop_connector_by_connector{$_[1]};
 }
 
+sub connectors {
+  \@shop_connectors;
+}
 1;
