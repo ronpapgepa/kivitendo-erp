@@ -116,34 +116,15 @@ sub action_show {
                                                 )";
   my @values = ($lastname, $company, $shop_order->billing_zipcode, $street, $shop_order->billing_zipcode, $shop_order->billing_email);
   my @c_ids = selectall_array_query($::form, $dbh, $fs_query, @values);
-$main::lxdebug->dump(0, 'WH:C_IDs ',\@c_ids);
 
   my $proposals = SL::DB::Manager::Customer->get_all(
-       query => [ id => [ @c_ids ],
-#                   or => [
-#                            and => [ # when matching names also match zipcode
-#                                     or => [ 'name' => { ilike => "%$lastname%"},
-#                                             'name' => { ilike => $shop_order->customer_company },
-#                                           ],
-#                                     'zipcode' => { ilike => $shop_order->customer_zipcode },
-#                                   ],
-#                            and => [ # check for street and zipcode
-#                                     and => [ 'street'  => { ilike => "%".$shop_order->customer_street."%" },
-#                                              'zipcode' => { ilike => $shop_order->customer_zipcode },
-#                                            ],
-#                                   ],
-#                            or  => [ 'email' => { ilike => $shop_order->customer_email } ],
-#                         ],
-                ],
+       query => [ id => [ @c_ids ], ],
   );
 
   $self->render('shop_order/show',
                 title       => t8('Shoporder'),
                 IMPORT      => $shop_order,
                 PROPOSALS   => $proposals,
-#                C_ADDRESS   => $c_address,
-#                B_ADDRESS   => $b_address,
-#                D_ADDRESS   => $d_address,
               );
 
 }

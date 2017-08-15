@@ -194,7 +194,6 @@ sub get_new_orders {
                                                                   city    => $shop_order->billing_city,
                                                                   name    => $name,
                                                                 ]);
-        $main::lxdebug->dump(0, 'WH:CUS ',\$customer);
 
         if(ref $customer){
           $shop_order->{kivi_customer_id} = $customer->id;
@@ -208,14 +207,6 @@ sub get_new_orders {
                                                                         email   => $shop_order->billing_email,
                                                                       ]
                                                            );
-        $main::lxdebug->dump(0, 'WH:CUS ',\$customer);
-
-        if(ref $customer){
-          $shop_order->{kivi_customer_id} = $customer->id;
-          $shop_order->save;
-        }
-      }
-      # DF Versandkosten als Position am ende einfügen Dreschflegelspezifisch event. konfigurierbar machen
 
         if(ref $customer){
           $shop_order->{kivi_customer_id} = $customer->id;
