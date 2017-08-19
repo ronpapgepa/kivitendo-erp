@@ -107,6 +107,38 @@ sub convert_to_sales_order {
    }
 };
 
+sub check_for_existing_customers {
+  my ($self, %params) = @_;
+
+  my $name     = $self->billing_lastname ne '' ? $self->billing_firstname . " " . $self->billing_lastname : '';
+  my $lastname = $self->billing_lastname ne '' ? "%" . $self->billing_lastname . "%"                      : '';
+  my $company  = $self->billing_company  ne '' ? "%" . $self->billing_company  . "%"                      : '';
+  my $street   = $self->billing_street   ne '' ?  $self->billing_street                                   : '';
+
+  # Fuzzysearch for street to find e.g. "Dorfstrasse - Dorfstr. - Dorfstraße"
+  my $fs_query = <<SQL;
+SELECT *
+FROM customer
+WHERE (
+   (
+    ( name ILIKE ? OR name ILIKE ? )
+      AND
+    zipcode ILIKE ?
+   )
+ OR
+   ( street % ?  AND zipcode ILIKE ?)
+ OR
+   email ILIKE ?
+)
+SQL
+  my @values = ($lastname, $company, $self->billing_zipcode, $street, $self->billing_zipcode, $self->billing_email);
+  my $customers = SL::DB::Manager::Customer->get_objects_from_sql(
+    sql  => $fs_query,
+    args => \@values,
+  );
+  return $customers;
+}
+
 sub compare_to {
   my ($self, $other) = @_;
 
@@ -119,3 +151,41 @@ sub compare_to {
 }
 
 1;
+
+__END__
+
+=pod
+
+=encoding utf-8
+
+=head1 NAME
+
+SL::DB::ShopOrder - Model for the 'shop_orders' table
+
+=head1 SYNOPSIS
+
+This is a standard Rose::DB::Object based model and can be used as one.
+
+=head1 METHODS
+
+=over 4
+
+=item C<convert_to_sales_order>
+
+=item C<check_for_existing_customers>
+
+Inexact search for possible matches with existing customers in the database.
+
+Returns all found customers as an arrayref of SL::DB::Customer objects.
+
+=item C<compare_to>
+
+=back
+
+=head1 AUTHORS
+
+Werner Hahn E<lt>wh@futureworldsearch.netE<gt>
+
+G. Richardson E<lt>grichardson@kivitendo-premium.deE<gt>
+
+=cut
