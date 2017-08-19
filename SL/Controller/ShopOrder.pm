@@ -45,8 +45,7 @@ sub action_list {
   my $sort_by = $::form->{sort_by} ? $::form->{sort_by} : 'order_date';
   $sort_by .=$::form->{sort_dir} ? ' DESC' : ' ASC';
   my $shop_orders = SL::DB::Manager::ShopOrder->get_all( %filter, sort_by => $sort_by,
-                                                      with_objects => ['shop_order_items'],
-                                                      with_objects => ['customer'],
+                                                      with_objects => ['shop_order_items', 'kivi_customer'],
                                                     );
 
   foreach my $shop_order(@{ $shop_orders }){
@@ -69,33 +68,8 @@ sub action_list {
 sub action_show {
   my ( $self ) = @_;
   my $id = $::form->{id} || {};
-  my $shop_order = SL::DB::Manager::ShopOrder->get_all(query => [ id => $id ],
-                                                        with_objects => ['customer'], )->[0];
+  my $shop_order = SL::DB::Manager::ShopOrder->find_by( id => $id , with_objects => ['kivi_customer'] );
   die "can't find shoporder with id $id" unless $shop_order;
-
-  # the different importaddresscheck if there complete in the customer table to prevent duplicats inserts
-  my %customer_address = ( 'name'    => $shop_order->customer_lastname,
-                           'company' => $shop_order->customer_company,
-                           'street'  => $shop_order->customer_street,
-                           'zipcode' => $shop_order->customer_zipcode,
-                           'city'    => $shop_order->customer_city,
-                         );
-  my %billing_address = ( 'name'     => $shop_order->billing_lastname,
-                          'company'  => $shop_order->billing_company,
-                          'street'   => $shop_order->billing_street,
-                          'zipcode'  => $shop_order->billing_zipcode,
-                          'city'     => $shop_order->billing_city,
-                        );
-  my %delivery_address = ( 'name'    => $shop_order->delivery_lastname,
-                           'company' => $shop_order->delivery_company,
-                           'street'  => $shop_order->delivery_street,
-                           'zipcode' => $shop_order->delivery_zipcode,
-                           'city'    => $shop_order->delivery_city,
-                         );
-  my $c_address = $self->check_address(%customer_address);
-  my $b_address = $self->check_address(%billing_address);
-  my $d_address = $self->check_address(%delivery_address);
-  ####
 
   # Only Customers which are not found will be applied
   my $name = $shop_order->billing_lastname ne '' ? "%" . $shop_order->billing_firstname . "%" . $shop_order->billing_lastname . "%" : '';
