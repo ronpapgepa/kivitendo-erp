@@ -76,7 +76,6 @@ __PACKAGE__->meta->columns(
   shop_customer_comment  => { type => 'text' },
   shop_customer_id       => { type => 'integer' },
   shop_customer_number   => { type => 'text' },
-  shop_data              => { type => 'text' },
   shop_id                => { type => 'integer' },
   shop_ordernumber       => { type => 'text' },
   shop_trans_id          => { type => 'integer', not_null => 1 },
@@ -88,6 +87,18 @@ __PACKAGE__->meta->columns(
 __PACKAGE__->meta->primary_key_columns([ 'id' ]);
 
 __PACKAGE__->meta->allow_inline_column_values(1);
+
+__PACKAGE__->meta->foreign_keys(
+  kivi_customer => {
+    class       => 'SL::DB::Customer',
+    key_columns => { kivi_customer_id => 'id' },
+  },
+
+  shop => {
+    class       => 'SL::DB::Shop',
+    key_columns => { shop_id => 'id' },
+  },
+);
 
 1;
 ;
