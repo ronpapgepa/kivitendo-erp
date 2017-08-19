@@ -9,6 +9,7 @@ use SL::DB::MetaSetup::ShopOrder;
 use SL::DB::Manager::ShopOrder;
 use SL::DB::Helper::LinkedRecords;
 use SL::Locale::String qw(t8);
+use Carp;
 
 __PACKAGE__->meta->add_relationships(
   shop_order_items => {
@@ -23,10 +24,10 @@ __PACKAGE__->meta->initialize;
 sub convert_to_sales_order {
   my ($self, %params) = @_;
 
-  my $customer = $params{customer};
-  my $employee = $params{employee};
-  die unless ref($customer) eq 'SL::DB::Customer';
-  die unless ref($employee) eq 'SL::DB::Employee';
+  my $customer = delete $params{customer};
+  my $employee = delete $params{employee};
+  croak "param customer is missing" unless ref($customer) eq 'SL::DB::Customer';
+  croak "param employee is missing" unless ref($employee) eq 'SL::DB::Employee';
 
   require SL::DB::Order;
   require SL::DB::OrderItem;
