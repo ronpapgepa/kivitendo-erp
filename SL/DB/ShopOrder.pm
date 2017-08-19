@@ -47,10 +47,10 @@ sub convert_to_sales_order {
   my @items = map{
 
   # TODO Flash and exit if part not found
-    my $part = SL::DB::Manager::Part->get_first( query => [ partnumber => $_->partnumber, ], );
+    my $part = SL::DB::Manager::Part->find_by(partnumber => $_->partnumber);
 
     unless($part){
-      push @error_report, t8('Part with Partnumber: ') . $_->partnumber . t8(' not found');
+      push @error_report, t8('Part with partnumber: #1 not found', $_->partnumber);
     }else{
       my $shop_part = SL::DB::Manager::ShopPart->get_all( where => [ shop_id => $self->shop_id, part_id => $part->id] )->[0];
 
@@ -70,22 +70,22 @@ sub convert_to_sales_order {
   if(!scalar(@error_report)){
 
     my $shipto_id;
-    if ($self->{billing_firstname} ne $self->{delivery_firstname} || $self->{billing_lastname} ne $self->{delivery_lastname} || $self->{billing_city} ne $self->{delivery_city} || $self->{billing_street} ne $self->{delivery_street}) {
-      if(my $address = SL::DB::Manager::Shipto->find_by( shiptoname          => $self->{delivery_firstname} . " " . $self->{delivery_lastname},
-                                                          shiptostreet        => $self->{delivery_street},
-                                                          shiptocity          => $self->{delivery_city},
+    if ($self->billing_firstname ne $self->delivery_firstname || $self->billing_lastname ne $self->delivery_lastname || $self->billing_city ne $self->delivery_city || $self->billing_street ne $self->delivery_street) {
+      if(my $address = SL::DB::Manager::Shipto->find_by( shiptoname          => $self->delivery_firstname . " " . $self->delivery_lastname,
+                                                          shiptostreet        => $self->delivery_street,
+                                                          shiptocity          => $self->delivery_city,
                                                         )) {
         $shipto_id = $address->{shipto_id};
       } else {
         my $deliveryaddress = SL::DB::Shipto->new;
         $deliveryaddress->assign_attributes(
-          shiptoname          => $self->{delivery_firstname} . " " . $self->{delivery_lastname},
-          shiptodepartment_1  => $self->{delivery_company},
-          shiptodepartment_2  => $self->{delivery_department},
-          shiptostreet        => $self->{delivery_street},
-          shiptozipcode       => $self->{delivery_zipcode},
-          shiptocity          => $self->{delivery_city},
-          shiptocountry       => $self->{delivery_country},
+          shiptoname          => $self->delivery_firstname . " " . $self->delivery_lastname,
+          shiptodepartment_1  => $self->delivery_company,
+          shiptodepartment_2  => $self->delivery_department,
+          shiptostreet        => $self->delivery_street,
+          shiptozipcode       => $self->delivery_zipcode,
+          shiptocity          => $self->delivery_city,
+          shiptocountry       => $self->delivery_country,
           trans_id            => $customer->id,
           module              => "CT",
         );
