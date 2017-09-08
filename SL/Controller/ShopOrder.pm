@@ -34,7 +34,7 @@ sub action_get_orders {
     my $new_orders = $shop->connector->get_new_orders;
 #    push @{ $orders_fetched },@{ $new_orders };
   };
-  $main::lxdebug->dump(0, 'WH:OF ',$orders_fetched);
+#  $main::lxdebug->dump(0, 'WH:OF ',$orders_fetched);
 
 #  flash('info', t8('#1 shoporders has been fetched', scalar(@{$orders_fetched})-1));
   $self->action_list;
