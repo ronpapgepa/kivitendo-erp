@@ -37,7 +37,6 @@ sub get_order_max {
 
   my $import    = SL::JSON::decode_json($data_json);
   $main::lxdebug->dump(0, 'WH:MAX ', $import->{data});
-  $main::lxdebug->dump(0, 'WH:MAX3 ', $import->{data}->{number});
 
 }
 
@@ -48,7 +47,7 @@ sub get_new_orders {
   my $ordnumber = $self->config->last_order_number + 1;
   my $otf       = $self->config->orders_to_fetch;
   my $of        = 0;
-  $self->get_order_max;
+#  $self->get_order_max;
   for(1 .. $otf) {
 
     my $data      = $self->connector->get($url . "api/orders/$ordnumber?useNumberAsId=true");
