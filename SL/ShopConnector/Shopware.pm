@@ -11,6 +11,7 @@ use LWP::Authen::Digest;
 use SL::DB::ShopOrder;
 use SL::DB::ShopOrderItem;
 use SL::DB::History;
+use DateTime::Format::Strptime;
 use SL::DB::File;
 use Data::Dumper;
 use Sort::Naturally ();
@@ -23,89 +24,42 @@ use Rose::Object::MakeMethods::Generic (
   'scalar --get_set_init' => [ qw(connector url) ],
 );
 
+sub get_order_max {
+  my ($self) = @_;
+  my %params = ( sort  => { property  => 'number',
+                            direction => 'DESC',
+                          },
+               );
+  my $url       = $self->url;
+  my $data      = $self->connector->get($url . "api/orders?limit=1", %params);
+  my $data_json = $data->content;
+  $main::lxdebug->dump(0, 'WH:MAX1 ', $data->content);
+
+  my $import    = SL::JSON::decode_json($data_json);
+  $main::lxdebug->dump(0, 'WH:MAX ', $import->{data});
+  $main::lxdebug->dump(0, 'WH:MAX3 ', $import->{data}->{number});
+
+}
+
 sub get_new_orders {
   my ($self, $id) = @_;
 
   my $url       = $self->url;
   my $ordnumber = $self->config->last_order_number + 1;
   my $otf       = $self->config->orders_to_fetch;
-
-  my $i;
-  for ($i=1;$i<=$otf;$i++) {
+  my $of        = 0;
+  $self->get_order_max;
+  for(1 .. $otf) {
 
     my $data      = $self->connector->get($url . "api/orders/$ordnumber?useNumberAsId=true");
     my $data_json = $data->content;
     my $import    = SL::JSON::decode_json($data_json);
-    if ($import->{success}){
 
-      # Mapping to table shoporders. See http://community.shopware.com/_detail_1690.html#GET_.28Liste.29
-      my %columns = (
-        amount                  => $import->{data}->{invoiceAmount},
-        billing_city            => $import->{data}->{billing}->{city},
-        billing_company         => $import->{data}->{billing}->{company},
-        billing_country         => $import->{data}->{billing}->{country}->{name},
-        billing_department      => $import->{data}->{billing}->{department},
-        billing_email           => $import->{data}->{customer}->{email},
-        billing_fax             => $import->{data}->{billing}->{fax},
-        billing_firstname       => $import->{data}->{billing}->{firstName},
-        #billing_greeting        => ($import->{data}->{billing}->{salutation} eq 'mr' ? 'Herr' : 'Frau'),
-        billing_lastname        => $import->{data}->{billing}->{lastName},
-        billing_phone           => $import->{data}->{billing}->{phone},
-        billing_street          => $import->{data}->{billing}->{street},
-        billing_vat             => $import->{data}->{billing}->{vatId},
-        billing_zipcode         => $import->{data}->{billing}->{zipCode},
-        customer_city           => $import->{data}->{billing}->{city},
-        customer_company        => $import->{data}->{billing}->{company},
-        customer_country        => $import->{data}->{billing}->{country}->{name},
-        customer_department     => $import->{data}->{billing}->{department},
-        customer_email          => $import->{data}->{customer}->{email},
-        customer_fax            => $import->{data}->{billing}->{fax},
-        customer_firstname      => $import->{data}->{billing}->{firstName},
-        #customer_greeting       => ($import->{data}->{billing}->{salutation} eq 'mr' ? 'Herr' : 'Frau'),
-        customer_lastname       => $import->{data}->{billing}->{lastName},
-        customer_phone          => $import->{data}->{billing}->{phone},
-        customer_street         => $import->{data}->{billing}->{street},
-        customer_vat            => $import->{data}->{billing}->{vatId},
-        customer_zipcode        => $import->{data}->{billing}->{zipCode},
-        customer_newsletter     => $import->{data}->{customer}->{newsletter},
-        delivery_city           => $import->{data}->{shipping}->{city},
-        delivery_company        => $import->{data}->{shipping}->{company},
-        delivery_country        => $import->{data}->{shipping}->{country}->{name},
-        delivery_department     => $import->{data}->{shipping}->{department},
-        delivery_email          => "",
-        delivery_fax            => $import->{data}->{shipping}->{fax},
-        delivery_firstname      => $import->{data}->{shipping}->{firstName},
-        #delivery_greeting       => ($import->{data}->{shipping}->{salutation} eq 'mr' ? 'Herr' : 'Frau'),
-        delivery_lastname       => $import->{data}->{shipping}->{lastName},
-        delivery_phone          => $import->{data}->{shipping}->{phone},
-        delivery_street         => $import->{data}->{shipping}->{street},
-        delivery_vat            => $import->{data}->{shipping}->{vatId},
-        delivery_zipcode        => $import->{data}->{shipping}->{zipCode},
-        host                    => $import->{data}->{shop}->{hosts},
-        netamount               => $import->{data}->{invoiceAmountNet},
-        order_date              => $import->{data}->{orderTime},
-        payment_description     => $import->{data}->{payment}->{description},
-        payment_id              => $import->{data}->{paymentId},
-        remote_ip               => $import->{data}->{remoteAddress},
-        sepa_account_holder     => $import->{data}->{paymentIntances}->{accountHolder},
-        sepa_bic                => $import->{data}->{paymentIntances}->{bic},
-        sepa_iban               => $import->{data}->{paymentIntances}->{iban},
-        shipping_costs          => $import->{data}->{invoiceShipping},
-        shipping_costs_net      => $import->{data}->{invoiceShippingNet},
-        shop_c_billing_id       => $import->{data}->{billing}->{customerId},
-        shop_c_billing_number   => $import->{data}->{billing}->{number},
-        shop_c_delivery_id      => $import->{data}->{shipping}->{id},
-        shop_customer_id        => $import->{data}->{customerId},
-        shop_customer_number    => $import->{data}->{billing}->{number},
-        shop_customer_comment   => $import->{data}->{customerComment},
-        shop_data               => "",
-        shop_id                 => $self->config->id,
-        shop_ordernumber        => $import->{data}->{number},
-        shop_trans_id           => $import->{data}->{id},
-        tax_included            => $self->config->pricetype eq "brutto" ? 1 : 0,
-      );
-      my $shop_order = SL::DB::ShopOrder->new(%columns);
+    if ($import->{success}){
+      my $shop_order = $self->map_data_to_shoporder($import);
+
       $shop_order->save;
+      $of ++;
       my $id = $shop_order->id;
 
       my @positions = sort { Sort::Naturally::ncmp($a->{"partnumber"}, $b->{"partnumber"}) } @{ $import->{data}->{details} };
@@ -128,90 +82,10 @@ sub get_new_orders {
         $position++;
       }
       $shop_order->{positions} = $position-1;
-
-      # Only Customers which are not found will be applied
-      my $name = $shop_order->billing_lastname ne '' ? $shop_order->billing_firstname . " " . $shop_order->billing_lastname : '';
-      my $lastname = $shop_order->billing_lastname ne '' ? "%" . $shop_order->billing_lastname . "%" : '';
-      my $company  = $shop_order->billing_company ne '' ? "%" . $shop_order->billing_company . "%" : '';
-      my $street   = $shop_order->billing_street ne '' ?  $shop_order->billing_street : '';
-      # Fuzzysearch for street to find e.g. "Dorfstrasse - Dorfstr. - Dorfstraße"
-      my $dbh      = $::form->get_standard_dbh();
-      my $fs_query = "SELECT id FROM customer WHERE ( ( (    name ILIKE ?
-                                                          OR name ILIKE ?
-                                                        )
-                                                        AND zipcode ILIKE ?
-                                                      )
-                                                      OR ( street % ?
-                                                           AND zipcode ILIKE ?
-                                                         )
-                                                      OR email ILIKE ?
-                                                    )";
-      my @values = ($lastname, $company, $shop_order->billing_zipcode, $street, $shop_order->billing_zipcode, $shop_order->billing_email);
-      my @c_ids  = selectall_array_query($::form, $dbh, $fs_query, @values);
-
-      if(!scalar(@c_ids)){
-
-        my %address = ( 'name'                  => $shop_order->billing_firstname . " " . $shop_order->billing_lastname,
-                        'department_1'          => $shop_order->billing_company,
-                        'department_2'          => $shop_order->billing_department,
-                        'street'                => $shop_order->billing_street,
-                        'zipcode'               => $shop_order->billing_zipcode,
-                        'city'                  => $shop_order->billing_city,
-                        'email'                 => $shop_order->billing_email,
-                        'country'               => $shop_order->billing_country,
-                        'greeting'              => $shop_order->billing_greeting,
-                        'contact'               => ($shop_order->billing_greeting eq "Herr" ? "Sehr geehrter Herr $lastname" : "Sehr geehrte Frau $lastname"),
-                        'fax'                   => $shop_order->billing_fax,
-                        'phone'                 => $shop_order->billing_phone,
-                        'ustid'                 => $shop_order->billing_vat,
-                        'taxincluded_checked'   => $self->config->pricetype eq "brutto" ? 1 : 0,
-                        'taxincluded'           => $self->config->pricetype eq "brutto" ? 1 : 0,
-                        'pricegroup_id'         => (split '\/',$self->config->price_source)[0] eq "pricegroup" ?  (split '\/',$self->config->price_source)[1] : undef,
-                        'taxzone_id'            => $self->config->taxzone_id,
-                        'currency'              => 1,   # TODO hardcoded
-                        #'payment_id'            => 7345,# TODO hardcoded
-                      );
-        my $customer = SL::DB::Customer->new(%address);
-
-        $customer->save;
-        my $snumbers = "customernumber_" . $customer->customernumber;
-        SL::DB::History->new(
-                          trans_id    => $customer->id,
-                          snumbers    => $snumbers,
-                          employee_id => SL::DB::Manager::Employee->current->id,
-                          addition    => 'SAVED',
-                          what_done   => 'Shopimport',
-                        )->save();
-        $shop_order->{kivi_customer_id} = $customer->id;
+      my $customer = $shop_order->get_customer;
+      if(ref($customer) eq "SL::DB::Customer"){
+        $shop_order->kivi_customer_id($customer->id);
         $shop_order->save;
-
-      }elsif(scalar(@c_ids) == 1){
-        my $customer = SL::DB::Manager::Customer->get_first( query => [
-                                                                  id      => $c_ids[0],
-                                                                  email   => $shop_order->billing_email,
-                                                                  street  => $shop_order->billing_street,
-                                                                  zipcode => $shop_order->billing_zipcode,
-                                                                  city    => $shop_order->billing_city,
-                                                                  name    => $name,
-                                                                ]);
-
-        if(ref $customer){
-          $shop_order->{kivi_customer_id} = $customer->id;
-          $shop_order->save;
-        }
-      }else{
-        my $customer = SL::DB::Manager::Customer->get_first( query => [   #or => [id      => \@c_ids ],
-                                                                        name    => $name,
-                                                                        street  => $shop_order->billing_street,
-                                                                        zipcode => $shop_order->billing_zipcode,
-                                                                        email   => $shop_order->billing_email,
-                                                                      ]
-                                                           );
-
-        if(ref $customer){
-          $shop_order->{kivi_customer_id} = $customer->id;
-          $shop_order->save;
-        }
       }
 
       my $attributes->{last_order_number} = $ordnumber;
@@ -221,9 +95,85 @@ sub get_new_orders {
     }
   }
   my $shop           = $self->config->description;
-  my @fetched_orders = ($shop,$i);
-  return \@fetched_orders;
-};
+  my %fetched_orders = (shop_id => $self->config->id, number_of_orders => $of);
+  return \%fetched_orders;
+}
+
+sub map_data_to_shoporder {
+  my ($self, $import) = @_;
+  my $parser = DateTime::Format::Strptime->new( pattern   => '%Y-%m-%dT%H:%M:%S',
+                                                  locale    => 'de_DE',
+                                                  time_zone => 'local'
+                                                );
+  my $orderdate = $parser->parse_datetime($import->{data}->{orderTime});
+  # Mapping to table shoporders. See http://community.shopware.com/_detail_1690.html#GET_.28Liste.29
+  my %columns = (
+    amount                  => $import->{data}->{invoiceAmount},
+    billing_city            => $import->{data}->{billing}->{city},
+    billing_company         => $import->{data}->{billing}->{company},
+    billing_country         => $import->{data}->{billing}->{country}->{name},
+    billing_department      => $import->{data}->{billing}->{department},
+    billing_email           => $import->{data}->{customer}->{email},
+    billing_fax             => $import->{data}->{billing}->{fax},
+    billing_firstname       => $import->{data}->{billing}->{firstName},
+    #billing_greeting        => ($import->{data}->{billing}->{salutation} eq 'mr' ? 'Herr' : 'Frau'),
+    billing_lastname        => $import->{data}->{billing}->{lastName},
+    billing_phone           => $import->{data}->{billing}->{phone},
+    billing_street          => $import->{data}->{billing}->{street},
+    billing_vat             => $import->{data}->{billing}->{vatId},
+    billing_zipcode         => $import->{data}->{billing}->{zipCode},
+    customer_city           => $import->{data}->{billing}->{city},
+    customer_company        => $import->{data}->{billing}->{company},
+    customer_country        => $import->{data}->{billing}->{country}->{name},
+    customer_department     => $import->{data}->{billing}->{department},
+    customer_email          => $import->{data}->{customer}->{email},
+    customer_fax            => $import->{data}->{billing}->{fax},
+    customer_firstname      => $import->{data}->{billing}->{firstName},
+    #customer_greeting       => ($import->{data}->{billing}->{salutation} eq 'mr' ? 'Herr' : 'Frau'),
+    customer_lastname       => $import->{data}->{billing}->{lastName},
+    customer_phone          => $import->{data}->{billing}->{phone},
+    customer_street         => $import->{data}->{billing}->{street},
+    customer_vat            => $import->{data}->{billing}->{vatId},
+    customer_zipcode        => $import->{data}->{billing}->{zipCode},
+    customer_newsletter     => $import->{data}->{customer}->{newsletter},
+    delivery_city           => $import->{data}->{shipping}->{city},
+    delivery_company        => $import->{data}->{shipping}->{company},
+    delivery_country        => $import->{data}->{shipping}->{country}->{name},
+    delivery_department     => $import->{data}->{shipping}->{department},
+    delivery_email          => "",
+    delivery_fax            => $import->{data}->{shipping}->{fax},
+    delivery_firstname      => $import->{data}->{shipping}->{firstName},
+    #delivery_greeting       => ($import->{data}->{shipping}->{salutation} eq 'mr' ? 'Herr' : 'Frau'),
+    delivery_lastname       => $import->{data}->{shipping}->{lastName},
+    delivery_phone          => $import->{data}->{shipping}->{phone},
+    delivery_street         => $import->{data}->{shipping}->{street},
+    delivery_vat            => $import->{data}->{shipping}->{vatId},
+    delivery_zipcode        => $import->{data}->{shipping}->{zipCode},
+    host                    => $import->{data}->{shop}->{hosts},
+    netamount               => $import->{data}->{invoiceAmountNet},
+    order_date              => $orderdate,
+    payment_description     => $import->{data}->{payment}->{description},
+    payment_id              => $import->{data}->{paymentId},
+    remote_ip               => $import->{data}->{remoteAddress},
+    sepa_account_holder     => $import->{data}->{paymentIntances}->{accountHolder},
+    sepa_bic                => $import->{data}->{paymentIntances}->{bic},
+    sepa_iban               => $import->{data}->{paymentIntances}->{iban},
+    shipping_costs          => $import->{data}->{invoiceShipping},
+    shipping_costs_net      => $import->{data}->{invoiceShippingNet},
+    shop_c_billing_id       => $import->{data}->{billing}->{customerId},
+    shop_c_billing_number   => $import->{data}->{billing}->{number},
+    shop_c_delivery_id      => $import->{data}->{shipping}->{id},
+    shop_customer_id        => $import->{data}->{customerId},
+    shop_customer_number    => $import->{data}->{billing}->{number},
+    shop_customer_comment   => $import->{data}->{customerComment},
+    shop_id                 => $self->config->id,
+    shop_ordernumber        => $import->{data}->{number},
+    shop_trans_id           => $import->{data}->{id},
+    tax_included            => $self->config->pricetype eq "brutto" ? 1 : 0,
+  );
+  my $shop_order = SL::DB::ShopOrder->new(%columns);
+  return $shop_order;
+}
 
 sub get_categories {
   my ($self) = @_;
@@ -257,7 +207,7 @@ sub get_version {
     return SL::JSON::decode_json($data_json);
   }else{
     my %return = ( success => 0,
-                   data  => { version => $url . ": " . $status_line, revision => $type },
+                   data    => { version => $url . ": " . $status_line, revision => $type },
                    message => "Server not found or wrong data type",
                 );
     return \%return;
@@ -291,11 +241,9 @@ sub update_part {
   my @upload_img = ();
   foreach my $img (@{ $images }) {
     my $file               = SL::File->get(id => $img->file->id );
-    my $file_path          = $file->get_file;
     my ($path, $extension) = (split /\./, $file->file_name);
     my $content            = File::Slurp::read_file($file->get_file);
-
-    my $temp ={ ( link        => 'data:' . $file->mime_type . ';base64,' . MIME::Base64::encode($content),
+    my $temp ={ ( link        => 'data:' . $file->mime_type . ';base64,' . MIME::Base64::encode($content, ""), #$content, # MIME::Base64::encode($content),
                   description => $img->file->title,
                   position    => $img->position,
                   extension   => $extension,
@@ -315,6 +263,7 @@ sub update_part {
 #  }
 
   # get the right price
+  # TODO In extra Helper??
   my ( $price_src_str, $price_src_id ) = split(/\//,$shop_part->active_price_source);
   require SL::DB::Part;
   my $price;
@@ -401,6 +350,7 @@ sub update_part {
 
   my $dataString = SL::JSON::to_json(\%shop_data);
   $dataString    = encode_utf8($dataString);
+
   my $upload_content;
   my $upload;
   if($import->{success}){
@@ -454,6 +404,7 @@ sub init_connector {
   );
 
   return $ua;
+
 }
 
 1;

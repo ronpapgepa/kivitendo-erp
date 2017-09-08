@@ -140,6 +140,60 @@ SQL
   return $customers;
 }
 
+#auslagern in eigene subroutine, da auch für andere connectoren genutzt werden muss
+sub get_customer{
+  my ($self, %params) = @_;
+
+  my $customer_proposals = $self->check_for_existing_customers;
+  my $name = $self->billing_firstname . " " . $self->billing_lastname;
+my $customer;
+  if(!scalar(@{$customer_proposals})){
+    my %address = ( 'name'                  => $name,
+                    'department_1'          => $self->billing_company,
+                    'department_2'          => $self->billing_department,
+                    'street'                => $self->billing_street,
+                    'zipcode'               => $self->billing_zipcode,
+                    'city'                  => $self->billing_city,
+                    'email'                 => $self->billing_email,
+                    'country'               => $self->billing_country,
+                    'greeting'              => $self->billing_greeting,
+                    'fax'                   => $self->billing_fax,
+                    'phone'                 => $self->billing_phone,
+                    'ustid'                 => $self->billing_vat,
+                    'taxincluded_checked'   => $self->config->pricetype eq "brutto" ? 1 : 0,
+                    'taxincluded'           => $self->config->pricetype eq "brutto" ? 1 : 0,
+                    'pricegroup_id'         => (split '\/',$self->config->price_source)[0] eq "pricegroup" ?  (split '\/',$self->config->price_source)[1] : undef,
+                    'taxzone_id'            => $self->config->taxzone_id,
+                    'currency'              => $::instance_conf->get_currency_id,
+                    #'payment_id'            => 7345,# TODO hardcoded
+                  );
+    $customer = SL::DB::Customer->new(%address);
+
+    $customer->save;
+    my $snumbers = "customernumber_" . $customer->customernumber;
+    SL::DB::History->new(
+                      trans_id    => $customer->id,
+                      snumbers    => $snumbers,
+                      employee_id => SL::DB::Manager::Employee->current->id,
+                      addition    => 'SAVED',
+                      what_done   => 'Shopimport',
+                    )->save();
+
+  }elsif(scalar(@{$customer_proposals}) == 1){
+    # hier überprüfen ob Kundendaten wirklich übereinstimmen auc auf ungültig überprüfen
+    $customer = $customer_proposals->[0];
+  }else{
+    # hier überprüfen ob Kundendaten wirklich übereinstimmen und ob es nur einen datensatz gibt auc auf ungültig überprüfen
+    $customer = SL::DB::Manager::Customer->find_by( name    => $name,
+                                                       street  => $self->billing_street,
+                                                       zipcode => $self->billing_zipcode,
+                                                       email   => $self->billing_email,
+                                                     );
+
+  }
+  return \$customer;
+}
+## EOF AUslagern
 sub compare_to {
   my ($self, $other) = @_;
 

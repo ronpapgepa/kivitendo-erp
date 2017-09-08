@@ -32,9 +32,11 @@ sub action_get_orders {
   foreach my $shop_config ( @{ $active_shops } ) {
     my $shop = SL::Shop->new( config => $shop_config );
     my $new_orders = $shop->connector->get_new_orders;
-    push @{ $orders_fetched },@{ $new_orders };
+#    push @{ $orders_fetched },@{ $new_orders };
   };
-  flash_later('info', t8('#1 shoporders has been fetched', scalar(@{$orders_fetched})-1));
+  $main::lxdebug->dump(0, 'WH:OF ',$orders_fetched);
+
+#  flash('info', t8('#1 shoporders has been fetched', scalar(@{$orders_fetched})-1));
   $self->action_list;
 }
 
@@ -68,32 +70,10 @@ sub action_list {
 sub action_show {
   my ( $self ) = @_;
   my $id = $::form->{id} || {};
-  my $shop_order = SL::DB::Manager::ShopOrder->find_by( id => $id , with_objects => ['kivi_customer'] );
+  my $shop_order = SL::DB::ShopOrder->new( id => $id )->load( with => ['kivi_customer'] );
   die "can't find shoporder with id $id" unless $shop_order;
 
-  # Only Customers which are not found will be applied
-  my $name = $shop_order->billing_lastname ne '' ? "%" . $shop_order->billing_firstname . "%" . $shop_order->billing_lastname . "%" : '';
-  my $lastname = $shop_order->billing_lastname ne '' ? "%" . $shop_order->billing_lastname . "%" : '';
-  my $company = $shop_order->billing_company ne '' ? "%" . $shop_order->billing_company . "%" : '';
-  my $street = $shop_order->billing_street ne '' ?  $shop_order->billing_street : '';
-  # Fuzzysearch for street to find e.g. "Dorfstrasse - Dorfstr. - Dorfstraße"
-  my $dbh = $::form->get_standard_dbh();
-  my $fs_query = "SELECT id FROM customer WHERE ( ( (    name ILIKE ?
-                                                      OR name ILIKE ?
-                                                    )
-                                                    AND zipcode ILIKE ?
-                                                  )
-                                                  OR ( street % ?
-                                                       AND zipcode ILIKE ?
-                                                     )
-                                                  OR email ILIKE ?
-                                                )";
-  my @values = ($lastname, $company, $shop_order->billing_zipcode, $street, $shop_order->billing_zipcode, $shop_order->billing_email);
-  my @c_ids = selectall_array_query($::form, $dbh, $fs_query, @values);
-
-  my $proposals = SL::DB::Manager::Customer->get_all(
-       query => [ id => [ @c_ids ], ],
-  );
+  my $proposals = $shop_order->check_for_existing_customers;
 
   $self->render('shop_order/show',
                 title       => t8('Shoporder'),
@@ -128,7 +108,7 @@ sub action_transfer {
   die "Can't load shop_order form form->import_id" unless $self->shop_order;
 
   my $order = $self->shop_order->convert_to_sales_order(customer => $customer, employee => $employee);
-
+  ## price_tax_calculator
   if ($order->{error}){
     flash_later('error',@{$order->{errors}});
   $self->redirect_to(controller => "ShopOrder", action => 'show', id => $self->shop_order->id);

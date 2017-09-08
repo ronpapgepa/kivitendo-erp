@@ -38,13 +38,12 @@ sub action_edit {
 
   my $is_new = !$self->shop->id;
   $self->_setup_form_action_bar;
-  $self->render('shops/form', title       => ($is_new ? t8('Add shop') : t8('Edit shop')));
+  $self->render('shops/form', title => ($is_new ? t8('Add shop') : t8('Edit shop')));
 }
 
 sub action_save {
   my ($self) = @_;
 
-  my $is_new = !$self->shop->id;
   $self->create_or_update;
 }
 
@@ -54,7 +53,7 @@ sub action_delete {
   if ( eval { $self->shop->delete; 1; } ) {
     flash_later('info',  $::locale->text('The shop has been deleted.'));
   } else {
-    flash_later('error', $::locale->text('The shop has been used and cannot be deleted.'));
+    flash_later('error', $::locale->text('The shop is in use and cannot be deleted.'));
   };
   $self->redirect_to(action => 'list');
 }
@@ -63,10 +62,10 @@ sub action_reorder {
   my ($self) = @_;
 
   SL::DB::Shop->reorder_list(@{ $::form->{shop_id} || [] });
-  $self->render(\'', { type => 'json' });
+  $self->render(\'', { type => 'json' }); # ' emacs happy again
 }
 
-sub action_check_connectivity {
+sub check_connectivity {
   my ($self) = @_;
 
   my $ok = 0;
@@ -75,10 +74,10 @@ sub action_check_connectivity {
   my $version = $shop->connector->get_version;
   $ok       = $version->{success};
 
-  if($ok) {
-    flash_later('ok', t8('The connection to the webshop is success. Version: #1 -- Revision: #2', $version->{data}->{version}, $version->{data}->{revision}));
+  if ($ok) {
+    flash_later('ok', t8('The connection to the webshop was successful. Version: #1 -- Revision: #2', $version->{data}->{version}, $version->{data}->{revision}));
     return;
-  }else{
+  } else {
     return $version;
   }
 }
@@ -88,8 +87,7 @@ sub check_auth {
 }
 
 sub init_shop {
-  SL::DB::Manager::Shop->find_by_or_create(id => $::form->{id} || 0)
-                              ->assign_attributes(%{ $::form->{shop} });
+  SL::DB::Manager::Shop->find_by_or_create(id => $::form->{id} || 0)->assign_attributes(%{ $::form->{shop} });
 }
 
 #
@@ -98,6 +96,7 @@ sub init_shop {
 
 sub create_or_update {
   my ($self) = @_;
+
   my $is_new = !$self->shop->id;
 
   my @errors = $self->shop->validate;
@@ -108,7 +107,7 @@ sub create_or_update {
     return;
   }
 
-  my $version = $self->action_check_connectivity();
+  my $version = $self->check_connectivity();
   if ($version) {
     flash('error', t8('The connection to the webshop is not success. Message: #1 -- URL: #2 -- Datatype: #3', $version->{message}, $version->{data}->{version}, $version->{data}->{revision}));
     $self->load_types();
@@ -129,31 +128,31 @@ sub load_types {
   require SL::ShopConnector::ALL;
   $self->connectors(SL::ShopConnector::ALL->connectors);
 
-  $self->price_types( [ { id => "brutto", name => t8('brutto')}, { id => "netto", name => t8('netto') } ] );
+  $self->price_types( [ { id => "brutto", name => t8('brutto') },
+                        { id => "netto",  name => t8('netto')  } ] );
 
-  $self->protocols( [ { id => "http", name => t8('http') }, { id => "https", name => t8('https') } ] );
+  $self->protocols(   [ { id => "http",  name => t8('http') },
+                        { id => "https", name => t8('https') } ] );
 
   my $pricesources;
-  push( @{ $pricesources } , { id => "master_data/sellprice", name => t8("Master Data")." - ".t8("Sellprice") },
-                             { id => "master_data/listprice", name => t8("Master Data")." - ".t8("Listprice") },
-                             { id => "master_data/lastcost",  name => t8("Master Data")." - ".t8("Lastcost") }
-                             );
+  push(@{ $pricesources } , { id => "master_data/sellprice", name => t8("Master Data") . " - " . t8("Sellprice") },
+                            { id => "master_data/listprice", name => t8("Master Data") . " - " . t8("Listprice") },
+                            { id => "master_data/lastcost",  name => t8("Master Data") . " - " . t8("Lastcost")  });
   my $pricegroups = SL::DB::Manager::Pricegroup->get_all;
   foreach my $pg ( @$pricegroups ) {
-    push( @{ $pricesources } , { id => "pricegroup/".$pg->id, name => t8("Pricegroup") . " - " . $pg->pricegroup} );
+    push( @{ $pricesources } , { id => "pricegroup/" . $pg->id, name => t8("Pricegroup") . " - " . $pg->pricegroup} );
   };
 
-  $self->price_sources( $pricesources );
+  $self->price_sources($pricesources);
 
   #Buchungsgruppen for calculate the tax for an article
   my $taxkey_ids;
   my $taxzones = SL::DB::Manager::TaxZone->get_all_sorted();
 
-  foreach my $tz( @$taxzones ) {
-    push( @{ $taxkey_ids }, { id => $tz->id, name => $tz->description } );
+  foreach my $tz (@$taxzones) {
+    push  @{ $taxkey_ids }, { id => $tz->id, name => $tz->description };
   }
   $self->taxzone_id( $taxkey_ids );
-
 };
 
 sub _setup_form_action_bar {
@@ -171,11 +170,11 @@ sub _setup_form_action_bar {
           t8('Delete'),
           submit => [ '#form', { action => "Shop/delete" } ],
         ],
-        ],
-        action => [
-          t8('Cancel'),
-          submit => [ '#form', { action => "Shop/list" } ],
-        ],
+      ],
+      action => [
+        t8('Cancel'),
+        submit => [ '#form', { action => "Shop/list" } ],
+      ],
     );
   }
 }
@@ -185,12 +184,12 @@ sub _setup_list_action_bar {
 
   for my $bar ($::request->layout->get('actionbar')) {
     $bar->add(
-        link => [
-          t8('Add'),
-          link => $self->url_for(action => 'edit'),
-        ],
-    );
-  }
+      link => [
+        t8('Add'),
+        link => $self->url_for(action => 'edit'),
+      ],
+    )
+  };
 }
 
 1;
