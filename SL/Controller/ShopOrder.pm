@@ -91,7 +91,7 @@ sub action_delete_order {
   $self->redirect_to(controller => "ShopOrder", action => 'list', filter => { 'transferred:eq_ignore_empty' => 0 });
 }
 
-sub action_valid_order {
+sub action_undelete_order {
   my ( $self ) = @_;
 
   $self->shop_order->obsolete(0);
