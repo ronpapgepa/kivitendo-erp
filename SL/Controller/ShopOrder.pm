@@ -32,12 +32,13 @@ sub action_get_orders {
   foreach my $shop_config ( @{ $active_shops } ) {
     my $shop = SL::Shop->new( config => $shop_config );
     my $new_orders = $shop->connector->get_new_orders;
-#    push @{ $orders_fetched },@{ $new_orders };
+    push @{ $orders_fetched }, $new_orders ;
   };
-  $main::lxdebug->dump(0, 'WH:OF ',$orders_fetched);
 
-#  flash('info', t8('#1 shoporders has been fetched', scalar(@{$orders_fetched})-1));
-  $self->action_list;
+  foreach my $shop_fetched(@{ $orders_fetched }) {
+    flash_later('info', t8('From shop #1 :  #2 shoporders has been fetched', $shop_fetched->{shop_id}, $shop_fetched->{number_of_orders}));
+  }
+  $self->redirect_to(controller => "ShopOrder", action => 'list');
 }
 
 sub action_list {
@@ -108,10 +109,11 @@ sub action_transfer {
   die "Can't load shop_order form form->import_id" unless $self->shop_order;
 
   my $order = $self->shop_order->convert_to_sales_order(customer => $customer, employee => $employee);
-  ## price_tax_calculator
+  $order->calculate_prices_and_taxes;
+
   if ($order->{error}){
     flash_later('error',@{$order->{errors}});
-  $self->redirect_to(controller => "ShopOrder", action => 'show', id => $self->shop_order->id);
+    $self->redirect_to(controller => "ShopOrder", action => 'show', id => $self->shop_order->id);
   }else{
     $order->save;
 
@@ -190,13 +192,12 @@ sub action_apply_customer {
                   'phone'                 => $::form->{$what.'_phone'},
                   'email'                 => $::form->{$what.'_email'},
                   'greeting'              => $::form->{$what.'_greeting'},
-                  # TODO in shopconfig
-                        'taxincluded_checked'   => $shop->pricetype eq "brutto" ? 1 : 0,
-                        'taxincluded'           => $shop->pricetype eq "brutto" ? 1 : 0,
-                        'pricegroup_id'         => (split '\/',$shop->price_source)[0] eq "pricegroup" ?  (split '\/',$shop->price_source)[1] : undef,
-                        'taxzone_id'            => $shop->taxzone_id,
-                        'currency'              => 1,   # TODO hardcoded
-                        #'payment_id'            => 7345,# TODO hardcoded
+                  'taxincluded_checked'   => $shop->pricetype eq "brutto" ? 1 : 0,
+                  'taxincluded'           => $shop->pricetype eq "brutto" ? 1 : 0,
+                  'pricegroup_id'         => (split '\/',$shop->price_source)[0] eq "pricegroup" ?  (split '\/',$shop->price_source)[1] : undef,
+                  'taxzone_id'            => $shop->taxzone_id,
+                  'currency'              => $::instance_conf->get_currency_id,
+                  #'payment_id'            => 7345,# TODO hardcoded
                 );
   my $customer;
   if($::form->{cv_id}){
@@ -233,17 +234,6 @@ sub setup {
 #
 # Helper
 #
-sub check_address {
-  my ($self,%address) = @_;
-  my $addressdata = SL::DB::Manager::Customer->get_all(
-                                query => [
-                                            or => [ 'name'   => { ilike => "%$address{'name'}%" }, 'name' => { ilike => $address{'company'} }, ],
-                                           'street' => { ilike => $address{'street'} },
-                                           'zipcode'=> { ilike => $address{'zipcode'} },
-                                           'city'   => { ilike => $address{'city'} },
-                                         ]);
-  return @{$addressdata}[0];
-}
 
 sub init_shop_order {
   my ( $self ) = @_;
@@ -251,8 +241,6 @@ sub init_shop_order {
 }
 
 sub init_transferred {
-  # data for drop down filter options
-
   [ { title => t8("all"),             value => '' },
     { title => t8("transferred"),     value => 1  },
     { title => t8("not transferred"), value => 0  }, ]
@@ -290,20 +278,99 @@ __END__
 
 =head1 NAME
 
-  SL::Controller::ShopOrder - Handles th imported shoporders
-
-=head1 SYNOPSIS
-
+SL::Controller::ShopOrder - Shoporder CRUD Controller
 
 =head1 DESCRIPTION
 
+Fetches the shoporders and transfers them to orders.
+
+Relations for shoporders
+
+=over 2
+
+=item shop_order_items
+
+=item shops
+
+=item shop_parts
+
+=back
+
+=head1 URL ACTIONS
+
+=over 4
+
+=item C<action_get_orders>
+
+Fetches the shoporders with the shopconnector class
+
+=item C<action_list>
+
+List the shoporders by different filters.
+From the List you can transfer shoporders into orders in batch where it is possible or one by one.
+
+=item C<action_show>
+
+Shows one order. From here you can apply/change/select customer data and transfer the shoporder to an order.
+
+=item C<action_delete>
+
+Marks the shoporder as obsolete. It's for shoporders you don't want to transfer.
+
+=item C<action_undelete>
+
+Marks the shoporder obsolete = false
+
+=item C<action_transfer>
+
+Transfers one shoporder to an order.
+
+=item C<action_apply_customer>
+
+Applys a new customer from the shoporder.
+
+=back
+
+=head1 TASKSERVER ACTIONS
+
+=over 4
+
+=item C<action_mass_transfer>
+
+Transfers more shoporders by backgroundjob called from the taskserver to orders.
+
+=item C<action_transfer_status>
+
+Shows the backgroundjobdata for the popup status window
+
+=back
+
+=head1 SETUP
+
+=over 4
+
+=item C<setup>
+
+=back
+
+=head1 INITS
+
+=over 4
+
+=item C<init_shoporder>
+
+=item C<init_transfered>
+
+Transferstatuses for the filter dropdown
+
+=back
 
 =head1 BUGS
 
-  None yet. :)
+None yet. :)
 
 =head1 AUTHOR
 
-  W. Hahn E<lt>wh@futureworldsearch.netE<gt>
+W. Hahn E<lt>wh@futureworldsearch.netE<gt>
 
 =cut

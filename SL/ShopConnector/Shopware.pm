@@ -33,11 +33,7 @@ sub get_order_max {
   my $url       = $self->url;
   my $data      = $self->connector->get($url . "api/orders?limit=1", %params);
   my $data_json = $data->content;
-  $main::lxdebug->dump(0, 'WH:MAX1 ', $data->content);
-
   my $import    = SL::JSON::decode_json($data_json);
-  $main::lxdebug->dump(0, 'WH:MAX ', $import->{data});
-
 }
 
 sub get_new_orders {
@@ -47,14 +43,28 @@ sub get_new_orders {
   my $ordnumber = $self->config->last_order_number + 1;
   my $otf       = $self->config->orders_to_fetch;
   my $of        = 0;
-#  $self->get_order_max;
-  for(1 .. $otf) {
+    my %params = ( filter => [  property   => 'customerId',
+                                  value      => 1,
 
-    my $data      = $self->connector->get($url . "api/orders/$ordnumber?useNumberAsId=true");
-    my $data_json = $data->content;
-    my $import    = SL::JSON::decode_json($data_json);
+                             ],
+                 );
+    my @filter = (  { property   => 'customerId',
+                        value      => 1,
+                      }
 
-    if ($import->{success}){
+                 );
+                 %params = ( filter => [ @filter ]);
+    my $orders_data      = $self->connector->get($url . "api/orders?limit=$otf&filter[0][property]=number&filter[0][expression]=>&filter[0][value]=" . $self->config->last_order_number);
+    my $orders_data_json = $orders_data->content;
+    my $orders_import    = SL::JSON::decode_json($orders_data_json);
+
+    if ($orders_import->{success}){
+      foreach my $shoporder(@{ $orders_import->{data} }){
+
+        my $data      = $self->connector->get($url . "api/orders/" . $shoporder->{id});
+        my $data_json = $data->content;
+        my $import    = SL::JSON::decode_json($data_json);
+
       my $shop_order = $self->map_data_to_shoporder($import);
 
       $shop_order->save;
@@ -82,7 +92,7 @@ sub get_new_orders {
       }
       $shop_order->{positions} = $position-1;
       my $customer = $shop_order->get_customer;
-      if(ref($customer) eq "SL::DB::Customer"){
+      if(ref($customer)){
         $shop_order->kivi_customer_id($customer->id);
         $shop_order->save;
       }
