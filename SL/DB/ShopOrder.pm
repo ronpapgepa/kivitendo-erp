@@ -5,6 +5,7 @@ package SL::DB::ShopOrder;
 
 use strict;
 
+use SL::DB::Shop;
 use SL::DB::MetaSetup::ShopOrder;
 use SL::DB::Manager::ShopOrder;
 use SL::DB::Helper::LinkedRecords;
@@ -42,8 +43,6 @@ sub convert_to_sales_order {
     unless($part){
       push @error_report, t8('Part with partnumber: #1 not found', $_->partnumber);
     }else{
-      my $shop_part = SL::DB::Manager::ShopPart->find_by( shop_id => $self->shop_id, part_id => $part->id );
-
       my $current_order_item = SL::DB::OrderItem->new(
         parts_id            => $part->id,
         description         => $part->description,
@@ -51,7 +50,7 @@ sub convert_to_sales_order {
         sellprice           => $_->price,
         unit                => $part->unit,
         position            => $_->position,
-        active_price_source => $shop_part->active_price_source,
+        active_price_source => $_->active_price_source,
       );
     }
   }@{ $self->shop_order_items };
@@ -130,7 +129,7 @@ WHERE (
    ( street % ?  AND zipcode ILIKE ?)
  OR
    email ILIKE ?
-)
+) AND obsolete = 'F'
 SQL
   my @values = ($lastname, $company, $self->billing_zipcode, $street, $self->billing_zipcode, $self->billing_email);
   my $customers = SL::DB::Manager::Customer->get_objects_from_sql(
@@ -140,13 +139,12 @@ SQL
   return $customers;
 }
 
-#auslagern in eigene subroutine, da auch für andere connectoren genutzt werden muss
 sub get_customer{
   my ($self, %params) = @_;
-
+  my $shop = SL::DB::Manager::Shop->find_by(id => $self->shop_id);
   my $customer_proposals = $self->check_for_existing_customers;
   my $name = $self->billing_firstname . " " . $self->billing_lastname;
-my $customer;
+  my $customer = 0;
   if(!scalar(@{$customer_proposals})){
     my %address = ( 'name'                  => $name,
                     'department_1'          => $self->billing_company,
@@ -160,10 +158,10 @@ my $customer;
                     'fax'                   => $self->billing_fax,
                     'phone'                 => $self->billing_phone,
                     'ustid'                 => $self->billing_vat,
-                    'taxincluded_checked'   => $self->config->pricetype eq "brutto" ? 1 : 0,
-                    'taxincluded'           => $self->config->pricetype eq "brutto" ? 1 : 0,
-                    'pricegroup_id'         => (split '\/',$self->config->price_source)[0] eq "pricegroup" ?  (split '\/',$self->config->price_source)[1] : undef,
-                    'taxzone_id'            => $self->config->taxzone_id,
+                    'taxincluded_checked'   => $shop->pricetype eq "brutto" ? 1 : 0,
+                    'taxincluded'           => $shop->pricetype eq "brutto" ? 1 : 0,
+                    'pricegroup_id'         => (split '\/',$shop->price_source)[0] eq "pricegroup" ?  (split '\/',$shop->price_source)[1] : undef,
+                    'taxzone_id'            => $shop->taxzone_id,
                     'currency'              => $::instance_conf->get_currency_id,
                     #'payment_id'            => 7345,# TODO hardcoded
                   );
@@ -180,20 +178,20 @@ my $customer;
                     )->save();
 
   }elsif(scalar(@{$customer_proposals}) == 1){
-    # hier überprüfen ob Kundendaten wirklich übereinstimmen auc auf ungültig überprüfen
-    $customer = $customer_proposals->[0];
-  }else{
-    # hier überprüfen ob Kundendaten wirklich übereinstimmen und ob es nur einen datensatz gibt auc auf ungültig überprüfen
-    $customer = SL::DB::Manager::Customer->find_by( name    => $name,
-                                                       street  => $self->billing_street,
-                                                       zipcode => $self->billing_zipcode,
-                                                       email   => $self->billing_email,
-                                                     );
-
+    # check if the proposal is the right customer, could be different names under the same address. Depends on how first- and familyname is handled. Here is for customername = companyname or customername = "firstname familyname"
+    $customer = SL::DB::Manager::Customer->find_by( id       => $customer_proposals->[0]->id,
+                                                    name     => $name,
+                                                    email    => $self->billing_email,
+                                                    street   => $self->billing_street,
+                                                    zipcode  => $self->billing_zipcode,
+                                                    city     => $self->billing_city,
+                                                    obsolete => 'F',
+                                                  );
   }
-  return \$customer;
+
+  return $customer;
 }
-## EOF AUslagern
+
 sub compare_to {
   my ($self, $other) = @_;
 
@@ -233,9 +231,19 @@ Inexact search for possible matches with existing customers in the database.
 
 Returns all found customers as an arrayref of SL::DB::Customer objects.
 
+=item C<get_customer>
+
+returns only one customer from the check_for_existing_customers if the return from it is 0 or 1 customer.
+
+When it is 0 get customer creates a new customer object of the shop order billing data and returns it
+
 =item C<compare_to>
 
 =back
+
+=head1 TODO
+
+some variables like payments could be better implemented. Transaction description is hardcoded
 
 =head1 AUTHORS
 

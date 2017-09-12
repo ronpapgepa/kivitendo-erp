@@ -133,7 +133,7 @@
                 <tr class="listheading">
                   <th colspan="7">Customer Proposals</td>
                 </tr>
-                [% FOREACH prop = PROPOSALS %][% IF prop.order_lock %][% SET orderlock_class = 'style="background:rgba(232, 32, 23, 0.2);"' %][% END %]
+                [% FOREACH prop = PROPOSALS %][% IF prop.order_lock %][% SET orderlock_class = 'style="background:rgba(232, 32, 23, 0.2);"' %][% ELSE %][% SET orderlock_class = '' %][% END %]
                 <tr class="listrow" [% orderlock_class %]>
                   <td>[% IF !prop.order_lock %][% L.radio_button_tag('customer', value=prop.id) %][% END %]</td>
                   <td><a href="controller.pl?action=CustomerVendor/edit&id=[% prop.id %]&db=customer&callback=[% HTML.url('controller.pl?action=ShopOrder/show&id=' _ IMPORT.id) %]">[% HTML.escape(prop.customernumber) %]</a></td>
