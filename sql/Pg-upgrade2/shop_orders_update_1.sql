@@ -1,7 +1,7 @@
 -- @tag: shop_orders_update_1
 -- @description: Ändern der Tabellen shop_orders und shop_order_items. Trigger für oe
 -- @depends: release_3_4_1 shop_orders shop_orders_add_active_price_source
--- @ignore: 1
+-- @ignore: 0
 
 ALTER TABLE shop_orders ADD FOREIGN KEY (shop_id) REFERENCES shops(id);
 ALTER TABLE shop_orders ADD FOREIGN KEY (kivi_customer_id) REFERENCES customer(id);
