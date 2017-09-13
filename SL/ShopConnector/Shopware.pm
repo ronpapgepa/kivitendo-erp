@@ -206,7 +206,7 @@ sub get_articles {
 }
 
 sub update_part {
-  my ($self, $shop_part, $json, $todo) = @_;
+  my ($self, $shop_part, $todo) = @_;
 
   #shop_part is passed as a param
   die unless ref($shop_part) eq 'SL::DB::ShopPart';
@@ -214,7 +214,7 @@ sub update_part {
   my $url = $self->url;
   my $part = SL::DB::Part->new(id => $shop_part->{part_id})->load;
 
-  # TODO: Prices (pricerules, pricegroups, multiple prices)
+  # CVARS to map
   my $cvars = { map { ($_->config->name => { value => $_->value_as_text, is_valid => $_->is_valid }) } @{ $part->cvars_by_config } };
 
   my @cat = ();
@@ -223,60 +223,10 @@ sub update_part {
     push ( @cat, $temp );
   }
 
-  my $images = SL::DB::Manager::ShopImage->get_all( where => [ 'files.object_id' => $part->{id}, ], with_objects => 'file', sort_by => 'position' );
-  my @upload_img = ();
-  foreach my $img (@{ $images }) {
-    my $file               = SL::File->get(id => $img->file->id );
-    my ($path, $extension) = (split /\./, $file->file_name);
-    my $content            = File::Slurp::read_file($file->get_file);
-    my $temp ={ ( link        => 'data:' . $file->mime_type . ';base64,' . MIME::Base64::encode($content, ""), #$content, # MIME::Base64::encode($content),
-                  description => $img->file->title,
-                  position    => $img->position,
-                  extension   => $extension,
-                  path        => $path,
-                      )}    ;
-    push( @upload_img, $temp);
-  }
-
-  my ($import,$data,$data_json);
-#  if( $shop_part->last_update){
-    my $partnumber = $::form->escape($part->{partnumber});#shopware don't accept / in articlenumber
-# Shopware RestApi schreibt Fehleremail wenn Artikel nicht gefunden. es braucht aber irgendeine Abfrage, ob der Artikel schon im Shop ist.
-# LWP->post = neuanlegen LWP->put = update
-    $data       = $self->connector->get($url . "api/articles/$partnumber?useNumberAsId=true");
-    $data_json  = $data->content;
-    $import     = SL::JSON::decode_json($data_json);
-#  }
-
-  # get the right price
-  # TODO In extra Helper??
-  my ( $price_src_str, $price_src_id ) = split(/\//,$shop_part->active_price_source);
-  require SL::DB::Part;
-  my $price;
-  if ($price_src_str eq "master_data") {
-    my $part = SL::DB::Manager::Part->get_all( where => [id => $shop_part->part_id], with_objects => ['prices'],limit => 1)->[0];
-    $price = $part->$price_src_id;
-  }else{
-    my $part = SL::DB::Manager::Part->get_all( where => [id => $shop_part->part_id, 'prices.'.pricegroup_id => $price_src_id], with_objects => ['prices'],limit => 1)->[0];
-    $price =  $part->prices->[0]->price;
-  }
-
-  # get the right taxrate for the article
-  # TODO In extra Helper??
-  my $taxrate;
-  my $dbh  = $::form->get_standard_dbh();
-  my $b_id = $part->buchungsgruppen_id;
-  my $t_id = $shop_part->shop->taxzone_id;
-
-  my $sql_str = "SELECT a.rate AS taxrate from tax a
-  WHERE a.taxkey = (SELECT b.taxkey_id
-  FROM chart b LEFT JOIN taxzone_charts c ON b.id = c.income_accno_id
-  WHERE c.taxzone_id = $t_id
-  AND c.buchungsgruppen_id = $b_id)";
-
-  my $rate = selectall_hashref_query($::form, $dbh, $sql_str);
-  $taxrate = @$rate[0]->{taxrate}*100;
-
+  my @upload_img = $shop_part->get_images;
+  my $tax_n_price = $shop_part->get_tax_and_price;
+  my $price = $tax_n_price->{price};
+  my $taxrate = $tax_n_price->{tax};
   # mapping to shopware still missing attributes,metatags
   my %shop_data;
 
@@ -339,6 +289,13 @@ sub update_part {
 
   my $upload_content;
   my $upload;
+  my ($import,$data,$data_json);
+  my $partnumber = $::form->escape($part->{partnumber});#shopware don't accept / in articlenumber
+  # Shopware RestApi sends an erroremail if configured and part not found. But it needs this info to decide if update or create a new article
+  # LWP->post = create LWP->put = update
+    $data       = $self->connector->get($url . "api/articles/$partnumber?useNumberAsId=true");
+    $data_json  = $data->content;
+    $import     = SL::JSON::decode_json($data_json);
   if($import->{success}){
     #update
     my $partnumber  = $::form->escape($part->{partnumber});#shopware don't accept / in articlenumber
@@ -354,7 +311,7 @@ sub update_part {
   # don't know if this is needed
   if(@upload_img) {
     my $partnumber = $::form->escape($part->{partnumber});#shopware don't accept / in articlenumber
-    my $imgup      = $self->connector->put($url . "api/generatearticleimages/$partnumber?usenumberasid=true");
+    my $imgup      = $self->connector->put($url . "api/generatearticleimages/$partnumber?useNumberAsId=true");
   }
 
   return $upload_content->{success};
@@ -365,7 +322,7 @@ sub get_article {
 
   my $url       = $self->url;
   $partnumber   = $::form->escape($partnumber);#shopware don't accept / in articlenumber
-  my $data      = $self->connector->get($url . "api/articles/$partnumber?usenumberasid=true");
+  my $data      = $self->connector->get($url . "api/articles/$partnumber?useNumberAsId=true");
   my $data_json = $data->content;
   return SL::JSON::decode_json($data_json);
 }

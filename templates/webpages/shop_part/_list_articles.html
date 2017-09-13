@@ -75,9 +75,9 @@
       </td>
       <td style="vertical-align:middle;text-align:center;">
         [% IF shop_part.active %]
-        <div id="toogle_[% shop_part.id %]" style="background-image:url(image/gruener_punkt.gif);background-repeat:no-repeat;witdh:15px;height:15px;" onclick="kivi.ShopPart.part_toggle_active([% shop_part.id %] ,[% shop_part.active %]);" onMouseOver="this.style.cursor='pointer'">&nbsp; </div>
+        <div id="toogle_[% shop_part.id %]" style="background-image:url(image/gruener_punkt.gif);background-repeat:no-repeat;witdh:15px;height:15px;">&nbsp; </div>
         [% ELSE %]
-        <div id="toogle_[% shop_part.id %]" style="background-image:url(image/roter_punkt.gif);background-repeat:no-repeat;witdh:15px;height:15px;" onclick="kivi.ShopPart.part_toggle_active([% shop_part.id %] ,[% shop_part.active %]);" onMouseOver="this.style.cursor='pointer'">&nbsp; </div>
+        <div id="toogle_[% shop_part.id %]" style="background-image:url(image/roter_punkt.gif);background-repeat:no-repeat;witdh:15px;height:15px;">&nbsp; </div>
         [% END %]
       </td>
       <td>[% L.html_tag('span',LxERP.t8(), id => 'active_price_source_' _ shop_part.id) %] </td>

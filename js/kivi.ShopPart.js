@@ -1,7 +1,6 @@
 namespace('kivi.ShopPart', function(ns) {
   var $dialog;
 
-  // this is called by sub render, with a certain prerendered html (edit.html,categories.html)
   ns.shop_part_dialog = function(title, html) {
     var id            = 'jqueryui_popup_dialog';
     var dialog_params = {
@@ -28,8 +27,6 @@ namespace('kivi.ShopPart', function(ns) {
     $dialog.dialog("close");
   }
 
-
-  // save existing shop_part_id with new params from form, calls create_or_update and saves to db
   ns.save_shop_part = function(shop_part_id) {
     var form = $('form').serializeArray();
     form.push( { name: 'action', value: 'ShopPart/update' }
@@ -41,7 +38,6 @@ namespace('kivi.ShopPart', function(ns) {
     });
   }
 
-  // add part to a shop
   ns.add_shop_part = function(part_id,shop_id) {
     var form = $('form').serializeArray();
     form.push( { name: 'action', value: 'ShopPart/update' }
@@ -51,34 +47,24 @@ namespace('kivi.ShopPart', function(ns) {
     });
   }
 
-  // this is called from tabs/_shop.html, opens edit_window (render)
   ns.edit_shop_part = function(shop_part_id) {
     $.post('controller.pl', { action: 'ShopPart/create_or_edit_popup', shop_part_id: shop_part_id }, function(data) {
       kivi.eval_json_result(data);
     });
   }
 
-  // does the same as edit_shop_part (existing), but with part_id and shop_id, opens edit window (render)
   ns.create_shop_part = function(part_id, shop_id) {
     $.post('controller.pl', { action: 'ShopPart/create_or_edit_popup', part_id: part_id, shop_id: shop_id }, function(data) {
       kivi.eval_json_result(data);
     });
   }
 
-  // gets all categories from the webshop
   ns.get_all_categories = function(shop_part_id) {
-    //var form = new Array; //$('form').serializeArray();
-    //form.push( { name: 'action', value: 'ShopPart/get_categories' }
-    //         , { name: 'shop_part_id', value: shop_part_id }
-    //);
     $.post('controller.pl', { action: 'ShopPart/get_categories', shop_part_id: shop_part_id }, function(data) {
       kivi.eval_json_result(data);
     });
-    //$.post('controller.pl', form, function(data) {
-    //  kivi.eval_json_result(data);
-    //});
   }
-  // write categories in kivi DB not in the shops DB TODO: create new categories in the shops db
+
   ns.save_categories = function(shop_part_id, shop_id) {
     var form = $('form').serializeArray();
     form.push( { name: 'action', value: 'ShopPart/save_categories' }
@@ -108,13 +94,12 @@ namespace('kivi.ShopPart', function(ns) {
     $('#shop_images').load(url);
   }
 
-  //shows the Name and price in _shop.html. Pricerules not implemented yet, just master_data and pricegroups
   ns.update_price_n_price_source = function(shop_part_id,price_source) {
     $.post('controller.pl', { action: 'ShopPart/show_price_n_pricesource', shop_part_id: shop_part_id, pricesource: price_source }, function(data) {
       kivi.eval_json_result(data);
     });
   }
-  //shows the local and the online stock
+
   ns.update_stock = function(shop_part_id) {
     $.post('controller.pl', { action: 'ShopPart/show_stock', shop_part_id: shop_part_id }, function(data) {
       kivi.eval_json_result(data);

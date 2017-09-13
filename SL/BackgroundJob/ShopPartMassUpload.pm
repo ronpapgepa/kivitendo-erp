@@ -1,5 +1,5 @@
 package SL::BackgroundJob::ShopPartMassUpload;
-#ShopPartMassUpload
+
 use strict;
 use warnings;
 
@@ -7,7 +7,7 @@ use parent qw(SL::BackgroundJob::Base);
 
 use SL::DBUtils;
 use SL::DB::ShopPart;
-      use SL::Shop;
+use SL::Shop;
 
 use constant WAITING_FOR_EXECUTION        => 0;
 use constant UPLOAD_TO_WEBSHOP            => 1;
@@ -15,10 +15,11 @@ use constant DONE                         => 2;
 
 # Data format:
 # my $data                  = {
-#     shop_part_record_ids       => [ 603, 604, 605],
-#     num_order_created           => 0,
-#     orders_ids                  => [1,2,3]
-#     conversation_errors         => [ { id => 603 , item => 2, message => "Out of stock"}, ],
+#     shop_part_record_ids         => [ 603, 604, 605 ],
+#     todo                         => $::form->{upload_todo},
+#     status                       => SL::BackgroundJob::ShopPartMassUpload->WAITING_FOR_EXECUTION(),
+#     num_uploaded                 => 0,
+#     conversation                 => [ { id => 603 , number => 2, message => "Ok" or $@ }, ],
 # };
 
 sub update_webarticles {
@@ -28,33 +29,31 @@ sub update_webarticles {
   my $db      = $job_obj->db;
 
   $job_obj->set_data(UPLOAD_TO_WEBSHOP())->save;
-
+  my $num_uploaded = 0;
   foreach my $shop_part_id (@{ $job_obj->data_as_hash->{shop_part_record_ids} }) {
     my $data  = $job_obj->data_as_hash;
     eval {
       my $shop_part = SL::DB::Manager::ShopPart->find_by(id => $shop_part_id);
       unless($shop_part){
-        push @{ $data->{conversion_errors} }, { id => $shop_part_id, number => '', message => 'Shoppart not found' };
+        push @{ $data->{conversion} }, { id => $shop_part_id, number => '', message => 'Shoppart not found' };
       }
 
       my $shop = SL::Shop->new( config => $shop_part->shop );
 
-      my $part_hash = $shop_part->part->as_tree;
-      require SL::JSON;
-
-      my $json      = SL::JSON::to_json($part_hash);
-      my $return    = $shop->connector->update_part($shop_part, $json, $data->{todo});
+      my $return    = $shop->connector->update_part($shop_part, $data->{todo});
       if ( $return == 1 ) {
         my $now = DateTime->now;
         my $attributes->{last_update} = $now;
         $shop_part->assign_attributes(%{ $attributes });
         $shop_part->save;
+        $data->{num_uploaded} = $num_uploaded++;
+        push @{ $data->{conversion} }, { id => $shop_part_id, number => $shop_part->part->partnumber, message => 'uploaded' };
       }else{
-      push @{ $data->{conversion_errors} }, { id => $shop_part_id, number => '', message => $return };
+      push @{ $data->{conversion} }, { id => $shop_part_id, number => $shop_part->part->partnumber, message => $return };
       }
       1;
     } or do {
-      push @{ $data->{conversion_errors} }, { id => $shop_part_id, number => '', message => $@ };
+      push @{ $data->{conversion} }, { id => $shop_part_id, number => '', message => $@ };
     };
 
     $job_obj->update_attributes(data_as_hash => $data);

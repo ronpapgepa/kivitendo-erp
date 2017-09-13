@@ -44,9 +44,7 @@ sub action_update_shop {
   require SL::Shop;
   my $shop = SL::Shop->new( config => $shop_part->shop );
 
-  my $part_hash = $shop_part->part->as_tree;
-  my $json      = SL::JSON::to_json($part_hash);
-  my $return    = $shop->connector->update_part($self->shop_part, $json,'all');
+  my $return    = $shop->connector->update_part($self->shop_part, 'all');
 
   # the connector deals with parsing/result verification, just needs to return success or failure
   if ( $return == 1 ) {
@@ -99,12 +97,6 @@ sub action_get_categories {
 
 }
 
-sub action_update {
-  my ($self) = @_;
-
-  $self->create_or_update;
-}
-
 sub action_show_price_n_pricesource {
   my ($self) = @_;
 
@@ -148,12 +140,10 @@ sub action_get_n_write_categories {
     my $online_cat = $online_article->{data}->{categories};
     my @cat = ();
     for(keys %$online_cat){
-    # The ShopwareConnector works with the CategoryID @categories[x][0] in others/new Connectors it must be tested
-    # Each assigned categorie is saved with id,categorie_name an multidimensional array and could be expanded with categoriepath or what is needed
       my @cattmp;
-      push( @cattmp,$online_cat->{$_}->{id} );
-      push( @cattmp,$online_cat->{$_}->{name} );
-      push( @cat,\@cattmp );
+      push @cattmp,$online_cat->{$_}->{id};
+      push @cattmp,$online_cat->{$_}->{name};
+      push @cat,\@cattmp;
     }
     my $attributes->{shop_category} = \@cat;
     my $active->{active} = $online_article->{data}->{active};
@@ -163,53 +153,11 @@ sub action_get_n_write_categories {
   $self->redirect_to( action => 'list_articles' );
 }
 
-sub create_or_update {
-  my ($self) = @_;
-
-  my $is_new = !$self->shop_part->id;
-
-  # in edit.html all variables start with shop_part
-  my $params = delete($::form->{shop_part}) || { };
-
-  $self->shop_part->assign_attributes(%{ $params });
-
-  $self->shop_part->save;
-
-  my ( $price, $price_src_str ) = $self->get_price_n_pricesource($self->shop_part->active_price_source);
-
-  flash('info', $is_new ? t8('The shop part has been created.') : t8('The shop part has been saved.'));
-  $self->js->html('#shop_part_description_' . $self->shop_part->id, $self->shop_part->shop_description)
-           ->html('#shop_part_active_' . $self->shop_part->id, $self->shop_part->active)
-           ->html('#price_' . $self->shop_part->id, $::form->format_amount(\%::myconfig,$price,2))
-           ->html('#active_price_source_' . $self->shop_part->id, $price_src_str)
-           ->run('kivi.ShopPart.close_dialog')
-           ->flash('info', t8("Updated shop part"))
-           ->render;
-}
-
-sub render_shop_part_edit_dialog {
-  my ($self) = @_;
-
-  # when self->shop_part is called in template, it will be an existing shop_part with id,
-  # or a new shop_part with only part_id and shop_id set
-  $self->js
-    ->run(
-      'kivi.ShopPart.shop_part_dialog',
-      t8('Shop part'),
-      $self->render('shop_part/edit', { output => 0 })
-    )
-    ->reinit_widgets;
-
-  $self->js->render;
-}
-
 sub action_save_categories {
   my ($self) = @_;
 
   my @categories =  @{ $::form->{categories} || [] };
 
-    # The ShopwareConnector works with the CategoryID @categories[x][0] in others/new Connectors it must be tested
-    # Each assigned categorie is saved with id,categorie_name an multidimensional array and could be expanded with categoriepath or what is needed
     my @cat = ();
     foreach my $cat ( @categories) {
       my @cattmp;
@@ -275,25 +223,69 @@ sub action_mass_upload {
 
   my @shop_parts =  @{ $::form->{shop_parts_ids} || [] };
 
-  my $job                   = SL::DB::BackgroundJob->new(
-    type                    => 'once',
-    active                  => 1,
-    package_name            => 'ShopPartMassUpload',
-  )->set_data(
-     shop_part_record_ids         => [ @shop_parts ],
-     todo                         => $::form->{upload_todo},
-     status                       => SL::BackgroundJob::ShopPartMassUpload->WAITING_FOR_EXECUTION(),
-     conversation_errors          => [ ],
+  my $job = SL::DB::BackgroundJob->new(
+        type                 => 'once',
+        active               => 1,
+        package_name         => 'ShopPartMassUpload',
+        )->set_data(
+        shop_part_record_ids => [ @shop_parts ],
+        todo                 => $::form->{upload_todo},
+        status               => SL::BackgroundJob::ShopPartMassUpload->WAITING_FOR_EXECUTION(),
+        conversation         => [ ],
+        num_uploaded         => 0,
    )->update_next_run_at;
 
    SL::System::TaskServer->new->wake_up;
 
-   my $html = $self->render('shop_part/_transfer_status', { output => 0 }, job => $job);
+   my $html = $self->render('shop_part/_upload_status', { output => 0 }, job => $job);
 
    $self->js
       ->html('#status_mass_upload', $html)
       ->run('kivi.ShopPart.massUploadStarted')
       ->render;
+}
+
+sub action_update {
+  my ($self) = @_;
+
+  $self->create_or_update;
+}
+
+sub render_shop_part_edit_dialog {
+  my ($self) = @_;
+
+  $self->js
+    ->run(
+      'kivi.ShopPart.shop_part_dialog',
+      t8('Shop part'),
+      $self->render('shop_part/edit', { output => 0 })
+    )
+    ->reinit_widgets;
+
+  $self->js->render;
+}
+
+sub create_or_update {
+  my ($self) = @_;
+
+  my $is_new = !$self->shop_part->id;
+
+  my $params = delete($::form->{shop_part}) || { };
+
+  $self->shop_part->assign_attributes(%{ $params });
+
+  $self->shop_part->save;
+
+  my ( $price, $price_src_str ) = $self->get_price_n_pricesource($self->shop_part->active_price_source);
+
+  flash('info', $is_new ? t8('The shop part has been created.') : t8('The shop part has been saved.'));
+  $self->js->html('#shop_part_description_' . $self->shop_part->id, $self->shop_part->shop_description)
+           ->html('#shop_part_active_' . $self->shop_part->id, $self->shop_part->active)
+           ->html('#price_' . $self->shop_part->id, $::form->format_amount(\%::myconfig,$price,2))
+           ->html('#active_price_source_' . $self->shop_part->id, $price_src_str)
+           ->run('kivi.ShopPart.close_dialog')
+           ->flash('info', t8("Updated shop part"))
+           ->render;
 }
 
 #
@@ -306,13 +298,10 @@ sub add_javascripts  {
 sub load_pricesources {
   my ($self) = @_;
 
-  # the price sources to use for the article: sellprice, lastcost,
-  # listprice, or one of the pricegroups. It overwrites the default pricesource from the shopconfig.
-  # TODO: implement valid pricerules for the article
   my $pricesources;
   push( @{ $pricesources } , { id => "master_data/sellprice", name => t8("Master Data")." - ".t8("Sellprice") },
                              { id => "master_data/listprice", name => t8("Master Data")." - ".t8("Listprice") },
-                             { id => "master_data/lastcost",  name => t8("Master Data")." - ".t8("Lastcost") }
+                             { id => "master_data/lastcost",  nam => t8("Master Data")." - ".t8("Lastcost") }
                              );
   my $pricegroups = SL::DB::Manager::Pricegroup->get_all;
   foreach my $pg ( @$pricegroups ) {
@@ -331,11 +320,12 @@ sub get_price_n_pricesource {
   require SL::DB::Part;
   my $price;
   if ($price_src_str eq "master_data") {
-    my $part       = SL::DB::Manager::Part->get_all( where => [id => $self->shop_part->part_id], with_objects => ['prices'],limit => 1)->[0];
+    my $part       = SL::DB::Manager::Part->find_by( id => $self->shop_part->part_id );
     $price         = $part->$price_src_id;
     $price_src_str = $price_src_id;
     }else{
     my $part       = SL::DB::Manager::Part->get_all( where => [id => $self->shop_part->part_id, 'prices.'.pricegroup_id => $price_src_id], with_objects => ['prices'],limit => 1)->[0];
+    #my $part       = SL::DB::Manager::Part->find_by( id => $self->shop_part->part_id, 'prices.'.pricegroup_id => $price_src_id );
     my $pricegrp   = SL::DB::Manager::Pricegroup->find_by( id => $price_src_id )->pricegroup;
     $price         = $part->prices->[0]->price;
     $price_src_str = $pricegrp;
@@ -362,20 +352,11 @@ sub init_file {
 }
 
 sub init_shops {
-  # data for drop down filter options
   require SL::DB::Shop;
   my @shops_dd = [ { title => t8("all") ,   value =>'' } ];
   my $shops = SL::DB::Mangager::Shop->get_all( where => [ obsolete => 0 ] );
   my @tmp = map { { title => $_->{description}, value => $_->{id} } } @{ $shops } ;
   return @shops_dd;
-
-}
-
-sub init_producers {
-  # data for drop down filter options
-  my @producers_dd = [ { title => t8("all") ,   value =>'' } ];
-  return @producers_dd;
-
 }
 
 1;
@@ -387,34 +368,109 @@ __END__
 
 =head1 NAME
 
-  SL::Controller::ShopPart - Controller for managing ShopParts
+SL::Controller::ShopPart - Controller for managing ShopParts
 
 =head1 SYNOPSIS
 
-  ShopParts are configured in a tab of the corresponding part.
+ShopParts are configured in a tab of the corresponding part.
 
-=head1 FUNCTIONS
-
+=head1 ACTIONS
 
 =over 4
 
 =item C<action_update_shop>
 
-  To be called from the "Update" button of the shoppart, for manually syncing/upload one part with its shop. Generates a  Calls some ClientJS functions to modifiy original page.
+To be called from the "Update" button of the shoppart, for manually syncing/upload one part with its shop. Calls some ClientJS functions to modifiy original page.
+
+=item C<action_show_files>
+
+
+
+=item C<action_ajax_delete_file>
+
+
+
+=item C<action_get_categories>
+
+
+
+=item C<action_show_price_n_pricesource>
+
+
+
+=item C<action_show_stock>
+
+
 
 =item C<action_get_n_write_categories>
 
-  Can be used to sync the categories of a shoppart with the categories from online.
+Can be used to sync the categories of a shoppart with the categories from online.
+
+=item C<action_save_categories>
+
+The ShopwareConnector works with the CategoryID @categories[x][0] in others/new Connectors it must be tested
+Each assigned categorie is saved with id,categorie_name an multidimensional array and could be expanded with categoriepath or what is needed
+
+=item C<action_reorder>
+
+
+
+=item C<action_upload_status>
+
+
+
+=item C<action_mass_upload>
+
+
+
+=item C<action_update>
+
+
+
+=item C<create_or_update>
+
+
+
+=item C<render_shop_part_edit_dialog>
+
+when self->shop_part is called in template, it will be an existing shop_part with id,
+or a new shop_part with only part_id and shop_id set
+
+=item C<add_javascripts>
+
+
+=item C<load_pricesources>
+
+the price sources to use for the article: sellprice, lastcost,
+listprice, or one of the pricegroups. It overwrites the default pricesource from the shopconfig.
+TODO: implement valid pricerules for the article
+
+=item C<get_price_n_pricesource>
+
+
+=item C<check_auth>
+
+
+=item C<init_shop_part>
+
+
+=item C<init_file>
+
+
+=item C<init_shops>
+
+data for drop down filter options
 
 =back
 
 =head1 TODO
 
-  Pricesrules, pricessources aren't fully implemented yet.
+CheckAuth
+Pricesrules, pricessources aren't fully implemented yet.
 
 =head1 AUTHORS
 
-  G. Richardson E<lt>information@kivitendo-premium.deE<gt>
-  W. Hahn E<lt>wh@futureworldsearch.netE<gt>
+G. Richardson E<lt>information@kivitendo-premium.deE<gt>
+W. Hahn E<lt>wh@futureworldsearch.netE<gt>
 
 =cut
