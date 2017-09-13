@@ -217,11 +217,7 @@ sub action_apply_customer {
                     what_done   => 'Shopimport',
                   )->save();
 
-  if($::form->{$what.'_country'} ne "Deutschland") {   # hardcoded
-    $self->redirect_to(controller => "controller.pl", action => 'CustomerVendor/edit', id => $customer->id);
-  }else{
-    $self->redirect_to(action => 'show', id => $::form->{import_id});
-  }
+  $self->redirect_to(action => 'show', id => $::form->{import_id});
 }
 
 sub setup {
@@ -364,6 +360,10 @@ Shows the backgroundjobdata for the popup status window
 Transferstatuses for the filter dropdown
 
 =back
+
+=head1 TODO
+
+Implements different payments, pricesources and pricegroups. Till now not needed.
 
 =head1 BUGS
 
