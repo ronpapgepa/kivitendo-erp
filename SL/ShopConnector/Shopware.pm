@@ -24,46 +24,23 @@ use Rose::Object::MakeMethods::Generic (
   'scalar --get_set_init' => [ qw(connector url) ],
 );
 
-sub get_order_max {
-  my ($self) = @_;
-  my %params = ( sort  => { property  => 'number',
-                            direction => 'DESC',
-                          },
-               );
-  my $url       = $self->url;
-  my $data      = $self->connector->get($url . "api/orders?limit=1", %params);
-  my $data_json = $data->content;
-  my $import    = SL::JSON::decode_json($data_json);
-}
-
 sub get_new_orders {
   my ($self, $id) = @_;
 
-  my $url       = $self->url;
-  my $ordnumber = $self->config->last_order_number + 1;
-  my $otf       = $self->config->orders_to_fetch;
-  my $of        = 0;
-    my %params = ( filter => [  property   => 'customerId',
-                                  value      => 1,
+  my $url              = $self->url;
+  my $ordnumber        = $self->config->last_order_number + 1;
+  my $otf              = $self->config->orders_to_fetch;
+  my $of               = 0;
+  my $orders_data      = $self->connector->get($url . "api/orders?limit=$otf&filter[0][property]=number&filter[0][expression]=>&filter[0][value]=" . $self->config->last_order_number);
+  my $orders_data_json = $orders_data->content;
+  my $orders_import    = SL::JSON::decode_json($orders_data_json);
 
-                             ],
-                 );
-    my @filter = (  { property   => 'customerId',
-                        value      => 1,
-                      }
+  if ($orders_import->{success}){
+    foreach my $shoporder(@{ $orders_import->{data} }){
 
-                 );
-                 %params = ( filter => [ @filter ]);
-    my $orders_data      = $self->connector->get($url . "api/orders?limit=$otf&filter[0][property]=number&filter[0][expression]=>&filter[0][value]=" . $self->config->last_order_number);
-    my $orders_data_json = $orders_data->content;
-    my $orders_import    = SL::JSON::decode_json($orders_data_json);
-
-    if ($orders_import->{success}){
-      foreach my $shoporder(@{ $orders_import->{data} }){
-
-        my $data      = $self->connector->get($url . "api/orders/" . $shoporder->{id});
-        my $data_json = $data->content;
-        my $import    = SL::JSON::decode_json($data_json);
+      my $data      = $self->connector->get($url . "api/orders/" . $shoporder->{id});
+      my $data_json = $data->content;
+      my $import    = SL::JSON::decode_json($data_json);
 
       my $shop_order = $self->map_data_to_shoporder($import);
 
