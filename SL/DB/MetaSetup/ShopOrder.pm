@@ -57,7 +57,7 @@ __PACKAGE__->meta->columns(
   mtime                  => { type => 'timestamp' },
   netamount              => { type => 'numeric', precision => 15, scale => 5 },
   obsolete               => { type => 'boolean', default => 'false', not_null => 1 },
-  oe_transid             => { type => 'integer' },
+  oe_trans_id            => { type => 'integer' },
   order_date             => { type => 'timestamp' },
   payment_description    => { type => 'text' },
   payment_id             => { type => 'integer' },
