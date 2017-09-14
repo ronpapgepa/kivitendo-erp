@@ -18,7 +18,7 @@ use SL::Locale::String;
 use SL::Controller::Helper::ParseFilter;
 use Rose::Object::MakeMethods::Generic
 (
-  'scalar --get_set_init' => [ qw(shop_order transferred js) ],
+  'scalar --get_set_init' => [ qw(shop_order shops transferred js) ],
 );
 
 __PACKAGE__->run_before('setup');
@@ -242,6 +242,10 @@ sub init_transferred {
     { title => t8("not transferred"), value => 0  }, ]
 }
 
+sub init_shops {
+  SL::DB::Shop->shops_dd;
+}
+
 sub _setup_list_action_bar {
   my ($self) = @_;
 
@@ -358,6 +362,10 @@ Shows the backgroundjobdata for the popup status window
 =item C<init_transfered>
 
 Transferstatuses for the filter dropdown
+
+=item C<init_shops>
+
+Filter dropdown Shops
 
 =back
 

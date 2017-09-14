@@ -9,16 +9,18 @@ use SL::System::TaskServer;
 use Data::Dumper;
 use SL::Locale::String qw(t8);
 use SL::DB::ShopPart;
+use SL::DB::Shop;
 use SL::DB::File;
 use SL::DB::ShopImage;
 use SL::DB::Default;
 use SL::Helper::Flash;
+use SL::Controller::Helper::ParseFilter;
 use MIME::Base64;
 
 use Rose::Object::MakeMethods::Generic
 (
    scalar                 => [ qw(price_sources) ],
-  'scalar --get_set_init' => [ qw(shop_part file shops producers) ],
+  'scalar --get_set_init' => [ qw(shop_part file shops) ],
 );
 
 __PACKAGE__->run_before('check_auth');
@@ -193,12 +195,11 @@ sub action_reorder {
 sub action_list_articles {
   my ($self) = @_;
 
-  my %filter      = ($::form->{filter} ? parse_filter($::form->{filter}) : query => [ transferred => 0 ]);
-  my $transferred = $::form->{filter}->{transferred_eq_ignore_empty} ne '' ? $::form->{filter}->{transferred_eq_ignore_empty} : '';
+  my %filter      = ($::form->{filter} ? parse_filter($::form->{filter}) : query => [ 'shop.obsolete' => 0 ]);
   my $sort_by     = $::form->{sort_by} ? $::form->{sort_by} : 'part.partnumber';
   $sort_by .=$::form->{sort_dir} ? ' DESC' : ' ASC';
 
-  my $articles = SL::DB::Manager::ShopPart->get_all(where => [ 'shop.obsolete' => 0 ],with_objects => [ 'part','shop' ], sort_by => $sort_by );
+  my $articles = SL::DB::Manager::ShopPart->get_all( %filter ,with_objects => [ 'part','shop' ], sort_by => $sort_by );
 
   foreach my $article (@{ $articles}) {
     my $images = SL::DB::Manager::ShopImage->get_all_count( where => [ 'files.object_id' => $article->part->id, ], with_objects => 'file', sort_by => 'position' );
@@ -352,11 +353,7 @@ sub init_file {
 }
 
 sub init_shops {
-  require SL::DB::Shop;
-  my @shops_dd = [ { title => t8("all") ,   value =>'' } ];
-  my $shops = SL::DB::Mangager::Shop->get_all( where => [ obsolete => 0 ] );
-  my @tmp = map { { title => $_->{description}, value => $_->{id} } } @{ $shops } ;
-  return @shops_dd;
+  SL::DB::Shop->shops_dd;
 }
 
 1;

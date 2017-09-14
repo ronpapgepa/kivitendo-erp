@@ -8,14 +8,7 @@ use strict;
 use SL::DB::MetaSetup::Shop;
 use SL::DB::Manager::Shop;
 use SL::DB::Helper::ActsAsList;
-
-#__PACKAGE__->meta->add_relationships(
-#  shop_parts     => {
-#    type         => 'one to many',
-#    class        => 'SL::DB::ShopPart',
-#    column_map   => { id => 'shop_id' },
-#  },
-#);
+use SL::Locale::String qw(t8);
 
 __PACKAGE__->meta->initialize;
 
@@ -28,4 +21,51 @@ sub validate {
 
   return @errors;
 }
+
+sub shops_dd {
+  my ( $self ) = @_;
+
+  my @shops_dd = [ { title => t8("all") ,   value =>'' } ];
+  my $shops = SL::DB::Manager::Shop->get_all( where => [ obsolete => 0 ] );
+  my @tmp = map { { title => $_->{description}, value => $_->{id} } } @{ $shops } ;
+  push @shops_dd, @tmp;
+  return \@shops_dd;
+}
+
 1;
+
+__END__
+
+=pod
+
+=encoding utf-8
+
+=head1 NAME
+
+SL::DB::Shop - Model for the 'shops' table
+
+=head1 SYNOPSIS
+
+This is a standard Rose::DB::Object based model and can be used as one.
+
+=head1 METHODS
+
+=over 4
+
+=item C<validate>
+
+Returns an error if the shop description is missing
+
+=item C<shops_dd>
+
+Returns an array of hashes for dropdowns in filters
+
+=back
+
+=head1 AUTHORS
+
+Werner Hahn E<lt>wh@futureworldsearch.netE<gt>
+
+G. Richardson E<lt>grichardson@kivitendo-premium.deE<gt>
+
+=cut

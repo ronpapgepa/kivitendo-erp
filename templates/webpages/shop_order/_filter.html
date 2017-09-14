@@ -6,6 +6,11 @@
  <table id='filter_table'>
 
     <tr>
+     <th align="right">[% 'Shop' | $T8 %]</th>
+     <td>[% L.select_tag('filter.shop_id:eq_ignore_empty', SELF.shops, value_key = 'value', title_key = 'title', default=0) %]</td>
+    </tr>
+
+    <tr>
      <th align="right">[% 'Status' | $T8 %]</th>
      <td>[% L.select_tag('filter.transferred:eq_ignore_empty', SELF.transferred, value_key = 'value', title_key = 'title', default=0) %]</td>
     </tr>

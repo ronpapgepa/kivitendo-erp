@@ -7,7 +7,7 @@
 
     <tr>
      <th align="right">[% 'Shop' | $T8 %]</th>
-     <td>[% L.select_tag('filter.transferred:eq_ignore_empty', SELF.shop, value_key = 'value', title_key = 'title', default=SHOPS) %]</td>
+     <td>[% L.select_tag('filter.shop_id:eq_ignore_empty', SELF.shops, value_key = 'value', title_key = 'title', default=0) %]</td>
     </tr>
 
  </table>
