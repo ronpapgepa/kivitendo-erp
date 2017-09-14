@@ -6,9 +6,6 @@ use parent qw(Rose::Object);
 use SL::ShopConnector::ALL;
 use SL::DB::Part;
 
-# __PACKAGE__->run_before('check_auth');
-# bb: warum auskommentiert - kann dann wohl weg, oder?
-
 use Rose::Object::MakeMethods::Generic (
   'scalar'                => [ qw(config) ],
   'scalar --get_set_init' => [ qw(connector) ],
