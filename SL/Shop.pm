@@ -55,26 +55,34 @@ __END__
 
 =head1 NAME
 
-  SL::Shop - Do stuff with WebShop instances
+SL::Shop - Do stuff with WebShop instances
 
 =head1 SYNOPSIS
 
-  my $config = SL::DB::Manager::Shop->get_first();
-  my $shop = SL::Shop->new( config => $config );
+my $config = SL::DB::Manager::Shop->get_first();
+my $shop = SL::Shop->new( config => $config );
 
-  From the config we know which Connector class to load, save in $shop->connector
-  and do stuff from there:
+From the config we know which Connector class to load, save in $shop->connector
+and do stuff from there:
 
-  $shop->connector->get_new_orders;
+$shop->connector->get_new_orders;
 
 =head1 FUNCTIONS
 
+=over 4
+
+=item C<updatable_parts>
+
+=item C<init_connector>
+
+=back
+
 =head1 BUGS
 
-  Nothing here yet.
+Nothing here yet.
 
 =head1 AUTHOR
 
-  G. Richardson <lt>information@kivitendo-premium.deE<gt>
+G. Richardson <lt>information@kivitendo-premium.deE<gt>
 
 =cut

@@ -105,31 +105,20 @@ __END__
 
 =head1 NAME
 
-  SL::DB::Helper::ThumbnailCreator - DatabaseClass Helper for Fileuploads
+SL::DB::Helper::ThumbnailCreator - DatabaseClass Helper for Fileuploads
 
 =head1 SYNOPSIS
 
-  use SL::DB::Helper::ThumbnailCreator;
+use SL::DB::Helper::ThumbnailCreator;
 
-  # synopsis...
+# synopsis...
 
 =head1 DESCRIPTION
 
-  # longer description..
+# longer description..
 
 =head1 AUTHOR
 
-  Werner Hahn E<lt>wh@futureworldsearch.netE<gt>
+Werner Hahn E<lt>wh@futureworldsearch.netE<gt>
 
 =cut
-
-
-=head1 INTERFACE
-
-
-=head1 DEPENDENCIES
-
-
-=head1 SEE ALSO
-
-
