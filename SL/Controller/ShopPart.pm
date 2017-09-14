@@ -302,7 +302,7 @@ sub load_pricesources {
   my $pricesources;
   push( @{ $pricesources } , { id => "master_data/sellprice", name => t8("Master Data")." - ".t8("Sellprice") },
                              { id => "master_data/listprice", name => t8("Master Data")." - ".t8("Listprice") },
-                             { id => "master_data/lastcost",  nam => t8("Master Data")." - ".t8("Lastcost") }
+                             { id => "master_data/lastcost",  name => t8("Master Data")." - ".t8("Lastcost") }
                              );
   my $pricegroups = SL::DB::Manager::Pricegroup->get_all;
   foreach my $pg ( @$pricegroups ) {
