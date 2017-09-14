@@ -19,12 +19,12 @@ sub reset_state {
   clear_up();
 
   $shop = SL::Dev::Shop::create_shop->save;
-  $part = SL::Dev::Part::create_part->save;
+  $part = SL::Dev::Part::new_part->save;
   $shop_part = SL::Dev::Shop::create_shop_part(part => $part, shop => $shop)->save;
 
   $employee = SL::DB::Manager::Employee->current || croak "No employee";
 
-  $customer = SL::Dev::CustomerVendor::create_customer(
+  $customer = SL::Dev::CustomerVendor::new_customer(
     name    => 'Evil Inc',
     street  => 'Evil Street',
     zipcode => '66666',
@@ -67,7 +67,7 @@ is(scalar @{ $fuzzy_customers }, 1, 'found 1 matching customer');
 is($fuzzy_customers->[0]->name, 'Evil Inc', 'matched customer Evil Inc');
 
 note('adding a not-so-similar customer');
-my $customer_different = SL::Dev::CustomerVendor::create_customer(
+my $customer_different = SL::Dev::CustomerVendor::new_customer(
   name    => "Different Name",
   street  => 'Good Straet', # difference large enough from "Evil Street"
   zipcode => $customer->zipcode,
@@ -77,7 +77,7 @@ $fuzzy_customers = $shop_order->check_for_existing_customers;
 is(scalar @{ $fuzzy_customers }, 1, 'still only found 1 matching customer (zipcode equal + street dissimilar');
 
 note('adding a similar customer');
-my $customer_similar = SL::Dev::CustomerVendor::create_customer(
+my $customer_similar = SL::Dev::CustomerVendor::new_customer(
   name    => "Different Name",
   street  => 'Good Street', # difference not large enough from "Evil Street", street matches
   zipcode => $customer->zipcode,
@@ -105,5 +105,6 @@ clear_up();
 1;
 
 sub clear_up {
-  "SL::DB::Manager::${_}"->delete_all(all => 1) for qw(OrderItem Order ShopPart Part ShopOrderItem ShopOrder Shop Customer);
+  "SL::DB::Manager::${_}"->delete_all(all => 1) for qw(OrderItem Order);
+  "SL::DB::Manager::${_}"->delete_all(all => 1) for qw(ShopPart Part ShopOrderItem ShopOrder Shop Customer);
 }
