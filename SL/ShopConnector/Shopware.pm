@@ -4,7 +4,7 @@ use strict;
 
 use parent qw(SL::ShopConnector::Base);
 
-use SL::DBUtils;
+
 use SL::JSON;
 use LWP::UserAgent;
 use LWP::Authen::Digest;
@@ -42,42 +42,12 @@ sub get_new_orders {
       my $data_json = $data->content;
       my $import    = SL::JSON::decode_json($data_json);
 
-      my $shop_order = $self->map_data_to_shoporder($import);
+      $self->import_data_to_shop_order($import);
 
-      $shop_order->save;
-      $of ++;
-      my $id = $shop_order->id;
-
-      my @positions = sort { Sort::Naturally::ncmp($a->{"partnumber"}, $b->{"partnumber"}) } @{ $import->{data}->{details} };
-      my $position = 1;
-      foreach my $pos(@positions) {
-        my $price = $::form->round_amount($pos->{price},2);
-
-        my %pos_columns = ( description          => $pos->{articleName},
-                            partnumber           => $pos->{articleNumber},
-                            price                => $price,
-                            quantity             => $pos->{quantity},
-                            position             => $position,
-                            tax_rate             => $pos->{taxRate},
-                            shop_trans_id        => $pos->{articleId},
-                            shop_order_id        => $id,
-                            active_price_source  => $self->config->price_source,
-                          );
-        my $pos_insert = SL::DB::ShopOrderItem->new(%pos_columns);
-        $pos_insert->save;
-        $position++;
-      }
-      $shop_order->{positions} = $position-1;
-      my $customer = $shop_order->get_customer;
-      if(ref($customer)){
-        $shop_order->kivi_customer_id($customer->id);
-        $shop_order->save;
-      }
-
-      my $attributes->{last_order_number} = $ordnumber;
-      $self->config->assign_attributes( %{ $attributes } );
+      $self->config->assign_attributes( last_order_number => $ordnumber);
       $self->config->save;
       $ordnumber++;
+      $of++;
     }
   }
   my $shop           = $self->config->description;
@@ -85,13 +55,52 @@ sub get_new_orders {
   return \%fetched_orders;
 }
 
+sub import_data_to_shop_order {
+  my ( $self, $import ) = @_;
+  my $shop_order = $self->map_data_to_shoporder($import);
+
+  $shop_order->save;
+  my $id = $shop_order->id;
+
+  my @positions = sort { Sort::Naturally::ncmp($a->{"partnumber"}, $b->{"partnumber"}) } @{ $import->{data}->{details} };
+  my $position = 1;
+  my $active_price_source = $self->config->price_source;
+  foreach my $pos(@positions) {
+    my $price = $::form->round_amount($pos->{price},2);
+    my %pos_columns = ( description          => $pos->{articleName},
+                        partnumber           => $pos->{articleNumber},
+                        price                => $price,
+                        quantity             => $pos->{quantity},
+                        position             => $position,
+                        tax_rate             => $pos->{taxRate},
+                        shop_trans_id        => $pos->{articleId},
+                        shop_order_id        => $id,
+                        active_price_source  => $active_price_source,
+                      );
+    my $pos_insert = SL::DB::ShopOrderItem->new(%pos_columns);
+    $pos_insert->save;
+    $position++;
+  }
+  $shop_order->{positions} = $position-1;
+
+  my $customer = $shop_order->get_customer;
+  if(ref($customer)){
+    $shop_order->kivi_customer_id($customer->id);
+    $shop_order->save;
+  }
+}
+
 sub map_data_to_shoporder {
   my ($self, $import) = @_;
+
   my $parser = DateTime::Format::Strptime->new( pattern   => '%Y-%m-%dT%H:%M:%S',
                                                   locale    => 'de_DE',
                                                   time_zone => 'local'
                                                 );
   my $orderdate = $parser->parse_datetime($import->{data}->{orderTime});
+
+  my $shop_id      = $self->config->id;
+  my $tax_included = $self->config->pricetype;
   # Mapping to table shoporders. See http://community.shopware.com/_detail_1690.html#GET_.28Liste.29
   my %columns = (
     amount                  => $import->{data}->{invoiceAmount},
@@ -152,11 +161,12 @@ sub map_data_to_shoporder {
     shop_customer_id        => $import->{data}->{customerId},
     shop_customer_number    => $import->{data}->{billing}->{number},
     shop_customer_comment   => $import->{data}->{customerComment},
-    shop_id                 => $self->config->id,
+    shop_id                 => $shop_id,
     shop_ordernumber        => $import->{data}->{number},
     shop_trans_id           => $import->{data}->{id},
-    tax_included            => $self->config->pricetype eq "brutto" ? 1 : 0,
+    tax_included            => $tax_included eq "brutto" ? 1 : 0,
   );
+
   my $shop_order = SL::DB::ShopOrder->new(%columns);
   return $shop_order;
 }
@@ -358,24 +368,32 @@ __END__
 
 =head1 NAME
 
-  SL::Shopconnecter::Shopware - connector for shopware 5
+SL::Shopconnecter::Shopware - connector for shopware 5
 
 =head1 SYNOPSIS
 
 
 =head1 DESCRIPTION
 
+=head1 METHODS
+
+=back 4
+
+=item C<import_data_to_shop_order>
+
+Creates on shoporder object from json
+
 =head1 TODO
 
-  Pricesrules, pricessources aren't fully implemented yet.
-  Payments aren't implemented( need to map payments from Shopware like invoice, paypal etc. to payments in kivitendo)
+Pricesrules, pricessources aren't fully implemented yet.
+Payments aren't implemented( need to map payments from Shopware like invoice, paypal etc. to payments in kivitendo)
 
 =head1 BUGS
 
-  None yet. :)
+None yet. :)
 
 =head1 AUTHOR
 
-  W. Hahn E<lt>wh@futureworldsearch.netE<gt>
+W. Hahn E<lt>wh@futureworldsearch.netE<gt>
 
 =cut

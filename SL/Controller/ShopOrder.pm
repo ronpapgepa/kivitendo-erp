@@ -106,9 +106,9 @@ sub action_transfer {
   my $customer = SL::DB::Manager::Customer->find_by(id => $::form->{customer});
   die "Can't find customer" unless $customer;
   my $employee = SL::DB::Manager::Employee->current;
+  die "Can't find employee" unless $employee;
 
   die "Can't load shop_order form form->import_id" unless $self->shop_order;
-
   my $order = $self->shop_order->convert_to_sales_order(customer => $customer, employee => $employee);
   $order->calculate_prices_and_taxes;
 
@@ -135,11 +135,10 @@ sub action_transfer {
 
       $self->shop_order->transferred(1);
       $self->shop_order->transfer_date(DateTime->now_local);
-      $self->shop_order->oe_transid($order->id);
       $self->shop_order->save;
       $self->shop_order->link_to_record($order);
-      $self->redirect_to(controller => "oe.pl", action => 'edit', type => 'sales_order', vc => 'customer', id => $order->id);
     }) || die $order->db->error;
+    $self->redirect_to(controller => "oe.pl", action => 'edit', type => 'sales_order', vc => 'customer', id => $order->id);
   }
 }
 

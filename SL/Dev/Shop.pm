@@ -2,21 +2,23 @@ package SL::Dev::Shop;
 
 use strict;
 use base qw(Exporter);
-our @EXPORT = qw(create_shop create_shop_part create_shop_order);
+use Data::Dumper;
+our @EXPORT_OK = qw(new_shop new_shop_part new_shop_order);
+our %EXPORT_TAGS = (ALL => \@EXPORT_OK);
 
 use SL::DB::Shop;
 
-sub create_shop {
+sub new_shop {
   my (%params) = @_;
 
   my $shop = SL::DB::Shop->new(
-    description => 'testshop',
+    description => delete $params{description} || 'testshop',
     %params
   );
   return $shop;
 }
 
-sub create_shop_part {
+sub new_shop_part {
   my (%params) = @_;
 
   my $part = delete $params{part};
@@ -30,7 +32,7 @@ sub create_shop_part {
   return $shop_part;
 }
 
-sub create_shop_order {
+sub new_shop_order {
   my (%params) = @_;
 
   my $shop_order = SL::DB::ShopOrder->new(
