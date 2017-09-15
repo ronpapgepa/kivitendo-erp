@@ -70,7 +70,6 @@ sub create_order {
                           )->save();
           $shop_order->transferred(1);
           $shop_order->transfer_date(DateTime->now_local);
-          $shop_order->oe_transid($order->id);
           $shop_order->save;
           $shop_order->link_to_record($order);
           $data->{num_order_created} ++;
