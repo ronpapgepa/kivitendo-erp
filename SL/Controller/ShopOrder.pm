@@ -102,6 +102,7 @@ sub action_undelete_order {
 
 sub action_transfer {
   my ( $self ) = @_;
+
   my $customer = SL::DB::Manager::Customer->find_by(id => $::form->{customer});
   die "Can't find customer" unless $customer;
   my $employee = SL::DB::Manager::Employee->current;
@@ -115,28 +116,30 @@ sub action_transfer {
     flash_later('error',@{$order->{errors}});
     $self->redirect_to(controller => "ShopOrder", action => 'show', id => $self->shop_order->id);
   }else{
-    $order->save;
+    $order->db->with_transaction( sub {
+      $order->save;
 
-    my $snumbers = "ordernumber_" . $order->ordnumber;
-    SL::DB::History->new(
-                      trans_id    => $order->id,
-                      snumbers    => $snumbers,
-                      employee_id => SL::DB::Manager::Employee->current->id,
-                      addition    => 'SAVED',
-                      what_done   => 'Shopimport -> Order',
-                    )->save();
-    foreach my $item(@{ $order->orderitems }){
-      $item->parse_custom_variable_values->save;
-      $item->{custom_variables} = \@{ $item->cvars_by_config };
-      $item->save;
-    }
+      my $snumbers = "ordernumber_" . $order->ordnumber;
+      SL::DB::History->new(
+                        trans_id    => $order->id,
+                        snumbers    => $snumbers,
+                        employee_id => SL::DB::Manager::Employee->current->id,
+                        addition    => 'SAVED',
+                        what_done   => 'Shopimport -> Order',
+                      )->save();
+      foreach my $item(@{ $order->orderitems }){
+        $item->parse_custom_variable_values->save;
+        $item->{custom_variables} = \@{ $item->cvars_by_config };
+        $item->save;
+      }
 
-    $self->shop_order->transferred(1);
-    $self->shop_order->transfer_date(DateTime->now_local);
-    $self->shop_order->oe_transid($order->id);
-    $self->shop_order->save;
-    $self->shop_order->link_to_record($order);
-    $self->redirect_to(controller => "oe.pl", action => 'edit', type => 'sales_order', vc => 'customer', id => $order->id);
+      $self->shop_order->transferred(1);
+      $self->shop_order->transfer_date(DateTime->now_local);
+      $self->shop_order->oe_transid($order->id);
+      $self->shop_order->save;
+      $self->shop_order->link_to_record($order);
+      $self->redirect_to(controller => "oe.pl", action => 'edit', type => 'sales_order', vc => 'customer', id => $order->id);
+    }) || die $order->db->error;
   }
 }
 
