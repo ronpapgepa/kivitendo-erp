@@ -65,6 +65,7 @@ sub import_data_to_shop_order {
   my @positions = sort { Sort::Naturally::ncmp($a->{"partnumber"}, $b->{"partnumber"}) } @{ $import->{data}->{details} };
   my $position = 1;
   my $active_price_source = $self->config->price_source;
+  #Mapping Positions
   foreach my $pos(@positions) {
     my $price = $::form->round_amount($pos->{price},2);
     my %pos_columns = ( description          => $pos->{articleName},
