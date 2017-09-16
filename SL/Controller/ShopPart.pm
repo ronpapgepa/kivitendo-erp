@@ -335,8 +335,7 @@ sub get_price_n_pricesource {
 }
 
 sub check_auth {
-  return 1; # TODO: implement shop rights
-  # $::auth->assert('shop');
+  $::auth->assert('shop_part_edit');
 }
 
 sub init_shop_part {

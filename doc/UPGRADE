@@ -4,6 +4,13 @@ Wichtige Hinweise zum Upgrade von älteren Versionen
 
 ** BITTE FERTIGEN SIE VOR DEM UPGRADE EIN BACKUP IHRER DATENBANK(EN) AN! **
 
+Upgrade auf v3.5.1
+
+* Neue Perlabhängigkeiten
+
+  * LWP::Authen::Digest für WebshopApi
+  * LWP::UserAgent für WebshopApi
+
 Upgrade auf v3.5.0
 ===========================
 

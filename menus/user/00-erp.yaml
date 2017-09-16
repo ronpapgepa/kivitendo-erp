@@ -373,6 +373,7 @@
 - parent: webshop
   id: webshop_import
   name: Webshop Import
+  access: shop_order
   params:
     action: ShopOrder/list
     filter.transferred:eq_ignore_empty: 0
@@ -382,6 +383,7 @@
 - parent: webshop
   id: webshop_articles
   name: Webshop articles
+  access: shop_part_edit
   params:
     action: ShopPart/list_articles
     db: shop_parts
@@ -1265,6 +1267,7 @@
   id: system_shops
   name: Web shops
   order: 2350
+  access: edit_shop_config
   params:
     action: Shop/list
 - parent: system

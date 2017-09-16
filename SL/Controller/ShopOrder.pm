@@ -21,6 +21,7 @@ use Rose::Object::MakeMethods::Generic
   'scalar --get_set_init' => [ qw(shop_order shops transferred js) ],
 );
 
+__PACKAGE__->run_before('check_auth');
 __PACKAGE__->run_before('setup');
 
 use Data::Dumper;
@@ -224,11 +225,13 @@ sub action_apply_customer {
 
 sub setup {
   my ($self) = @_;
-  $::auth->assert('invoice_edit');
-
+  $::auth->assert('shop_part_edit');
   $::request->layout->use_javascript("${_}.js")  for qw(kivi.ShopOrder);
 }
 
+sub check_auth {
+  $::auth->assert('shop_part_edit');
+}
 #
 # Helper
 #
