@@ -31,7 +31,17 @@
    <td>[% L.html_tag('span', shop_part.last_update.to_kivitendo('precision' => 'minute'), id => 'shop_part_last_update_' _ shop_part.id ) %]</td>
    <td>[% L.button_tag("kivi.ShopPart.edit_shop_part(" _ shop_part.id _ ")", LxERP.t8("Edit"))  %]</td>
    <td>[% L.button_tag("kivi.ShopPart.update_shop_part(" _ shop_part.id _ ")", LxERP.t8("Upload"))  %]</td>
-   <td>[% L.button_tag("kivi.ShopPart.get_all_categories(" _ shop_part.id _ ")", LxERP.t8("Shopcategories"))  %]<br>[% HTML.escape(shop_part.part.partsgroup.partsgroup) %]</td>
+   <td>[% L.button_tag("kivi.ShopPart.get_all_categories(" _ shop_part.id _ ")", LxERP.t8("Shopcategories"))  %]<br>
+    [% IF shop_part.shop_category %]
+      [% IF shop_part.shop_category.1.size > 1%]
+        [% FOREACH cat = shop_part.shop_category %]
+          [% HTML.escape(cat.1) %]<br>
+        [% END %]
+      [% ELSE %]
+        [% HTML.escape(shop_part.shop_category.1) %]<br>
+      [% END %]
+    [% END %]
+   </td>
   </tr>
   <script type="text/javascript">
     $(function() {
