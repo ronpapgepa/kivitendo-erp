@@ -5422,7 +5422,9 @@ systemctl enable kivitendo-task-server.service</programlisting>
           unter einem ähnlichen Namensschema zur Verfügung. Hier lautet der
           Präfix <varname>shiptocvar_</varname>.</para>
 
-          <para>Analog stehen die benutzerdefinierten Variablen für Ansprechpersonen mit dem Namenspräfix <varname>cp_cvar_</varname> zur Verfügung.</para>
+          <para>Analog stehen die benutzerdefinierten Variablen für
+          Ansprechpersonen mit dem Namenspräfix <varname>cp_cvar_</varname>
+          zur Verfügung.</para>
         </sect3>
       </sect2>
 
@@ -6415,13 +6417,13 @@ Beschreibung: &lt;%description%&gt;
       <sect2>
         <title>Übersicht</title>
 
-        <para>Die Klassifizierung von Artikeln dient einer weiteren Gliederung,
-        um zum Beispiel den Einkauf vom Verkauf zu trennen, gekennzeichnet
-        durch eine Beschreibung (z.B. "Einkauf") und ein Kürzel (z.B. "E").
-        Für jede Klassifizierung besteht eine Beschreibung und eine Abkürzung
-        die normalerweise aus einem Zeichen besteht, kann aber auf mehrere
-        Zeichen erweitert werden, falls zur Unterscheidung notwendig. Sinnvoll
-        sind jedoch nur maximal 2 Zeichen.</para>
+        <para>Die Klassifizierung von Artikeln dient einer weiteren
+        Gliederung, um zum Beispiel den Einkauf vom Verkauf zu trennen,
+        gekennzeichnet durch eine Beschreibung (z.B. "Einkauf") und ein Kürzel
+        (z.B. "E"). Für jede Klassifizierung besteht eine Beschreibung und
+        eine Abkürzung die normalerweise aus einem Zeichen besteht, kann aber
+        auf mehrere Zeichen erweitert werden, falls zur Unterscheidung
+        notwendig. Sinnvoll sind jedoch nur maximal 2 Zeichen.</para>
       </sect2>
 
       <sect2>
@@ -6490,13 +6492,13 @@ Beschreibung: &lt;%description%&gt;
           </listitem>
         </itemizedlist>
 
-        <para>Für das Attribut "separat ausweisen" stehen in den LaTeX-Vorlagen
-        die Variable <emphasis role="bold">&lt;%non_separate_subtotal%&gt;
-        </emphasis>zur Verfügung, die alle nicht separat auszuweisenden
-        Artikelkosten saldiert, sowie pro separat auszuweisenden
-        Klassifizierungen die Variable<emphasis role="bold">&lt;
-        %separate_X_subtotal%&gt;</emphasis>, wobei X das Kürzel der
-        Klassifizierung ist.</para>
+        <para>Für das Attribut "separat ausweisen" stehen in den
+        LaTeX-Vorlagen die Variable <emphasis
+        role="bold">&lt;%non_separate_subtotal%&gt; </emphasis>zur Verfügung,
+        die alle nicht separat auszuweisenden Artikelkosten saldiert, sowie
+        pro separat auszuweisenden Klassifizierungen die Variable<emphasis
+        role="bold">&lt; %separate_X_subtotal%&gt;</emphasis>, wobei X das
+        Kürzel der Klassifizierung ist.</para>
 
         <para>Im obigen Beispiel wäre das für Lieferkosten <emphasis
         role="bold">&lt;%separate_L_subtotal%&gt;</emphasis> und für
@@ -6525,8 +6527,10 @@ Beschreibung: &lt;%description%&gt;
 
       <sect2>
         <title>Übersicht</title>
-        <para>Parallel zum alten WebDAV gibt es ein Datei-Management-System, das Dateien
-        verschiedenen Typs verwaltet. Dies können</para>
+
+        <para>Parallel zum alten WebDAV gibt es ein Datei-Management-System,
+        das Dateien verschiedenen Typs verwaltet. Dies können</para>
+
         <orderedlist>
           <listitem>
             <para>aus ERP-Daten per LaTeX Template erzeugte
@@ -6543,7 +6547,8 @@ Beschreibung: &lt;%description%&gt;
           </listitem>
 
           <listitem>
-            <para>per E-Mail empfangene Dateianhänge unterschiedlichen Formats,</para>
+            <para>per E-Mail empfangene Dateianhänge unterschiedlichen
+            Formats,</para>
           </listitem>
 
           <listitem>
@@ -6580,7 +6585,8 @@ Beschreibung: &lt;%description%&gt;
           </listitem>
 
           <listitem>
-            <para>Schnittstelle zu externen Dokumenten-Management-Systemen</para>
+            <para>Schnittstelle zu externen
+            Dokumenten-Management-Systemen</para>
           </listitem>
 
           <listitem>
@@ -6591,58 +6597,68 @@ Beschreibung: &lt;%description%&gt;
             <para>etc ...</para>
           </listitem>
         </itemizedlist>
-        <para>Es gibt unterschiedliche Typen von Dateien. Jedem Typ läßt sich in der
-              Mandantenkonfiguration ein bestimmtes Backend zuordnen.
-        </para>
+
+        <para>Es gibt unterschiedliche Typen von Dateien. Jedem Typ läßt sich
+        in der Mandantenkonfiguration ein bestimmtes Backend zuordnen.</para>
+
         <itemizedlist>
           <listitem>
-            <para>"document": Das sind entweder generierte, eingescannte oder hochgeladene PDF-Dateien,
-                  die zu bestimmten ERP-Daten (ERP-Objekte, wie z.B. Rechnung, Lieferschein) gehören.</para>
+            <para>"document": Das sind entweder generierte, eingescannte oder
+            hochgeladene PDF-Dateien, die zu bestimmten ERP-Daten
+            (ERP-Objekte, wie z.B. Rechnung, Lieferschein) gehören.</para>
           </listitem>
 
           <listitem>
-            <para>"attachment": zusätzlich hochgeladene Dokumente, die an bestimmte ERP-Objekte angehängt werden,
-            z.B. technische Zeichnungen, Aufmaße. Diese können auch für Artikel,
-            Lieferanten und Kunden hinterlegt sein.</para>
+            <para>"attachment": zusätzlich hochgeladene Dokumente, die an
+            bestimmte ERP-Objekte angehängt werden, z.B. technische
+            Zeichnungen, Aufmaße. Diese können auch für Artikel, Lieferanten
+            und Kunden hinterlegt sein.</para>
           </listitem>
 
           <listitem>
-            <para>"image": Bilder für Artikel. Diese können auch verkleinert in einer Vorschau (Thumbnail)
-            angezeigt werden.</para>
+            <para>"image": Bilder für Artikel. Diese können auch verkleinert
+            in einer Vorschau (Thumbnail) angezeigt werden.</para>
           </listitem>
         </itemizedlist>
-        <para>Zusätzlich werden in der Datenbank zu den Dateien neben der Zuordnung zu ERP-Objekten, Dateityp
-        Dateinamen und Backend, in dem die Datei gespeichert ist, auch die Quelle der Datei notiert:
-        </para>
+
+        <para>Zusätzlich werden in der Datenbank zu den Dateien neben der
+        Zuordnung zu ERP-Objekten, Dateityp Dateinamen und Backend, in dem die
+        Datei gespeichert ist, auch die Quelle der Datei notiert:</para>
+
         <itemizedlist>
           <listitem>
-            <para> "created": vom System erzeugte Dokumente"</para>
+            <para>"created": vom System erzeugte Dokumente"</para>
           </listitem>
 
           <listitem>
-            <para> "uploaded": hochgeladene Dokumente</para>
+            <para>"uploaded": hochgeladene Dokumente</para>
           </listitem>
 
           <listitem>
-            <para> "email": vom Mail-System empfangene Dateien</para>
+            <para>"email": vom Mail-System empfangene Dateien</para>
           </listitem>
 
           <listitem>
-            <para> "scanner[1]": von einem oder mehreren Scannern erzeugte Dateien. Existieren mehrere Scanner,
-            so sind diese durch unterschiedliche Quellennamen zu definieren.</para>
+            <para>"scanner[1]": von einem oder mehreren Scannern erzeugte
+            Dateien. Existieren mehrere Scanner, so sind diese durch
+            unterschiedliche Quellennamen zu definieren.</para>
           </listitem>
         </itemizedlist>
-        <para>Je nach Dateityp sind nur bestimmte Quellen zulässig. So gibt es für "attachment" und "image" nur
-        die Quelle "uploaded". Für "document" gibt es auf jeden Fall die Quelle "created".
-        Die Quellen "scanner" und "email" müssen derzeit in der Datenbank konfiguriert werden
-        (siehe <xref linkend="file_management.dbconfig"/>).</para>
+
+        <para>Je nach Dateityp sind nur bestimmte Quellen zulässig. So gibt es
+        für "attachment" und "image" nur die Quelle "uploaded". Für "document"
+        gibt es auf jeden Fall die Quelle "created". Die Quellen "scanner" und
+        "email" müssen derzeit in der Datenbank konfiguriert werden (siehe
+        <xref linkend="file_management.dbconfig"/>).</para>
       </sect2>
 
       <sect2>
         <title>Anwendung</title>
-        <para>Die Daten werden bei den ERP-Objekten als extra Reiter dargestellt.
-        Eine Verkaufsrechnung z.B. hat die
-        Reiter "Dokumente" und "Dateianhänge".</para>
+
+        <para>Die Daten werden bei den ERP-Objekten als extra Reiter
+        dargestellt. Eine Verkaufsrechnung z.B. hat die Reiter "Dokumente" und
+        "Dateianhänge".</para>
+
         <screenshot>
           <screeninfo>Reiter "Dateianhänge"</screeninfo>
 
@@ -6652,10 +6668,14 @@ Beschreibung: &lt;%description%&gt;
             </imageobject>
           </mediaobject>
         </screenshot>
-        <para>Bei den Dateianhängen wird immer nur die aktuelle Version einer Datei angezeigt.
-        Wird eine Datei mit gleichem Namen hochgeladen, so wird eine neue Version der Datei erstellt.
-        Vorher wird der Anwender durch einen Dialog gefragt, ob er eine neue Version anlegen will oder
-        ob er die Datei umbenennen will, falls es eine neue Datei sein soll.</para>
+
+        <para>Bei den Dateianhängen wird immer nur die aktuelle Version einer
+        Datei angezeigt. Wird eine Datei mit gleichem Namen hochgeladen, so
+        wird eine neue Version der Datei erstellt. Vorher wird der Anwender
+        durch einen Dialog gefragt, ob er eine neue Version anlegen will oder
+        ob er die Datei umbenennen will, falls es eine neue Datei sein
+        soll.</para>
+
         <screenshot>
           <screeninfo>Reiter "Dateianhänge"</screeninfo>
 
@@ -6669,8 +6689,9 @@ Beschreibung: &lt;%description%&gt;
         </screenshot>
 
         <para>Es können mehrere Dateien gleichzeitig hochgeladen werden,
-        solange in Summe die maximale Größe nicht überschritten wird
-        (siehe <xref linkend="file_management.clientconfig"/>).</para>
+        solange in Summe die maximale Größe nicht überschritten wird (siehe
+        <xref linkend="file_management.clientconfig"/>).</para>
+
         <screenshot>
           <screeninfo>Reiter "Dokumente"</screeninfo>
 
@@ -6680,11 +6701,14 @@ Beschreibung: &lt;%description%&gt;
             </imageobject>
           </mediaobject>
         </screenshot>
-        <para>Sind keine weiteren Quellen für Dokumente konfiguriert, so gibt es nur "erzeugte Dokumente".
-        Es werden alle Versionen der generierten Datei angezeigt. Für Verkaufsrechnungen kommen keine
-        anderen Quellen zur Geltung. Werden entsprechend der
-        <xref linkend="file_management.dbconfig"/> zusätzliche Quellen konfiguriert, so sind diese z.B. bei
-        Einkaufsrechnungen sichtbar:</para>
+
+        <para>Sind keine weiteren Quellen für Dokumente konfiguriert, so gibt
+        es nur "erzeugte Dokumente". Es werden alle Versionen der generierten
+        Datei angezeigt. Für Verkaufsrechnungen kommen keine anderen Quellen
+        zur Geltung. Werden entsprechend der <xref
+        linkend="file_management.dbconfig"/> zusätzliche Quellen konfiguriert,
+        so sind diese z.B. bei Einkaufsrechnungen sichtbar:</para>
+
         <screenshot>
           <screeninfo>Reiter "Dokumente"</screeninfo>
 
@@ -6706,50 +6730,73 @@ Beschreibung: &lt;%description%&gt;
 
       <sect2>
         <title>Konfigurierung</title>
-        <sect3 id="file_management.clientconfig" xreflabel="Mandantenkonfigurierung">
+
+        <sect3 id="file_management.clientconfig"
+               xreflabel="Mandantenkonfigurierung">
           <title>Mandantenkonfiguration</title>
+
           <sect4>
             <title>Reiter "Features"</title>
-            <para>Unter dem Reiter <emphasis role="bold">Features</emphasis> im Abschnitt Dateimanagement ist
-            neben dem "alten" WebDAV das Dateimangement generell zu- und abschaltbar, sowie die Zuordnung der
-          Dateitypen zu Backends. Die Löschbarkeit von Dateien, sowie die maximale Uploadgröße sind Backend-unabhängig</para>
-        <screenshot>
-          <screeninfo>Mandantenkonfig Reiter "Features"</screeninfo>
-          <mediaobject>
-            <imageobject>
-              <imagedata  width="500" fileref="images/DMS-ClientConfig.png"/>
-            </imageobject>
-          </mediaobject>
-        </screenshot>
-        <para>Die einzelnen Backends sind einzeln einschaltbar. Spezifische Backend-Konfigurierungen sind hier
-        noch ergänzbar.</para>
-        </sect4>
+
+            <para>Unter dem Reiter <emphasis role="bold">Features</emphasis>
+            im Abschnitt Dateimanagement ist neben dem "alten" WebDAV das
+            Dateimangement generell zu- und abschaltbar, sowie die Zuordnung
+            der Dateitypen zu Backends. Die Löschbarkeit von Dateien, sowie
+            die maximale Uploadgröße sind Backend-unabhängig</para>
+
+            <screenshot>
+              <screeninfo>Mandantenkonfig Reiter "Features"</screeninfo>
+
+              <mediaobject>
+                <imageobject>
+                  <imagedata fileref="images/DMS-ClientConfig.png" width="500"/>
+                </imageobject>
+              </mediaobject>
+            </screenshot>
+
+            <para>Die einzelnen Backends sind einzeln einschaltbar.
+            Spezifische Backend-Konfigurierungen sind hier noch
+            ergänzbar.</para>
+          </sect4>
+
           <sect4>
             <title>Reiter "Allgemeine Dokumentenanhänge"</title>
-            <para>Unter dem Reiter <emphasis role="bold">Allgemeine Dokumentenanhänge</emphasis>
-            kann für alle ERP-Dokumente ( Angebote, Aufträge, Lieferscheine, Rechnungen im Verkauf und Einkauf )
-            allgemeingültige Anhänge hochgeladen werden.</para>
-        <screenshot>
-          <screeninfo>Mandantenkonfig Reiter "Allgemeine Dokumentenanhänge"</screeninfo>
-          <mediaobject>
-            <imageobject>
-              <imagedata  width="500" fileref="images/DMS-Allgemeine-Dokumentenanhaenge.png"/>
-            </imageobject>
-          </mediaobject>
-        </screenshot>
-        <para>Diese Anhänge werden beim Generieren von PDF-Dateien an die ERP-Dokumente angehängt,
-        z.B. AGBs oder aktuelle Angebote. Es werden in dem Fall die Daten kopiert, sodass an den ERP-Dokumenten immer
-        die Anhänge zum Generierungszeitpunkt eingebettet sind.
-        </para>
-        </sect4>
+
+            <para>Unter dem Reiter <emphasis role="bold">Allgemeine
+            Dokumentenanhänge</emphasis> kann für alle ERP-Dokumente (
+            Angebote, Aufträge, Lieferscheine, Rechnungen im Verkauf und
+            Einkauf ) allgemeingültige Anhänge hochgeladen werden.</para>
+
+            <screenshot>
+              <screeninfo>Mandantenkonfig Reiter "Allgemeine
+              Dokumentenanhänge"</screeninfo>
+
+              <mediaobject>
+                <imageobject>
+                  <imagedata fileref="images/DMS-Allgemeine-Dokumentenanhaenge.png"
+                             width="500"/>
+                </imageobject>
+              </mediaobject>
+            </screenshot>
+
+            <para>Diese Anhänge werden beim Generieren von PDF-Dateien an die
+            ERP-Dokumente angehängt, z.B. AGBs oder aktuelle Angebote. Es
+            werden in dem Fall die Daten kopiert, sodass an den ERP-Dokumenten
+            immer die Anhänge zum Generierungszeitpunkt eingebettet
+            sind.</para>
+          </sect4>
         </sect3>
 
         <sect3 id="file_management.dbconfig"
                xreflabel="Datenbank-Konfigurierung">
           <title>Datenbank-Konfigurierung</title>
-          <para>Die zusätzlichen Quellen für "email" oder ein oder mehrere Scanner sind derzeit vom Administrator
-          direkt in der Datenbanktabelle "user_preferences" einzurichten. Die "value" ist im JSON-Format
-          mit den jeweiligen Werten des Verzeichnisses und der Beschreibung der Quelle.</para>
+
+          <para>Die zusätzlichen Quellen für "email" oder ein oder mehrere
+          Scanner sind derzeit vom Administrator direkt in der
+          Datenbanktabelle "user_preferences" einzurichten. Die "value" ist im
+          JSON-Format mit den jeweiligen Werten des Verzeichnisses und der
+          Beschreibung der Quelle.</para>
+
           <programlisting>
  id |  login    |  namespace   | version |   key    |          value
 ----+-----------+--------------+---------+----------+---------------------------
@@ -6760,8 +6807,10 @@ Beschreibung: &lt;%description%&gt;
   3 | #default# | file_sources | 0.00000 | emails   |
                              {"dir":"/var/tmp/emails","desc":"Empfangene Mails" }
           </programlisting>
-          <para>Es ist daran gedacht, statt dem Default-Eintrag später für bestimmte Benutzer ('login') bestimmte Quellen zuzulassen.
-          Dies wird nach Bedarf implementiert.</para>
+
+          <para>Es ist daran gedacht, statt dem Default-Eintrag später für
+          bestimmte Benutzer ('login') bestimmte Quellen zuzulassen. Dies wird
+          nach Bedarf implementiert.</para>
         </sect3>
 
         <sect3 id="file_management.kiviconfig"
@@ -6776,7 +6825,9 @@ Beschreibung: &lt;%description%&gt;
 [paths]
 document_path = /var/local/kivi_documents
           </programlisting>
-          <para>Unter diesem Wurzelverzeichnis wird pro Mandant automatisch ein Unterverzeichnis mit der ID des Mandanten angelegt.</para>
+
+          <para>Unter diesem Wurzelverzeichnis wird pro Mandant automatisch
+          ein Unterverzeichnis mit der ID des Mandanten angelegt.</para>
         </sect3>
       </sect2>
     </sect1>
@@ -6785,7 +6836,7 @@ document_path = /var/local/kivi_documents
       <title>Webshop-Api</title>
 
       <para>Das Shopmodul bietet die Möglichkeit Onlineshopartikel und
-      Onlineshopbestellungen zu verwalten und zu bearbeiten. </para>
+      Onlineshopbestellungen zu verwalten und zu bearbeiten.</para>
 
       <para>Es ist Multishopfähig, d.h. Artikel können mehreren oder
       unterschiedlichen Shops zugeordnet werden. Bestellungen können aus
@@ -6811,9 +6862,196 @@ psql template1</programlisting></para>
       </sect2>
 
       <sect2>
+        <title>Rechte für die Webshopapi</title>
+
+        <para>In der Administration können folgende Rechte vergeben
+        werden</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Webshopartikel anlegen und bearbeiten</para>
+          </listitem>
+
+          <listitem>
+            <para>Shopbestellungen holen und bearbeiten</para>
+          </listitem>
+
+          <listitem>
+            <para>Shopbestellungen holen und bearbeiten</para>
+          </listitem>
+        </itemizedlist>
+      </sect2>
+
+      <sect2>
         <title>Konfiguration</title>
 
-        <para/>
+        <para>Unter System-&gt;Webshops können Shops angelegt und konfiguriert
+        werden</para>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata contentdepth="500" contentwidth="700"
+                       fileref="images/Shop_Listing.png"/>
+          </imageobject>
+        </mediaobject>
+      </sect2>
+
+      <sect2>
+        <title>Webshopartikel</title>
+
+        <sect3>
+          <title>Shopvariablenreiter in Artikelstammdaten</title>
+
+          <para>Mit dem Recht "Shopartikel anlegen und bearbeiten" öffnet sich
+          der Reiter "Shopvariablen" in den Artikelstammdaten. Hier können
+          jetzt die Artikel mit unterschiedlichen Beschreibung und/oder
+          Preisen für die konfigutierten Shops angelegt und bearbeitet werden.
+          An dieser Stelle können auch beliebig viele Bilder dem Shopartikel
+          zugeordnet werden. Artikelbilder gelten für alle Shops.</para>
+
+          <mediaobject>
+            <imageobject>
+              <imagedata contentdepth="500" contentwidth="600"
+                         fileref="images/Shop_Artikel.png"/>
+            </imageobject>
+          </mediaobject>
+
+          <para>Die Artikelgruppen werden direkt vom Shopsystem geholt somit
+          ist es möglich einen Artikel auch mehreren Gruppen
+          zuzuordenen</para>
+        </sect3>
+
+        <sect3>
+          <title>Shopartikelliste</title>
+
+          <para>Unter dem Menu Webshop-&gt;Webshop Artikel hat man nochmal
+          eine Gesamtübersicht. Von hier aus ist es möglich Artikel im Stapel
+          unter verschiedenen Kriterien &lt;alles&gt;&lt;nur Preis&gt;&lt;nur
+          Bestand&gt;&lt;Preis und Bestand&gt; an die jeweiligen Shops
+          hochzuladen.</para>
+
+          <mediaobject>
+            <imageobject>
+              <imagedata fileref="images/Shop_Artikel_Listing.png"/>
+            </imageobject>
+          </mediaobject>
+        </sect3>
+      </sect2>
+
+      <sect2>
+        <title>Bestellimport</title>
+
+        <para>Unter dem Menupunkt Webshop-&gt;Webshop Import öffnet sich die
+        Bestellimportsliste. Hier ist sind Möglichkeiten gegeben Neue
+        Bestellungen vom Shop abzuholen, geholte Bestellungen im Stapel oder
+        einzeln als Auftrag zu transferieren. Die Liste kann nach
+        verschiedenen Kriterien gefiltert werden.</para>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="images/Shop_Bestell.png"/>
+          </imageobject>
+        </mediaobject>
+
+        <para>Bei Einträgen in der Liste.</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>keine Kundennummer: Es gibt ähnliche Kundendatensätze und
+            der Datensatz konnte nicht eindeutig zugewiesen werden.</para>
+          </listitem>
+
+          <listitem>
+            <para>Kundennummer und Rechnungen rot hinterlegt: Der Kunde hat
+            offene Posten und kann deswegen nicht im Stapel übernommen
+            werden.</para>
+          </listitem>
+
+          <listitem>
+            <para>Rechnungsadresse grün hinterlegt: Der Kunde konnte eindeutig
+            einem Datensatz zugeordnet werden. Die Shopbestellung kann im
+            Stapel mit dem Button "Anwenden" und wenn markiert als Auftrag
+            übernommen werden.</para>
+          </listitem>
+
+          <listitem>
+            <para>Kundennummer vorhanden, aber die Checkbox "Auftrag
+            erstellen" fehlt. Der Kunde hat vermutlich eine
+            Shopauftragssperre.</para>
+          </listitem>
+
+          <listitem>
+            <para>Lieferadresse grau hinterlegt: Optische Anzeige, dass es
+            sich um eine unterschiedliche Lieferadresse handelt.
+            Lieferadressen werden aber grundsätzlich beim Transferieren zu
+            Aufträgen mit übernommen.</para>
+          </listitem>
+
+          <listitem>
+            <para>In der Spalte Positionen/Betrag/Versandkosten zeigt sich ein
+            tooltip zu den Positionen.</para>
+          </listitem>
+        </itemizedlist>
+
+        <para>Maske Auftrag erstellen</para>
+
+        <para>Viele Shopsysteme haben drei verschieden Adresstypen Kunden-,
+        Rechnungs-, und Lieferadresse, die sich auch alle unterscheiden
+        können. Diese werden im oberen Bereich angezeigt. Es ist möglich jede
+        dieser Adresse einzeln in kivitendo als Kunde zu übernehmen. Es werden
+        die Werte Formulareingabe übernommen. Es wird bei einer Änderung
+        allerdings nur diese in die kivitendo Kundenstammdaten übernommen, die
+        Shopbestellung bleibt bestehen.</para>
+
+        <para>Mit der mittleren Adresse(Rechnungsadresse) im oberen Bereich,
+        kann ich den ausgewählten kivitendodatensatz des mittleren Bereich
+        überschreiben. Das ist sinnvoll, wenn ich erkenne, das der Kunde z.B.
+        umgezogen ist.</para>
+
+        <para>Im mittleren Bereich das Adresslisting zeigt:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Rot hinterlegt: Kunde hat eine Shopauftragssperre, diese
+            muss zuerst deaktiviert werden bevor ich diesem Kunden eine
+            Shopbestellung zuordnen kann.</para>
+          </listitem>
+
+          <listitem>
+            <para>Kundenname fett und rot: Hier hat der Kunde eine Bemerkung
+            in den Stammdaten. Ein Tooltip zeigt diese Bemerkung. Das kann dan
+            auch der Grund für die Auftragssperre sein.</para>
+          </listitem>
+
+          <listitem>
+            <para>Die Buttons "Auftrag erstellen" und "Kunde mit
+            Rechnungsadresse überschreiben" zeigen sich erst, wenn ein Kunde
+            aus dem Listing ausgewählt ist.</para>
+          </listitem>
+
+          <listitem>
+            <para>Es ist aber möglich die Shopbestellung zu löschen.</para>
+          </listitem>
+
+          <listitem>
+            <para>Ist eine Bestellung schon übernommen, zeigen sich an dieser
+            Stelle, die dazugehörigen Belegverknüpfungen.</para>
+          </listitem>
+        </itemizedlist>
+      </sect2>
+
+      <sect2>
+        <title>Mapping der Daten</title>
+
+        <para>Das Mapping der kivitendo Daten mit den Shopdaten geschieht in
+        der Datei SL/ShopConnector/&lt;SHOPCONNECTORNAME&gt;.pm
+        z.B.:SL/ShopConnector/Shopware.pm</para>
+
+        <para>In dieser Datei gibt es einen Bereich wo die Bestellpostionen,
+        die Bestellkopfdaten und die Artikeldaten gemapt werden. In dieser
+        Datei kann ein individelles Mapping dann gemacht werden. Zu Shopware
+        gibt es hier eine sehr gute Dokumentation: <ulink
+        url="https://developers.shopware.com/developers-guide/rest-api/">https://developers.shopware.com/developers-guide/rest-api/</ulink></para>
       </sect2>
     </sect1>
   </chapter>
