@@ -109,10 +109,7 @@ sub create_or_update {
 
   my $version = $self->check_connectivity();
   if ($version) {
-    flash('error', t8('The connection to the webshop is not success. Message: #1 -- URL: #2 -- Datatype: #3', $version->{message}, $version->{data}->{version}, $version->{data}->{revision}));
-    $self->load_types();
-    $self->action_edit();
-    return;
+    flash_later('error', t8('The connection to the webshop is not success. Message: #1 -- URL: #2 -- Datatype: #3', $version->{message}, $version->{data}->{version}, $version->{data}->{revision}));
   }
 
   $self->shop->save;
