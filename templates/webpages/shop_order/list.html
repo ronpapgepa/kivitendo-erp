@@ -155,7 +155,7 @@
       <br>[% HTML.escape(shop_order.billing_street) %]
       <br>[% HTML.escape(shop_order.billing_zipcode) %]&nbsp;[% HTML.escape(shop_order.billing_city) %]
       <br>[% HTML.escape(shop_order.billing_country) %]
-      <br>[% IF shop_order.open_invoices > 0 || shop_order.customer.order_lock == 1 %][% SET alertclass = 'style="background:rgba(255,0,0,1);"' %][% ELSE %][% SET alertclass = '' %][% END %]<span [% alertclass %]>&nbsp;&nbsp;[% HTML.escape(shop_order.kivi_customer.customernumber) %] -- [% shop_order.open_invoices %]&nbsp;&nbsp;</span></td>
+      <br>[% IF shop_order.open_invoices > 0 || shop_order.customer.order_lock == 1 %][% SET alertclass = 'style="background:rgba(255,0,0,1);"' %][% ELSE %][% SET alertclass = '' %][% END %]<span [% alertclass %]>&nbsp;&nbsp;[% 'Customernumber' | $T8 %] [% HTML.escape(shop_order.kivi_customer.customernumber) %] -- [% 'Invoices' | $T8 %] [% shop_order.open_invoices %]&nbsp;&nbsp;</span></td>
     [% IF (shop_order.delivery_lastname != shop_order.billing_lastname || shop_order.delivery_firstname != shop_order.billing_firstname || shop_order.delivery_street != shop_order.billing_street || shop_order.delivery_city != shop_order.billing_city) %] [% SET deliveryclass = 'style="background:rgba(100, 100, 100, 0.5);"' %] [% ELSE %] [% SET deliveryclass = '' %] [% END %]
     <td [% deliveryclass %]>[% IF shop_order.customer_company %]<b>[% HTML.escape(shop_order.customer_company) %]</b><br>[% END %]
       <b>[% HTML.escape(shop_order.delivery_lastname) %],&nbsp;[% HTML.escape(shop_order.delivery_firstname) %]</b>
