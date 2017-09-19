@@ -111,13 +111,13 @@ sub action_transfer {
 
   die "Can't load shop_order form form->import_id" unless $self->shop_order;
   my $order = $self->shop_order->convert_to_sales_order(customer => $customer, employee => $employee);
-  $order->calculate_prices_and_taxes;
 
   if ($order->{error}){
     flash_later('error',@{$order->{errors}});
     $self->redirect_to(controller => "ShopOrder", action => 'show', id => $self->shop_order->id);
   }else{
     $order->db->with_transaction( sub {
+      $order->calculate_prices_and_taxes;
       $order->save;
 
       my $snumbers = "ordernumber_" . $order->ordnumber;

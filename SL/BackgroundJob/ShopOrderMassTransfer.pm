@@ -60,6 +60,7 @@ sub create_order {
           $job_obj->update_attributes(data_as_hash => $data);
         }else{
           $order->save;
+          $order->calculate_prices_and_taxes;
           my $snumbers = "ordernumber_" . $order->ordnumber;
           SL::DB::History->new(
                             trans_id    => $order->id,

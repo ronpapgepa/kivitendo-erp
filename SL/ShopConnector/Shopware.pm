@@ -85,6 +85,7 @@ sub import_data_to_shop_order {
   $shop_order->{positions} = $position-1;
 
   my $customer = $shop_order->get_customer;
+
   if(ref($customer)){
     $shop_order->kivi_customer_id($customer->id);
     $shop_order->save;

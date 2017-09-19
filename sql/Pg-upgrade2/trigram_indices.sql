@@ -1,6 +1,6 @@
 -- @tag: trigram_indices
 -- @description: Trigram Indizes für häufig durchsuchte Spalten
--- @depends: release_3_4_1
+-- @depends: release_3_4_1 shops
 -- @encoding: utf-8
 -- @ignore: 1
 
