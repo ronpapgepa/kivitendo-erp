@@ -1,33 +1,23 @@
 package SL::ShopConnector::ALL;
 
 use strict;
-#use SL::ShopConnector::XTCommerce;
 use SL::ShopConnector::Shopware;
-# use SL::ShopConnector::ideal;
 
 my %shop_connector_by_name = (
-#  xtcommerce  => 'SL::ShopConnector::XTCommerce',
   shopware    => 'SL::ShopConnector::Shopware',
-#  ideal       => 'SL::ShopConnector::IDeal',
 );
 
 my %shop_connector_by_connector = (
-#  xtcommerce => 'SL::ShopConnector::XTCommerce',
   shopware   => 'SL::ShopConnector::Shopware',
-#  ideal      => 'SL::ShopConnector::IDeal',
 );
 
 my @shop_connector_order = qw(
-  xtcommerce
   shopware
-  ideal
 );
 
 my @shop_connectors =
   (
-#    { id => "xtcommerce", description => "XT Commerce"},
     { id => "shopware",   description => "Shopware" },
-#    { id => "ideal",      description => "IDeal" }
   );
 
 sub all_enabled_shop_connectors {
