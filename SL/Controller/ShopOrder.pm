@@ -37,7 +37,7 @@ sub action_get_orders {
   };
 
   foreach my $shop_fetched(@{ $orders_fetched }) {
-    flash_later('info', t8('From shop #1 :  #2 shoporders has been fetched', $shop_fetched->{shop_id}, $shop_fetched->{number_of_orders}));
+    flash_later('info', t8('From shop #1 :  #2 shoporders have been fetched', $shop_fetched->{shop_id}, $shop_fetched->{number_of_orders}));
   }
   $self->redirect_to(controller => "ShopOrder", action => 'list');
 }
