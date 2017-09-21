@@ -51,7 +51,7 @@ sub get_new_orders {
     }
   }
   my $shop           = $self->config->description;
-  my %fetched_orders = (shop_id => $self->config->id, number_of_orders => $of);
+  my %fetched_orders = (shop_id => $self->config->description, number_of_orders => $of);
   return \%fetched_orders;
 }
 

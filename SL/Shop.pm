@@ -40,6 +40,12 @@ sub updatable_parts {
 
 };
 
+sub check_connectivity {
+  my ($self) = @_;
+  my $version = $self->connector->get_version;
+  return $version;
+}
+
 sub init_connector {
   my ($self) = @_;
   # determine the connector from the connector type in the webshop config

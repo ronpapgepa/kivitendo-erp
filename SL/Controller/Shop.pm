@@ -76,7 +76,7 @@ sub check_connectivity {
 
   if ($ok) {
     flash_later('ok', t8('The connection to the webshop was successful. Version: #1 -- Revision: #2', $version->{data}->{version}, $version->{data}->{revision}));
-    return;
+    return $version;
   } else {
     return $version;
   }

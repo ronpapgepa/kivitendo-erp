@@ -29,15 +29,32 @@ use Data::Dumper;
 sub action_get_orders {
   my ( $self ) = @_;
   my $orders_fetched;
+  my $new_orders;
+  my %new_order;
   my $active_shops = SL::DB::Manager::Shop->get_all(query => [ obsolete => 0 ]);
   foreach my $shop_config ( @{ $active_shops } ) {
     my $shop = SL::Shop->new( config => $shop_config );
-    my $new_orders = $shop->connector->get_new_orders;
+    my $connect = $shop->check_connectivity;
+
+    if( !$connect->{success} ){
+      %new_order  = (
+        number_of_orders => $connect->{data}->{version},
+        shop_id          => $shop->config->description,
+        error            => 1,
+     );
+     $new_orders = \%new_order;
+    }else{
+      $new_orders = $shop->connector->get_new_orders;
+    }
     push @{ $orders_fetched }, $new_orders ;
-  };
+  }
 
   foreach my $shop_fetched(@{ $orders_fetched }) {
-    flash_later('info', t8('From shop #1 :  #2 shoporders have been fetched', $shop_fetched->{shop_id}, $shop_fetched->{number_of_orders}));
+    if($shop_fetched->{error}){
+      flash_later('error', t8('From shop "#1" :  #2 ', $shop_fetched->{shop_id}, $shop_fetched->{number_of_orders},));
+    }else{
+      flash_later('info', t8('From shop #1 :  #2 shoporders have been fetched.', $shop_fetched->{shop_id}, $shop_fetched->{number_of_orders},));
+    }
   }
   $self->redirect_to(controller => "ShopOrder", action => 'list');
 }
