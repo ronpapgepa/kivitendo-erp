@@ -46,20 +46,26 @@ sub action_update_shop {
   require SL::Shop;
   my $shop = SL::Shop->new( config => $shop_part->shop );
 
-  my $return    = $shop->connector->update_part($self->shop_part, 'all');
+  my $connect = $shop->check_connectivity;
+  if($connect->{success}){
+    my $return    = $shop->connector->update_part($self->shop_part, 'all');
 
-  # the connector deals with parsing/result verification, just needs to return success or failure
-  if ( $return == 1 ) {
-    my $now = DateTime->now;
-    my $attributes->{last_update} = $now;
-    $self->shop_part->assign_attributes(%{ $attributes });
-    $self->shop_part->save;
-    $self->js->html('#shop_part_last_update_' . $shop_part->id, $now->to_kivitendo('precision' => 'minute'))
-           ->flash('info', t8("Updated part [#1] in shop [#2] at #3", $shop_part->part->displayable_name, $shop_part->shop->description, $now->to_kivitendo('precision' => 'minute') ) )
-           ->render;
-  } else {
-    $self->js->flash('error', t8('The shop part wasn\'t updated.'))->render;
-  };
+    # the connector deals with parsing/result verification, just needs to return success or failure
+    if ( $return == 1 ) {
+      my $now = DateTime->now;
+      my $attributes->{last_update} = $now;
+      $self->shop_part->assign_attributes(%{ $attributes });
+      $self->shop_part->save;
+      $self->js->html('#shop_part_last_update_' . $shop_part->id, $now->to_kivitendo('precision' => 'minute'))
+             ->flash('info', t8("Updated part [#1] in shop [#2] at #3", $shop_part->part->displayable_name, $shop_part->shop->description, $now->to_kivitendo('precision' => 'minute') ) )
+             ->render;
+    } else {
+      $self->js->flash('error', t8('The shop part wasn\'t updated.'))->render;
+    }
+  }else{
+    $self->js->flash('error', t8('The shop part wasn\'t updated. #1', $connect->{data}->{version}))->render;
+  }
+
 
 }
 
@@ -86,16 +92,21 @@ sub action_get_categories {
   require SL::Shop;
   my $shop = SL::Shop->new( config => $self->shop_part->shop );
 
-  my $categories = $shop->connector->get_categories;
+  my $connect = $shop->check_connectivity;
+  if($connect->{success}){
+    my $categories = $shop->connector->get_categories;
 
-  $self->js
-    ->run(
-      'kivi.ShopPart.shop_part_dialog',
-      t8('Shopcategories'),
-      $self->render('shop_part/categories', { output => 0 }, CATEGORIES => $categories )
-    )
-    ->reinit_widgets;
-    $self->js->render;
+    $self->js
+      ->run(
+        'kivi.ShopPart.shop_part_dialog',
+        t8('Shopcategories'),
+        $self->render('shop_part/categories', { output => 0 }, CATEGORIES => $categories )
+      )
+      ->reinit_widgets;
+      $self->js->render;
+  }else{
+    $self->js->flash('error', t8('Can\'t connect to shop. #1', $connect->{data}->{version}))->render;
+  }
 
 }
 
@@ -278,7 +289,7 @@ sub create_or_update {
   $self->shop_part->save;
 
   my ( $price, $price_src_str ) = $self->get_price_n_pricesource($self->shop_part->active_price_source);
-
+if(!$is_new){
   flash('info', $is_new ? t8('The shop part has been created.') : t8('The shop part has been saved.'));
   $self->js->html('#shop_part_description_' . $self->shop_part->id, $self->shop_part->shop_description)
            ->html('#shop_part_active_' . $self->shop_part->id, $self->shop_part->active)
@@ -287,6 +298,9 @@ sub create_or_update {
            ->run('kivi.ShopPart.close_dialog')
            ->flash('info', t8("Updated shop part"))
            ->render;
+         }else{
+    $self->redirect_to(controller => 'Part', action => 'edit', 'part.id' => $self->shop_part->part_id);
+  }
 }
 
 #

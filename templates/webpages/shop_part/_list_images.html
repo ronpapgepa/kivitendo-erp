@@ -23,7 +23,7 @@
       <td>[% HTML.escape(img.file.description) %]</td>
       <td>[% HTML.escape(img.file.file_name) %]</td>
       <td>[% HTML.escape(img.org_file_width) _  ' x ' _ HTML.escape(img.org_file_height) %]</td>
-      <td>[% L.button_tag("kivi.File.delete_file(" _ img.file_id _ ", 'ShopPart/ajax_delete_file')", LxERP.t8('Delete'), confirm=LxERP.t8("Are you sure?")) %] [% L.button_tag("kivi.FileUploader.add_file(" _ img.id _ "," _ FORM.id _ ",'shop_part','ShopPart/ajax_update_file','jpg|png|tif|gif')", LxERP.t8('Edit')) %] </td>
+      <td>[% L.button_tag("kivi.File.delete_file(" _ img.file_id _ ", 'ShopPart/ajax_delete_file')", LxERP.t8('Delete'), confirm=LxERP.t8("Are you sure?")) %]</td>
     </tr>
    [%  END %]
   </tbody>
