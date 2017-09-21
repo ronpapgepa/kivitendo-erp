@@ -19,11 +19,11 @@
   </tr>
   <tr>
     <th align="right">[% 'Shop type' | $T8 %]</th>
-    <td>[% L.select_tag('shop.connector', SELF.connectors, value_key = 'id', title_key = 'description', with_empty = 1, default = SELF.shop.connector, default_value_key='id' ) %]</td>
+    <td>[% L.select_tag('shop.connector', SELF.connectors, value_key = 'id', title_key = 'description', with_empty = 0, default = SELF.shop.connector, default_value_key='id' ) %]</td>
   <tr>
   <tr>
     <th align="right">[% 'Price type' | $T8 %]</th>
-    <td>[% L.select_tag('shop.pricetype', SELF.price_types, value_key = 'id', title_key = 'name', with_empty = 1, default = SELF.shop.pricetype, default_value_key='id' ) %]</td>
+    <td>[% L.select_tag('shop.pricetype', SELF.price_types, value_key = 'id', title_key = 'name', with_empty = 0, default = SELF.shop.pricetype, default_value_key='id' ) %]</td>
   </tr>
   <tr>
     <th align="right">[% 'Price Source' | $T8 %]</th>

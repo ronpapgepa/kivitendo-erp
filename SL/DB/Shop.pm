@@ -18,6 +18,7 @@ sub validate {
   my @errors;
 
   push @errors, $::locale->text('The description is missing.') unless $self->{description};
+  push @errors, $::locale->text('The path is missing.') unless $self->{path};
 
   return @errors;
 }
