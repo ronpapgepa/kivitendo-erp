@@ -36,3 +36,14 @@ div.shop_table_info {
   width: 100%;
   align: left;
 }
+
+.shop_transferable{
+  background:rgba(43, 208, 54, 0.5);
+}
+.shop_alert{
+  background:rgba(255, 0, 0, 0.5);
+}
+.shop_delivery{
+  background:rgba(100, 100, 100, 0.5);
+}
+
