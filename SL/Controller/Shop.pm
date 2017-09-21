@@ -65,21 +65,19 @@ sub action_reorder {
   $self->render(\'', { type => 'json' }); # ' emacs happy again
 }
 
-sub check_connectivity {
+sub action_check_connectivity {
   my ($self) = @_;
 
   my $ok = 0;
   require SL::Shop;
   my $shop = SL::Shop->new( config => $self->shop );
-  my $version = $shop->connector->get_version;
-  $ok       = $version->{success};
-
-  if ($ok) {
-    flash_later('ok', t8('The connection to the webshop was successful. Version: #1 -- Revision: #2', $version->{data}->{version}, $version->{data}->{revision}));
-    return $version;
-  } else {
-    return $version;
-  }
+  my $connect = $shop->check_connectivity;
+  $ok       = $connect->{success};
+  my  $version = $connect->{data}->{version};
+  $self->render('shops/test_shop_connection', { layout => 0 },
+                title   => t8('Shop Connection Test'),
+                ok      => $ok,
+                version => $version);
 }
 
 sub check_auth {
@@ -105,11 +103,6 @@ sub create_or_update {
     $self->load_types();
     $self->action_edit();
     return;
-  }
-
-  my $version = $self->check_connectivity();
-  if ($version) {
-    flash_later('error', t8('The connection to the webshop is not success. Message: #1 -- URL: #2 -- Datatype: #3', $version->{message}, $version->{data}->{version}, $version->{data}->{revision}));
   }
 
   $self->shop->save;
@@ -169,6 +162,11 @@ sub _setup_form_action_bar {
         ],
       ],
       action => [
+        t8('Check Api'),
+        call => [ 'kivi.Shop.check_connectivity', id => "form" ],
+        tooltip => t8('Check connectivity'),
+      ],
+      action => [
         t8('Cancel'),
         submit => [ '#form', { action => "Shop/list" } ],
       ],
@@ -207,9 +205,9 @@ __END__
 
 =head1 BUGS
 
-  None yet. :)
+None yet. :)
 
 =head1 AUTHOR
 
-  G. Richardson E<lt>information@kivitendo-premium.deE<gt>
-  W. Hahn E<lt>wh@futureworldsearch.netE<gt>
+G. Richardson E<lt>information@kivitendo-premium.deE<gt>
+W. Hahn E<lt>wh@futureworldsearch.netE<gt>

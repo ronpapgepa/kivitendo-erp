@@ -79,6 +79,8 @@ $shop->connector->get_new_orders;
 
 =item C<updatable_parts>
 
+=item C<check_connectivity>
+
 =item C<init_connector>
 
 =back
