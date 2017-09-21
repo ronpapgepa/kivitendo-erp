@@ -61,12 +61,13 @@ sub action_get_orders {
 
 sub action_list {
   my ( $self ) = @_;
+
   my %filter = ($::form->{filter} ? parse_filter($::form->{filter}) : query => [ transferred => 0, obsolete => 0 ]);
   my $transferred = $::form->{filter}->{transferred_eq_ignore_empty} ne '' ? $::form->{filter}->{transferred_eq_ignore_empty} : '';
   my $sort_by = $::form->{sort_by} ? $::form->{sort_by} : 'order_date';
   $sort_by .=$::form->{sort_dir} ? ' DESC' : ' ASC';
   my $shop_orders = SL::DB::Manager::ShopOrder->get_all( %filter, sort_by => $sort_by,
-                                                      with_objects => ['shop_order_items', 'kivi_customer'],
+                                                      with_objects => ['shop_order_items', 'kivi_customer', 'shop'],
                                                     );
 
   foreach my $shop_order(@{ $shop_orders }){

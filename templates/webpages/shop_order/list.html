@@ -10,13 +10,21 @@
  <table id="shoplist" width="100%">
   <thead>
    <tr class="listheading">
-    <th>[% 'Shop Host' | $T8 %]</th>
+    <th>[% 'Shop' | $T8 %]</th>
     <th>[% IF FORM.sort_by == 'order_date' %]
       <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=order_date&sort_dir=[% 1 - FORM.sort_dir %]&filter.order_date:date::ge=[% FORM.filter.order_date_date__ge %]&filter.order_date:date::le=[% FORM.filter.order_date_date__le %]&filter.obsolete=[% FORM.filter.obsolete %]" class="sort_link">
         [% 'Shop orderdate' | $T8 %][% IF FORM.sort_dir == 0 %]<img border="0" src="image/down.png">[% ELSE %]<img border="0" src="image/up.png">[% END %]</a>
     [% ELSE %]
       <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=order_date&sort_dir=0&filter.order_date:date::ge=[% FORM.filter.order_date_date__ge %]&filter.order_date:date::le=[% FORM.filter.order_date_date__le %]&filter.obsolete=[% FORM.filter.obsolete %]" class="sort_link">
         [% 'Shop orderdate' | $T8 %]</a>
+    [% END %]
+    <br>
+    [% IF FORM.sort_by == 'itime' %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=itime&sort_dir=[% 1 - FORM.sort_dir %]&filter.order_date:date::ge=[% FORM.filter.order_date_date__ge %]&filter.order_date:date::le=[% FORM.filter.order_date_date__le %]&filter.obsolete=[% FORM.filter.obsolete %]" class="sort_link">
+        [% 'Importdate' | $T8 %][% IF FORM.sort_dir == 0 %]<img border="0" src="image/down.png">[% ELSE %]<img border="0" src="image/up.png">[% END %]</a>
+    [% ELSE %]
+      <a href ="controller.pl?action=ShopOrder/list&filter.transferred:eq_ignore_empty=[% FORM.filter.transferred_eq_ignore_empty %]&sort_by=itime&sort_dir=0&filter.order_date:date::ge=[% FORM.filter.order_date_date__ge %]&filter.order_date:date::le=[% FORM.filter.order_date_date__le %]&filter.obsolete=[% FORM.filter.obsolete %]" class="sort_link">
+        [% 'Importdate' | $T8 %]</a>
     [% END %]
     </th>
     <th>[% IF FORM.sort_by == 'shop_ordernumber' %]
@@ -141,8 +149,8 @@
   [% # Dumper.dump_html(shop_order) %]
     [% IF shop_order.kivi_customer.id && shop_order.kivi_customer.order_lock == 0 && shop_order.open_invoices == 0 %] [% SET transferable = 1 %] [% SET transferable_class = 'style="background:rgba(43, 208, 54, 0.5);"' %] [% ELSE %] [% SET transferable = 0 %] [% SET transferable_class = '' %][% END %]
   <tr class="listrow">
-    <td>[% HTML.escape(shop_order.host) %]</td>
-    <td>[% shop_order.order_date.dmy('.') _ ' ' _ shop_order.order_date.hms(':') %]</td>
+    <td>[% HTML.escape(shop_order.shop.description) %]</td>
+    <td>[% shop_order.order_date.dmy('.') _ ' ' _ shop_order.order_date.hms(':') %]<br>[% shop_order.order_date.dmy('.') _ ' ' _ shop_order.itime.hms(':') %]</td>
     <td>[% HTML.escape(shop_order.shop_ordernumber) %]</td>
     <td>[% HTML.escape(shop_order.shop_customer_number) %]</td>
     <td>[% IF shop_order.customer_company %]<b>[% HTML.escape(shop_order.customer_company) %]</b><br>[% END %]

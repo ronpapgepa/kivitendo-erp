@@ -26,7 +26,7 @@ sub validate {
 sub shops_dd {
   my ( $self ) = @_;
 
-  my @shops_dd = [ { title => t8("all") ,   value =>'' } ];
+  my @shops_dd = ( { title => t8("all") ,   value =>'' } );
   my $shops = SL::DB::Manager::Shop->get_all( where => [ obsolete => 0 ] );
   my @tmp = map { { title => $_->{description}, value => $_->{id} } } @{ $shops } ;
   push @shops_dd, @tmp;
