@@ -138,7 +138,7 @@ namespace('kivi.ShopPart', function(ns) {
                                    is_global:   gl
                                  },
                         id:     'files_upload',
-                        dialog: { title: upload_title, width: 650, height: 240 } });
+                        dialog: { title: kivi.t8('File upload'), width: 650, height: 240 } });
     return true;
   }
 

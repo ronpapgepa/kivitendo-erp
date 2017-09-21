@@ -31,5 +31,5 @@
 
 [% L.sortable_element('#images_list tbody', url=SELF.url_for(action='reorder'), with='image_id') %]
 <p>
-[% L.button_tag("kivi.ShopPart.imageUpload(" _ FORM.id _ ",'shop_image','image','Upload shopimage',0);", LxERP.t8('Upload shopimage') ) %]
+[% L.button_tag("kivi.ShopPart.imageUpload(" _ FORM.id _ ",'shop_image','image', '',0);", LxERP.t8('File upload') ) %]
 </p>
