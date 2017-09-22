@@ -20,11 +20,6 @@ my @shop_connectors =
     { id => "shopware",   description => "Shopware" },
   );
 
-#sub all_enabled_shop_connectors {
-#   my %disabled = map { $_ => 1 } @{ $::instance_conf->get_disabled_shop_connectors || [] };
-#
-#  map { $shop_connector_by_name{$_} } grep { !$disabled{$_} } @shop_connector_order;
-#}
 
 sub all_shop_connectors {
   map { $shop_connector_by_name{$_} } @shop_connector_order;
