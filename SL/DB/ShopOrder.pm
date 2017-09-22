@@ -83,6 +83,7 @@ sub convert_to_sales_order {
       }
     }
 
+    my $shop = SL::DB::Manager::Shop->find_by(id => $self->shop_id);
     my $order = SL::DB::Order->new(
       amount                  => $self->amount,
       cusordnumber            => $self->shop_ordernumber,
@@ -96,7 +97,7 @@ sub convert_to_sales_order {
       payment_id              => $customer->payment_id,
       taxzone_id              => $customer->taxzone_id,
       currency_id             => $customer->currency_id,
-      transaction_description => 'Shop Import',
+      transaction_description => $shop->transaction_description,
       transdate               => DateTime->today_local
     );
      return $order;

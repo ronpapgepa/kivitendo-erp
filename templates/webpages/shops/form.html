@@ -70,6 +70,10 @@
     <td>[%- L.input_tag("shop.orders_to_fetch", SELF.shop.orders_to_fetch, size=12) %]</td>
   </tr>
   <tr>
+    <th align="right">[% 'Transaction description' | $T8 %]</th>
+    <td>[%- L.input_tag("shop.transaction_description", SELF.shop.transaction_description, size=size) %]</td>
+  </tr>
+  <tr>
     <th align="right">[% 'Obsolete' | $T8 %]</th>
     <td>[% L.checkbox_tag('shop.obsolete', checked = SELF.shop.obsolete, for_submit=1) %]</td>
   </tr>

@@ -9,6 +9,7 @@
     <th align="center" width="1%"><img src="image/updown.png" alt="[ LxERP.t8('reorder item') %]"></th>
     <th>[% 'Description' | $T8 %]</th>
     <th>[% 'Type' | $T8 %]</th>
+    <th>[% 'Obsolete' | $T8 %]</th>
    </tr>
   </thead>
 
@@ -18,6 +19,7 @@
      <td align="center" class="dragdrop"><img src="image/updown.png" alt="[ LxERP.t8('reorder item') %]"></td>
      <td><a href="[% SELF.url_for(action='edit', id=shop.id) %]">[% HTML.escape(shop.description) %]</a></td>
      <td>[% HTML.escape(shop.connector) %]</a></td>
+     <td>[% HTML.escape(shop.obsolete) %]</td>
     </tr>
    [%- END %]
   </tbody>
