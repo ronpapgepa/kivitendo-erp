@@ -134,35 +134,12 @@ WHERE (
 ) AND obsolete = 'F'
 SQL
 
-  # Fuzzysearch for street to find e.g. "Dorfstrasse - Dorfstr. - Dorfstraße"
-  my $fs_subquery = <<SQL;
-SELECT id
-FROM customer
-WHERE (
-   (
-    ( name ILIKE ? OR name ILIKE ? )
-      AND
-    zipcode ILIKE ?
-   )
- OR
-   ( street % ?  AND zipcode ILIKE ?)
- OR
-   email ILIKE ?
-) AND obsolete = 'F'
-SQL
-
   my @values = ($lastname, $company, $self->billing_zipcode, $street, $self->billing_zipcode, $self->billing_email);
 
-  my $dbh = $::form->get_standard_dbh();
-  my @c_ids = ( 0 );
-  @c_ids = selectall_array_query($::form, $dbh, $fs_subquery, @values);
-  @c_ids = ( 0 ) if( !scalar(@c_ids) );
-  my $customers = SL::DB::Manager::Customer->get_all( query => [  id => [ @c_ids ] ] );
-
-  # my $customers = SL::DB::Manager::Customer->get_objects_from_sql(
-  #  sql  => $fs_query,
-  #  args => \@values,
-  #);
+  my $customers = SL::DB::Manager::Customer->get_objects_from_sql(
+    sql  => $fs_query,
+    args => \@values,
+  );
 
   return $customers;
 }
