@@ -285,7 +285,7 @@ sub _setup_list_action_bar {
         ],
         'separator',
         action => [
-          t8('Apply'),
+          t8('Execute'),
           call => [ 'kivi.ShopOrder.setup', id => "mass_transfer" ],
           tooltip => t8('Transfer all marked'),
         ],

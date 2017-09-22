@@ -1294,6 +1294,7 @@ $self->{texts} = {
   'Exchangerate Difference'     => 'Wechselkursunterschied',
   'Exchangerate for payment missing!' => 'Es fehlt der Wechselkurs für die Bezahlung!',
   'Exchangerate missing!'       => 'Es fehlt der Wechselkurs!',
+  'Execute'                     => 'Ausführen',
   'Executed'                    => 'Ausgeführt',
   'Execution date'              => 'Ausführungsdatum',
   'Execution date from'         => 'Ausführungsdatum von',
