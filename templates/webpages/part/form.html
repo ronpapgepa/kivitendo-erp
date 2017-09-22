@@ -41,7 +41,7 @@
     [%- IF CUSTOM_VARIABLES.size %]
     <li><a href="#custom_variables">[% 'Custom Variables' | $T8 %]</a></li>
     [%- END %]
-    [% IF AUTH.assert('shop_part_edit', 1) && SELF.part.id %]
+    [% IF AUTH.assert('shop_part_edit', 1) && SELF.part.id && SELF.part.shop %]
     <li><a href="#shop_variables">[% 'Shop variables' | $T8 %]</a></li>
     [% END %]
    </ul>
