@@ -151,7 +151,7 @@
     [% IF shop_order.kivi_customer.id && shop_order.kivi_customer.order_lock == 0 && shop_order.open_invoices == 0 %] [% SET transferable = 1 %] [% SET transferable_class = 'class="shop_transferable"' %] [% ELSE %] [% SET transferable = 0 %] [% SET transferable_class = '' %][% END %]
   <tr class="listrow">
     <td>[% HTML.escape(shop_order.shop.description) %]</td>
-    <td>[% shop_order.order_date.dmy('.') _ ' ' _ shop_order.order_date.hms(':') %]<br>[% shop_order.order_date.dmy('.') _ ' ' _ shop_order.itime.hms(':') %]</td>
+    <td>[% shop_order.order_date.to_kivitendo('precision' => 'minute') %]<br>[% shop_order.itime.to_kivitendo('precision' => 'minute') %]</td>
     <td>[% HTML.escape(shop_order.shop_ordernumber) %]</td>
     <td>[% HTML.escape(shop_order.shop_customer_number) %]</td>
     <td>[% IF shop_order.customer_company %]<b>[% HTML.escape(shop_order.customer_company) %]</b><br>[% END %]

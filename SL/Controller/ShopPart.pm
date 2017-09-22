@@ -115,6 +115,13 @@ sub action_show_price_n_pricesource {
 
   my ( $price, $price_src_str ) = $self->get_price_n_pricesource($::form->{pricesource});
 
+  if( $price_src_str eq 'sellprice'){
+    $price_src_str = t8('Sellprice');
+  }elsif( $price_src_str eq 'listprice'){
+    $price_src_str = t8('Listprice');
+  }elsif( $price_src_str eq 'lastcost'){
+    $price_src_str = t8('Lastcost');
+  }
   $self->js->html('#price_' . $self->shop_part->id, $::form->format_amount(\%::myconfig,$price,2))
            ->html('#active_price_source_' . $self->shop_part->id, $price_src_str)
            ->render;
