@@ -40,7 +40,7 @@ __END__
 
 =item C<get_order>
 
-=item C<get_orders>
+=item C<get_new_orders>
 
 =item C<update_part>
 
@@ -54,15 +54,15 @@ __END__
 
 =head1 SEE ALSO
 
-  L<SL::ShopConnector::ALL>
+L<SL::ShopConnector::ALL>
 
 =head1 BUGS
 
-  None yet. :)
+None yet. :)
 
 =head1 AUTHOR
 
-  G. Richardson <lt>information@kivitendo-premium.deE<gt>
-  W. Hahn E<lt>wh@futureworldsearch.netE<gt>
+G. Richardson <lt>information@kivitendo-premium.deE<gt>
+W. Hahn E<lt>wh@futureworldsearch.netE<gt>
 
 =cut

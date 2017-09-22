@@ -212,11 +212,6 @@ sub get_version {
   }
 }
 
-sub get_articles {
-  my ($self, $json_data) = @_;
-
-}
-
 sub update_part {
   my ($self, $shop_part, $todo) = @_;
 
@@ -339,11 +334,6 @@ sub get_article {
   return SL::JSON::decode_json($data_json);
 }
 
-
-sub set_orderstatus {
-  my ($self,$ordernumber);
-}
-
 sub init_url {
   my ($self) = @_;
   $self->url($self->config->protocol . "://" . $self->config->server . ":" . $self->config->port . $self->config->path);
@@ -377,13 +367,58 @@ SL::Shopconnecter::Shopware - connector for shopware 5
 
 =head1 DESCRIPTION
 
+This is the connector to shopware.
+In this file you can do the mapping to your needs.
+see https://developers.shopware.com/developers-guide/rest-api/
+for more information.
+
 =head1 METHODS
 
-=back 4
+=over 4
+
+=item C<get_new_orders>
 
 =item C<import_data_to_shop_order>
 
 Creates on shoporder object from json
+Here is the mapping for the positions.
+see https://developers.shopware.com/developers-guide/rest-api/
+for detailed information
+
+=item C<map_data_to_shoporder>
+
+Here is the mapping for the order data.
+see https://developers.shopware.com/developers-guide/rest-api/
+for detailed information
+
+=item C<get_categories>
+
+=item C<get_version>
+
+Use this for test Connection
+see SL::Shop
+
+=item C<update_part>
+
+Here is the mapping for the article data.
+see https://developers.shopware.com/developers-guide/rest-api/
+for detailed information
+
+=item C<get_article>
+
+=back
+
+=head1 INITS
+
+=over 4
+
+=item init_url
+
+build an url for LWP
+
+=item init_connector
+
+=back
 
 =head1 TODO
 
