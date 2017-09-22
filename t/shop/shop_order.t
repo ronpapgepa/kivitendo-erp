@@ -67,7 +67,7 @@ reset_state();
 
 my $shop_trans_id = 1;
 
-my $shop_order = SL::Dev::Shop::new_shop_order(
+$shop_order = SL::Dev::Shop::new_shop_order(
   shop              => $shop,
   shop_trans_id     => $shop_trans_id,
   amount            => 59.5,
