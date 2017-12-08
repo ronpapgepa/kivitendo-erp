@@ -31,14 +31,24 @@ namespace("kivi.Validator", function(ns) {
 
   ns.validate = function($e) {
     var tests = $e.data('validate').split(/ +/);
+    var args;
 
     for (var test_idx in tests) {
       var test = tests[test_idx];
+
+      var has_args = /^(\w+)\((.*)\)$/.exec(test);
+      if (has_args) {
+        test = has_args[1];
+        args = has_args[2].split(/,/);
+      } else {
+        args = [];
+      }
+
       if (!ns.checks[test])
         continue;
 
       if (ns.checks[test]) {
-        if (!ns.checks[test]($e))
+        if (!ns.checks[test].apply(undefined, [$e].concat(args)))
           return false;
       } else {
         var error = "kivi.validate_form: unknown test '" + test + "' for element ID '" + $e.prop('id') + "'";
@@ -61,7 +71,7 @@ namespace("kivi.Validator", function(ns) {
         return true;
       }
     },
-    number: function($e) {
+    number: function($e, places) {
       var number_string = $e.val();
 
       var parsed_number = kivi.parse_amount(number_string);
@@ -76,7 +86,7 @@ namespace("kivi.Validator", function(ns) {
         return false;
       } else
       {
-        var formatted_number = kivi.format_amount(parsed_number);
+        var formatted_number = kivi.format_amount(parsed_number, places);
         if (formatted_number != number_string)
           $e.val(formatted_number);
         ns.annotate($e);
