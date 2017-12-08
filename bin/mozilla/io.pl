@@ -377,7 +377,7 @@ sub display_row {
     my $edit_discounts  = $main::auth->assert('edit_prices', 1) && !$::form->{"active_discount_source_$i"};
     $column_data{sellprice}   = (!$edit_prices)
                                 ? $cgi->hidden(   -name => "sellprice_$i", -id => "sellprice_$i", -value => $sellprice_value) . $sellprice_value
-                                : $cgi->textfield(-name => "sellprice_$i", -id => "sellprice_$i", -size => 10, -class => "numeric", -value => $sellprice_value);
+                                : $cgi->textfield(-name => "sellprice_$i", -id => "sellprice_$i", -size => 10, -"data-validate" => "number(-2)", -class => "numeric", -value => $sellprice_value);
     $column_data{discount}    = (!$edit_discounts)
                                   ? $cgi->hidden(   -name => "discount_$i", -id => "discount_$i", -value => $discount_value) . $discount_value . ' %'
                                   : $cgi->textfield(-name => "discount_$i", -id => "discount_$i", -size => 3, -"data-validate" => "number", -class => "numeric", -value => $discount_value);
