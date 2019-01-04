@@ -59,60 +59,59 @@
   })
 --></script>
 
- <form name="Form" method="post" action="wh.pl" id="form">
+<form name="Form" method="post" action="wh.pl" id="form">
+<div class="wrapper">
 
 [% IF saved_message %]
   <p>[% saved_message %]</p>
 [% END %]
 
-  <p>
-   <table>
-    <tr>
-     <th align="right" nowrap>[% 'Assembly' | $T8 %]</th>
-     <td>
-      [% P.part.picker("parts_id", parts_id, part_type="assembly", class="initial_focus", fat_set_item="1") %]
-     </td>
-    </tr>
 
+<table class="tbl-horizontal">
+  <tbody>
     <tr>
-     <th align="right" nowrap>[% 'Destination warehouse' | $T8 %]</th>
-     <td>
-      <select name="warehouse_id" id="warehouse_id" onchange="warehouse_selected(warehouses[this.selectedIndex]['id'], 0)">
-       [%- FOREACH warehouse = WAREHOUSES %]
-       <option value="[% HTML.escape(warehouse.id) %]"[% IF warehouse_id == warehouse.id %] selected[% END %]>[% warehouse.description %]</option>
-       [%- END %]
-      </select>
-     </td>
+      <th>[% 'Assembly' | $T8 %]</th>
+      <td>[% P.part.picker("parts_id", parts_id, part_type="assembly", class="initial_focus", fat_set_item="1", class="wi-lightwide") %] </td>
     </tr>
     <tr>
-     <th align="right" nowrap>[% 'Destination bin' | $T8 %]:</th>
-     <td><select id="bin_id" name="bin_id"></select></td>
+      <th>[% 'Destination warehouse' | $T8 %]</th>
+      <td>
+        <select name="warehouse_id" id="warehouse_id" onchange="warehouse_selected(warehouses[this.selectedIndex]['id'], 0)" class="wi-lightwide">
+          [% FOREACH warehouse = WAREHOUSES %]
+            <option value="[% HTML.escape(warehouse.id) %]"[% IF warehouse_id == warehouse.id %] selected[% END %]>[% warehouse.description %]</option>
+          [% END %]
+        </select>
+      </td>
     </tr>
     <tr>
-     <th align="right" nowrap>[% 'Charge number' | $T8 %]</th>
-     <td><input name="chargenumber" size="30" value="[% HTML.escape(chargenumber) %]"></td>
+      <th>[% 'Destination bin' | $T8 %]</th>
+      <td><select id="bin_id" name="bin_id" class="wi-lightwide"></select></td>
     </tr>
-
+    <tr>
+      <th>[% 'Charge number' | $T8 %]</th>
+      <td><input type="text" name="chargenumber" class="wi-lightwide" value="[% HTML.escape(chargenumber) %]"></td>
+    </tr>
     [% IF INSTANCE_CONF.get_show_bestbefore %]
-    <tr>
-     <th align="right" nowrap>[% 'Best Before' | $T8 %]</th>
-     <td>
-      [% L.date_tag('bestbefore', bestbefore) %]
-     </td>
-    </tr>
+      <tr>
+        <th>[% 'Best Before' | $T8 %]</th>
+        <td><span class="wi-date">[% L.date_tag('bestbefore', bestbefore) %]</span> </td>
+      </tr>
     [% END %]
     <tr>
-     <th align="right" nowrap>[% 'Quantity' | $T8 %]</th>
-     <td>
-      <input name="qty" size="10" value="[% HTML.escape(LxERP.format_amount(qty)) %]">
-      <select name="unit">
-       [%- FOREACH unit = UNITS %]<option[% IF unit.selected %] selected[% END %]>[% HTML.escape(unit.name) %]</option>[% END %]
-      </select>
-     </td>
+      <th>[% 'Quantity' | $T8 %]</th>
+      <td>
+        <input type="text" name="qty" class="wi-verysmall" value="[% HTML.escape(LxERP.format_amount(qty)) %]">
+        <select name="unit" class="wi-small">
+          [% FOREACH unit = UNITS %]
+            <option[% IF unit.selected %] selected[% END %]>[% HTML.escape(unit.name) %]</option>
+          [% END %]
+        </select>
+      </td>
     </tr>
     <tr>
-     <th align="right" nowrap>[% 'Optional comment' | $T8 %]</th>
-     <td><input name="comment" size="30" value="[% HTML.escape(comment) %]"></td>
+      <th>[% 'Optional comment' | $T8 %]</th>
+      <td><input type="text" name="comment" class="wi-lightwide" value="[% HTML.escape(comment) %]">
+      </td>
     </tr>
   </tbody>
 </table>

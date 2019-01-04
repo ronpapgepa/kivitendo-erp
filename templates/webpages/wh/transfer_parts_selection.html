@@ -43,8 +43,8 @@
 
 <p>[% 'Transfer from warehouse' | $T8 %]: [% warehouse_description %]</p>
 
-  <p>
-   <table>
+<table class="tbl-horizontal">
+  <tbody>
     <tr>
       <th>[% 'Select type of transfer' | $T8 %]:</th>
       <td>
@@ -66,22 +66,23 @@
   </tbody>
 </table>
 
-  <p>
-   <table>
+<table class="tbl-list">
+  <thead>
     <tr>
-     <th class="listheading">[% 'Source bin' | $T8 %]</th>
-     <th class="listheading">[% 'Part Number' | $T8 %]</th>
-     <th class="listheading">[% 'Part Description' | $T8 %]</th>
-     <th class="listheading">[% 'Charge Number' | $T8 %]</th>
-     [% IF INSTANCE_CONF.get_show_bestbefore %]
-     <th class="listheading">[% 'Best Before' | $T8 %]</th>
-     [% END %]
-     <th class="listheading">[% 'EAN' | $T8 %]</th>
-     <th class="listheading">[% 'Available qty' | $T8 %]</th>
-     <th class="listheading" colspan="2">[% 'Transfer qty' | $T8 %]</th>
-     <th class="listheading" colspan="2">[% 'Destination warehouse and bin' | $T8 %]</th>
+      <th>[% 'Source bin' | $T8 %]</th>
+      <th>[% 'Part Number' | $T8 %]</th>
+      <th>[% 'Part Description' | $T8 %]</th>
+      <th>[% 'Charge Number' | $T8 %]</th>
+      [% IF INSTANCE_CONF.get_show_bestbefore %]
+      <th>[% 'Best Before' | $T8 %]</th>
+      [% END %]
+      <th>[% 'EAN' | $T8 %]</th>
+      <th>[% 'Available qty' | $T8 %]</th>
+      <th colspan="2">[% 'Transfer qty' | $T8 %]</th>
+      <th colspan="2">[% 'Destination warehouse and bin' | $T8 %]</th>
     </tr>
-
+  </thead>
+  <tbody>
     [% FOREACH row = CONTENTS %]
       <tr>
         <td>
@@ -124,6 +125,8 @@
         </td>
       </tr>
     [% END %]
+  </tbody>
+</table>
 
 <input type="hidden" name="rowcount" value="[% CONTENTS.size %]">
 
