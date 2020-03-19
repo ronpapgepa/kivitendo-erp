@@ -27,7 +27,7 @@
 #======================================================================
 
 use POSIX qw(strftime getcwd);
-use Archive::Zip qw(:ERROR_CODES :CONSTANTS);
+use IO::Compress::Zip qw(zip $ZipError);
 
 use SL::Common;
 use SL::DATEV qw(:CONSTANTS);
@@ -150,7 +150,6 @@ sub download {
 
   $::auth->assert('datev_export');
 
-  my $tmp_name = Common->tmpname();
   my $zip_name = strftime("kivitendo-datev-export-%Y%m%d.zip", localtime(time()));
 
   my $cwd = getcwd();
@@ -171,13 +170,11 @@ sub download {
     $form->error($locale->text("Your download does not exist anymore. Please re-run the DATEV export assistant."));
   }
 
-  my $zip = Archive::Zip->new();
-  map { $zip->addFile($_); } @filenames;
-  $zip->writeToFileNamed($tmp_name);
+  zip \@filenames => $zip_name or die "zip failed: $ZipError\n";
 
   chdir($cwd);
 
-  open(IN, $tmp_name) || die("open $tmp_name");
+  open(IN, $path . $zip_name) || die("open $path");
   $::locale->with_raw_io(\*STDOUT, sub {
     print("Content-Type: application/zip\n");
     print("Content-Disposition: attachment; filename=\"${zip_name}\"\n\n");
@@ -186,8 +183,6 @@ sub download {
     }
   });
   close(IN);
-
-  unlink($tmp_name);
 
   $main::lxdebug->leave_sub();
 }

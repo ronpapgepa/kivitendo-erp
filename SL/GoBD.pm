@@ -10,9 +10,9 @@ use parent qw(Rose::Object);
 
 use Text::CSV_XS;
 use XML::Writer;
-use Archive::Zip;
 use File::Temp ();
 use File::Spec ();
+use IO::Compress::Zip qw(zip $ZipError);
 use List::MoreUtils qw(any);
 use List::UtilsBy qw(partition_by sort_by);
 
@@ -180,14 +180,14 @@ sub generate_export {
 
   # make zip
   my ($fh, $zipfile) = File::Temp::tempfile();
-  my $zip            = Archive::Zip->new;
-
+  my (@files, %name_subs);
   while (my ($name, $file) = each %{ $self->files }) {
-    $zip->addFile($file, $name);
+    push @files, $file;
+    $name_subs{$file} = $name;
   }
 
-  $zip->writeToFileHandle($fh) == Archive::Zip::AZ_OK() or die 'error writing zip file';
-  close($fh);
+  zip \@files => $zipfile, FilterName => sub { s/.*/$name_subs{$_}/;  }
+    or die "zip failed: $ZipError\n";
 
   return $zipfile;
 }
