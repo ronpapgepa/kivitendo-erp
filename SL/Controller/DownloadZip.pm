@@ -4,11 +4,8 @@ use strict;
 
 use parent qw(SL::Controller::Base);
 
-use List::Util qw(first max);
-
 use utf8;
-use Encode qw(decode encode);
-use Archive::Zip;
+use IO::Compress::Zip qw(zip $ZipError);
 use SL::File;
 use SL::SessionFile::Random;
 
@@ -35,34 +32,29 @@ sub action_download_orderitems_files {
   #$Archive::Zip::UNICODE = 1;
 
   my $object_id    = $::form->{object_id};
-  my $object_type  = $::form->{object_type};
-  my $element_type = $::form->{element_type};
   my $sfile = SL::SessionFile::Random->new(mode => "w");
-  my $zip = Archive::Zip->new();
-  #TODO Check client encoding !!
-  #my $name_encoding = 'cp850';
-  my $name_encoding = 'UTF-8';
+  my (@files, %name_subs);
 
-  if (   $object_id
-      && ($object_type =~ m{^(?:sales_order|purchase_order|sales_quotation|request_quotation)$})
-      && ($element_type eq 'part')) {
-    my $orderitems = SL::DB::Manager::OrderItem->get_all(query => ['order.id' => $object_id ],
-                                                         with_objects => [ 'order', 'part' ],
-                                                         sort_by => 'part.partnumber ASC');
-    foreach my $item ( @{$orderitems} ) {
-      my @files = SL::File->get_all(object_id   => $item->parts_id,
-                                    object_type => $element_type,
-                                  );
-      next unless @files;
+  die "Need a saved object!" unless $object_id;
+  die "Works only for Quotations or Orders"
+    unless $::form->{object_type} =~ m{^(?:sales_order|purchase_order|sales_quotation|request_quotation)$};
 
-      $zip->addDirectory($item->part->partnumber);
-      $zip->addFile($_->get_file, Encode::encode($name_encoding, $item->part->partnumber . '/' . $_->db_file->file_name)) for @files;
+  my $orderitems = SL::DB::Manager::OrderItem->get_all(query => ['order.id' => $object_id ],
+                                                       with_objects => [ 'order', 'part' ],
+                                                       sort_by => 'part.partnumber ASC');
+  foreach my $item ( @{$orderitems} ) {
+    my @files_cur = SL::File->get_all(object_id   => $item->parts_id,
+                                      object_type => 'part' # this is a mandatory param! get_all can only fetch one type
+                                     );
+    next unless @files_cur;
+
+    foreach (@files_cur) {
+      push @files, $_->get_file;
+      $name_subs{$_->get_file} = $item->part->partnumber . '/' . $_->db_file->file_name;
     }
   }
-  unless ( $zip->writeToFileNamed($sfile->file_name) == Archive::Zip::AZ_OK ) {
-    die 'zipfile write error';
-  }
-  $sfile->fh->close;
+  zip \@files => $sfile->file_name, FilterName => sub { s/.*/$name_subs{$_}/; }
+    or die "zip failed: $ZipError\n";
 
   return $self->send_file(
     $sfile->file_name,
@@ -87,10 +79,7 @@ SL::Controller::DownloadZip - controller for download all files from parts of an
 
 Some customer want all attached files for the parts of an sales order or sales delivery order in one zip to download.
 This is a special method for one customer, so it is moved into an extra controller.
-The $Archive::Zip::UNICODE = 1; doesnt work ok
-So today the filenames in cp850/DOS format for legacy windows.
-To ues it for Linux Clients an additinal effort must be done,
-for ex. a link to the same file with an utf-8 name.
+
 
 There is also a special javascript method necessary which calles this controller method.
 THis method must be inserted into the customer branch:
@@ -123,6 +112,10 @@ See also L<SL::Controller::FileManagement>
 =head1 DISCUSSION
 
 Is this method needed in the master branch ?
+
+No. But now we've got it.
+The pod is not quite accurate, sales delivery order is not a valid record_type
+for this Controller.
 
 =head1 AUTHOR
 
