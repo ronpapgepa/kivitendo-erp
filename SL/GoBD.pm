@@ -19,6 +19,7 @@ use List::UtilsBy qw(partition_by sort_by);
 use SL::DB::Helper::ALL; # since we work on meta data, we need everything
 use SL::DB::Helper::Mappings;
 use SL::Locale::String qw(t8);
+use SL::SessionFile::Random;
 use SL::Version;
 
 use Rose::Object::MakeMethods::Generic (
@@ -179,17 +180,17 @@ sub generate_export {
   $self->files->{'gdpdu-01-08-2002.dtd'} = File::Spec->catfile('users', 'gdpdu-01-08-2002.dtd');
 
   # make zip
-  my ($fh, $zipfile) = File::Temp::tempfile();
+  my $sfile = SL::SessionFile::Random->new(mode => "w");
   my (@files, %name_subs);
   while (my ($name, $file) = each %{ $self->files }) {
     push @files, $file;
     $name_subs{$file} = $name;
   }
 
-  zip \@files => $zipfile, FilterName => sub { s/.*/$name_subs{$_}/;  }
+  zip \@files => $sfile->file_name, FilterName => sub { s/.*/$name_subs{$_}/;  }
     or die "zip failed: $ZipError\n";
 
-  return $zipfile;
+  return $sfile->file_name;
 }
 
 sub do_xml_file {
