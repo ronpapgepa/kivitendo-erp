@@ -21,20 +21,20 @@ Upgrade auf v3.4.0
   * Algorithm::CheckDigits
   * PBKDF2::Tiny
 
-  Wie immer bitte vor dem ersten Aufrufen einmal die Pakete überprüfen:
+  Wie immer bitte vor erstem Aufruf Pakete überprüfen:
 
   $ scripts/installation_check.pl -ro
 
-* Der in der Dokumentation beschriebene Mechanismus für die CGI-Anbindung
-  (2.6.1 Grundkonfiguration mittels CGI) wurde geändert. Ein einfacher Alias
-  auf das Programmverzeichnis funktioniert nicht mehr, und es muss immer ein
-  AliasMatch auf einen dispatcher eingerichtet werden. Die Dokumentation wurde
-  aktualisiert. Für Benutzer der empfohlenen FastCGI Anbindung ändert sich
+* In der Dokumentation beschriebener Mechanismus für CGI-Anbindung
+  (2.6.1 Grundkonfiguration mittels CGI) wurde geändert. Einfacher Alias
+  auf Programmverzeichnis funktioniert nicht mehr, es ist immer ein
+  AliasMatch auf einen dispatcher einzurichten. Dokumentation wurde
+  aktualisiert. Für Nutzer empfohler FastCGI Anbindung ändert sich
   nichts.
 
-* Der Task-Server ist nun mandantenfähig. Für jeden Mandanten, für den
-  der Task-Server laufen soll, muss in der Administrationsoberfläche
-  in der Konfiguration des Mandanten hinterlegt werden, welchen
+* Task-Server ist nun mandantenfähig. Für jeden Mandanten, für den
+  der Task-Server laufen soll, ist in der Administrationsoberfläche
+  in der Konfiguration des Mandanten zu hinterlegen, welchen
   kivitendo-Benutzer der Task-Server nutzen soll. Ist bei einem
   Mandanten kein Benutzer hinterlegt, so ignoriert der Task-Server
   diesen Mandanten.
@@ -42,12 +42,12 @@ Upgrade auf v3.4.0
   Im Gegenzug wurden die beiden Konfigurations-Einstellungen »client«
   und »login« aus dem Abschnitt [task_server] entfernt. Der
   Task-Server prüft beim Starten allerdings, ob diese Einstellungen
-  noch existieren und verweigert den Start mit einer hilfreichen
+  noch existieren und verweigert den Start mit hilfreicher
   Fehlermeldung, solange sie noch vorhanden sind.
 
-* Die Unterstützung unsicherer Passwort-Hashing-Mechanism wurde
+* Unterstützung unsicherer Passwort-Hashing-Mechanism wurde
   entfernt. Für BenutzerInnen, die noch alte Mechanismen verwenden,
-  müssen die Passwörter einmalig in der Administrationsoberfläche
+  müssen Passwörter einmalig in der Administrationsoberfläche
   zurückgesetzt werden.
 
   Dies betrifft nur Accounts, deren Passwort sich das letzte Mal vor
