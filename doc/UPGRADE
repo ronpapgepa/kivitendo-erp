@@ -29,45 +29,45 @@ Upgrade auf v3.4.0
   (2.6.1 Grundkonfiguration mittels CGI) wurde geändert. Einfacher Alias
   auf Programmverzeichnis funktioniert nicht mehr, es ist immer ein
   AliasMatch auf einen dispatcher einzurichten. Dokumentation wurde
-  aktualisiert. Für Nutzer empfohler FastCGI Anbindung ändert sich
-  nichts.
+  aktualisiert. Für Nutzer empfohle FastCGI Anbindung ändert sich
+  nicht.
 
 * Task-Server ist nun mandantenfähig. Für jeden Mandanten, für den
   der Task-Server laufen soll, ist in der Administrationsoberfläche
   in der Konfiguration des Mandanten zu hinterlegen, welchen
   kivitendo-Benutzer der Task-Server nutzen soll. Ist bei einem
-  Mandanten kein Benutzer hinterlegt, so ignoriert der Task-Server
+  Mandanten kein Benutzer hinterlegt, ignoriert der Task-Server
   diesen Mandanten.
 
-  Im Gegenzug wurden die beiden Konfigurations-Einstellungen »client«
-  und »login« aus dem Abschnitt [task_server] entfernt. Der
+  Im Gegenzug wurden beide Konfigurations-Einstellungen »client«
+  und »login« aus Abschnitt [task_server] entfernt. Der
   Task-Server prüft beim Starten allerdings, ob diese Einstellungen
   noch existieren und verweigert den Start mit hilfreicher
   Fehlermeldung, solange sie noch vorhanden sind.
 
 * Unterstützung unsicherer Passwort-Hashing-Mechanism wurde
   entfernt. Für BenutzerInnen, die noch alte Mechanismen verwenden,
-  müssen Passwörter einmalig in der Administrationsoberfläche
-  zurückgesetzt werden.
+  sind Passwörter einmalig in der Administrationsoberfläche
+  zurückzusetzen.
 
-  Dies betrifft nur Accounts, deren Passwort sich das letzte Mal vor
+  Betroffen sind nur Accounts, deren Passwort sich letztmalig vor
   kivitendo 2.7.0 geändert hat.
 
 Upgrade auf v3.3.0
 ==================
 
-* Bei Upgrade von Versionen vor v.3.2.x wie immer erst die dortigen
+* Bei Upgrade von Versionen vor v.3.2.x immer erst dortige
   Upgradehinweise beachten.
 
-* Es gibt keine neuen Perl-Modul-Abhängigkeiten.
+* Keine neuen Perl-Modul-Abhängigkeiten.
 
-* Die alte ungepflegte Druckvorlagenvariante "Standard" wurde entfernt.
-  Bereits verwendete Druckvorlagen, die darauf aufbauen, funktionieren
+* Alte ungepflegte Druckvorlagenvariante "Standard" wurde entfernt.
+  Bereits verwendete, darauf aufbauende Druckvorlagen, funktionieren
   natürlich weiterhin.
 
-* Für die Verwendung des MT940 Import Features der Bankerweiterung muß
-  aqbanking installiert werden. Dies wird nur für die Konvertierung vom MT940
-  ins CSV Format benötigt, das Kommandozeilentool "aqbanking-cli" befindet sich
+* Für Verwendung des MT940 Import Features ist Bankerweiterung 
+  aqbanking zu installieren, welches nur für Konvertierung vom MT940
+  ins CSV Format benötigt wird. Das Kommandozeilentool "aqbanking-cli" findet sich
   z.B. unter Ubuntu im Paket aqbanking-tools.
 
 Upgrade auf v3.2.0
@@ -79,32 +79,32 @@ Upgrade auf v3.2.0
   * HTML::Restrict
   * Image::Info
 
-  Wie immer bitte vor dem ersten Aufrufen einmal die Pakete überprüfen:
+  Wie immer bitte vor erstem Aufruf Pakete überprüfen:
 
   $ scripts/installation_check.pl -ro
-
-  Sofern das Upgrade von einer früheren Version als 3.1.0 geschieht auch die
-  Upgradehinweise der Vorversionen beachten.
-
+  
+  Bei Upgrade von Versionen vor v.3.1.0 immer erst dortige
+  Upgradehinweise beachten.  
+  
 * Druckvorlagen auf shipto-Verwendung prüfen
 
-  Hier hat sich das Standardverhalten geändert und ggf. werden shipto* nicht mehr
-  ausgedruckt, hier müssten die Druckvorlagen individuell angepasst werden, s.a.
+  Standardverhalten geändert, und ggf. werden shipto* nicht mehr
+  ausgedruckt, hier wären Druckvorlagen individuell anzupassen, s.a.
   Changelog -> Verkaufsbeleg-Ausdruck.
 
 Upgrade auf v3.1.0
 ==================
 
 
-* BEVOR ein Aufruf im Administrationsbereich erfolgt, muss zwingend der
+* VOR Aufruf im Administrationsbereich, muss zwingend der
   webdav Ordner im Installationspfad vorhanden sein!
    -  mkdir webdav/
    -  Rechte für webserver setzen ($ chmod www-data webdav/)
   Dieses "Feature" war in vorhergehenden Versionen optional, wird aber
   für das Upgrade auf Mandantenfähigkeit vorausgesetzt.
 
-* Neue Softwarevoraussetzungen: Perl v5.10.1 oder neuer sowie
-  PostgreSQL 8.4 oder neuer werden zwingend vorausgesetzt. Ein Betrieb
+* Neue Softwarevoraussetzungen: Perl v5.10.1 oder aktueller sowie
+  PostgreSQL 8.4 oder aktueller zwingend vorausgesetzt. Ein Betrieb
   mit älteren Versionen ist nicht mehr möglich.
 
 * Neue Perl-Modul-Abhängigkeiten:
@@ -118,13 +118,13 @@ Upgrade auf v3.1.0
   $ scripts/installation_check.pl -ro
 
 * Die Datenbank muss zwingend Unicode als Encoding nutzen. Daher wird
-  auch die Konfigurationsvariable "system.dbcharset" nicht mehr
+  auch Konfigurationsvariable "system.dbcharset" nicht mehr
   unterstützt.
 
-* Einführung von Mandanten. Früher war die Konfiguration der
+* Einführung von Mandanten. Früher war Konfiguration der
   Datenbanken für jeden Benutzer getrennt vorzunehmen. Mit diesem
-  Release wurden Mandanten eingeführt: ein Mandant bekommt einen Namen
-  sowie die Datenbankkonfiguration, und Benutzer bekommen
+  Release wurden Mandanten eingeführt: ein Mandant erkält Namen
+  sowie Datenbankkonfiguration, und Benutzer erhalten
   Zugriffsrechte auf einen oder mehrere Mandanten.
 
   Um dieses Update durchzuführen, müssen Sie sich einmal im
